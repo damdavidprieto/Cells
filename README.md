@@ -33,7 +33,7 @@ The simulation is built on peer-reviewed scientific research, modeling realistic
 - **Natural selection**: Resource scarcity drives adaptation
 
 ### 🔬 Scientific Accuracy
-- **Based on peer-reviewed research**: 15+ scientific papers from Nature, Science, Cell, etc.
+- **Based on peer-reviewed research**: 23 scientific papers from Nature, Science, Cell, etc.
 - **Realistic metabolism**: LUCA (2.0x cost) → Fermentation (1.5x) → Chemosynthesis (1.0x)
 - **Environmental gradients**: Light, oxygen, nitrogen, phosphorus distribution
 - **Mutation rates**: Modeled after real LUCA mutation rates (10⁻⁵ to 10⁻⁴ per base)
