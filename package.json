@@ -1,0 +1,39 @@
+{
+    "name": "cells-evolution-simulator",
+    "version": "1.0.0",
+    "description": "A scientifically-grounded cellular evolution simulator modeling LUCA (Last Universal Common Ancestor) and metabolic divergence in primordial oceans",
+    "main": "index.html",
+    "scripts": {
+        "start": "npx http-server -p 8080 -o",
+        "dev": "npx http-server -p 8080 -o"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/damdavidprieto/Cells.git"
+    },
+    "keywords": [
+        "evolution",
+        "simulation",
+        "biology",
+        "cellular-automata",
+        "p5js",
+        "javascript",
+        "LUCA",
+        "metabolism",
+        "genetics",
+        "educational",
+        "science",
+        "primordial-life",
+        "abiogenesis",
+        "chemosynthesis",
+        "fermentation"
+    ],
+    "author": "David Prieto",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/damdavidprieto/Cells/issues"
+    },
+    "homepage": "https://github.com/damdavidprieto/Cells#readme",
+    "devDependencies": {},
+    "dependencies": {}
+}

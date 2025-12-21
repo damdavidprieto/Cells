@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cells - Ecosystem Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+    <div id="ui-layer">
+        <h1>Cells - Evolution Simulation</h1>
+        <div id="stats">
+            <p><strong>Population</strong></p>
+            <p>Total Cells: <span id="entity-count">0</span></p>
+            <p>Species: <span id="species-count">0</span></p>
+
+            <p style="margin-top: 15px;"><strong>Cell Types</strong></p>
+            <p>LUCA: <span id="luca-count">0</span></p>
+            <p>Fermentation: <span id="fermentation-count">0</span></p>
+            <p>Chemosynthesis: <span id="chemosynthesis-count">0</span></p>
+
+            <p style="margin-top: 15px;"><strong>Resources</strong></p>
+            <p>Oxygen: <span id="oxygen-count">0</span></p>
+            <p>Nitrogen: <span id="nitrogen-count">0</span></p>
+            <p>Phosphorus: <span id="phosphorus-count">0</span></p>
+
+            <p style="margin-top: 15px;"><strong>Development</strong></p>
+            <button id="download-logs-btn" onclick="downloadDevLogs()"
+                style="padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                📥 Download Logs
+            </button>
+        </div>
+    </div>
+
+    <div id="legend">
+        <h2>Legend</h2>
+
+        <div class="legend-section">
+            <h3>Cell Types</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(200, 200, 220);"></div>
+                <span>LUCA - Primitive ancestor</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(180, 100, 150);"></div>
+                <span>Fermentation - Anaerobic</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(150, 200, 100);"></div>
+                <span>Chemosynthesis - Chemical energy</span>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <h3>Resources</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(80, 200, 255);"></div>
+                <span>Oxygen - Limited resource</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(180, 80, 255);"></div>
+                <span>Nitrogen - Sediment nutrient</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(255, 140, 60);"></div>
+                <span>Phosphorus - DNA/RNA (scarce)</span>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <h3>Zones</h3>
+            <div class="legend-item">
+                <div class="legend-color"
+                    style="background: linear-gradient(to bottom, rgb(20, 60, 120), rgb(5, 15, 30));"></div>
+                <span>Water - Upper 90%</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgb(50, 30, 40);"></div>
+                <span>Sediment - Bottom 10%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Constants -->
+    <script src="src/utils/Constants.js"></script>
+
+    <!-- Logging System -->
+    <script src="src/logging/CircuitFilter.js"></script>
+    <script src="src/logging/ReproductionIndexCalculator.js"></script>
+    <script src="src/logging/DevLogger.js"></script>
+
+    <!-- DNA System -->
+    <script src="src/dna/DNAFactory.js"></script>
+    <script src="src/dna/DNAMutator.js"></script>
+    <script src="src/dna/GeneticDistance.js"></script>
+
+    <!-- Cellular Systems (renamed from Metabolism) -->
+    <script src="src/cellular_systems/FlagellaCosts.js"></script>
+    <script src="src/cellular_systems/MetabolicCosts.js"></script>
+    <script src="src/cellular_systems/ResourceConsumption.js"></script>
+    <script src="src/cellular_systems/MembraneSystem.js"></script>
+    <script src="src/cellular_systems/ColorSystem.js"></script>
+    <script src="src/cellular_systems/OxygenTolerance.js"></script>
+
+    <!-- Reproduction -->
+    <script src="src/reproduction/ReproductionSystem.js"></script>
+
+    <!-- Visualization -->
+    <script src="src/visualization/CellRenderer.js"></script>
+    <script src="src/visualization/MutationRateTracker.js"></script>
+    <script src="src/visualization/SpeciesNotifier.js"></script>
+    <script src="src/visualization/DevelopmentMonitor.js"></script>
+
+    <!-- Ecosystem Modules (load BEFORE Environment.js) -->
+    <script src="src/ecosystem/utils/GridUtils.js"></script>
+    <script src="src/ecosystem/grids/ResourceGrids.js"></script>
+    <script src="src/ecosystem/grids/ChemicalGrids.js"></script>
+    <script src="src/ecosystem/grids/PhysicalGrids.js"></script>
+    <script src="src/ecosystem/regeneration/GridRegeneration.js"></script>
+    <script src="src/ecosystem/regeneration/OxygenRegeneration.js"></script>
+    <script src="src/ecosystem/regeneration/PhosphorusRegeneration.js"></script>
+    <script src="src/ecosystem/Environment.js"></script>
+
+    <!-- Core -->
+    <script src="src/core/Entity.js"></script>
+    <script src="src/core/Sketch.js"></script>
+</body>
+
+</html>
