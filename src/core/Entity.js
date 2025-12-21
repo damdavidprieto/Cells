@@ -110,9 +110,9 @@ class Entity {
         ResourceConsumption.consume(this, environment);
     }
 
-    reproduce() {
+    reproduce(environmentalStability = 0.5) {
         if (ReproductionSystem.canReproduce(this)) {
-            return ReproductionSystem.reproduce(this);
+            return ReproductionSystem.reproduce(this, environmentalStability);
         }
         return null;
     }
