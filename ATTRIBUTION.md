@@ -8,6 +8,18 @@ This document provides transparency about the tools, methodologies, and authorsh
 
 This project was developed with significant assistance from **Antigravity AI** (Google DeepMind's advanced agentic coding assistant).
 
+> ⚠️ **Important Note on Content Attribution**
+> 
+> This document provides detailed attribution of AI-generated vs human-created content. **This distinction is crucial for**:
+> 
+> - **Historification**: Understanding the evolution and decision-making process of the project
+> - **Reusability**: Knowing which parts were human-designed (conceptual) vs AI-implemented (technical)
+> - **Maintenance**: Identifying who/what to consult when modifying specific components
+> - **Learning**: Studying the collaboration patterns between human expertise and AI capabilities
+> - **Accountability**: Clear responsibility for design decisions vs implementation details
+> 
+> **This is not a value judgment** - neither human nor AI-generated content is inherently "better" or "worse". Rather, it's about **transparency and traceability** for future development, research, and collaboration.
+
 ### Development Breakdown
 
 **Estimated Code Authorship**:
@@ -231,11 +243,46 @@ We believe in **radical transparency** about AI assistance:
 4. **Accountability**: Clear responsibility for decisions
 5. **Trust**: Transparency builds credibility
 
+### Why Distinguish Human vs AI Content?
+
+The detailed breakdown of authorship serves **practical purposes beyond ethics**:
+
+#### 1. **Historification & Project Evolution**
+- **Understanding decisions**: Human-directed parts show *why* choices were made
+- **Tracing changes**: AI-generated parts show *how* ideas were implemented
+- **Evolution tracking**: See which aspects evolved from human insight vs AI iteration
+- **Decision archaeology**: Future maintainers can trace back to original human intent
+
+#### 2. **Reusability & Adaptation**
+- **Conceptual reuse**: Human-designed architecture can be adapted to other projects
+- **Technical reuse**: AI-generated implementations can be regenerated with different parameters
+- **Pattern recognition**: Identify which human decisions led to successful AI implementations
+- **Modular understanding**: Know which parts are "design" vs "implementation"
+
+#### 3. **Maintenance & Debugging**
+- **Who to ask**: Human for "why this approach?", AI logs for "how was this implemented?"
+- **Change impact**: Human-designed parts may need conceptual redesign, AI parts can be regenerated
+- **Bug classification**: Is this a design flaw (human) or implementation bug (AI)?
+- **Update strategy**: Conceptual changes need human review, technical updates can be AI-assisted
+
+#### 4. **Learning & Research**
+- **Collaboration patterns**: Study effective human-AI interaction models
+- **Capability boundaries**: Understand what AI can/cannot do well
+- **Quality factors**: Identify which human inputs lead to better AI outputs
+- **Best practices**: Extract lessons for future human-AI projects
+
+#### 5. **Legal & Ethical Clarity**
+- **Copyright**: Clear attribution for licensing purposes
+- **Responsibility**: Who is accountable for specific decisions
+- **Credit**: Fair recognition of both human and AI contributions
+- **Transparency**: Honest representation of the development process
+
 ### What This Means
 - **Not hiding AI use**: Openly acknowledging assistance
 - **Not claiming sole authorship**: Crediting AI contribution
 - **Not diminishing human role**: Design and validation are critical
 - **Not overstating AI**: Human expertise drives quality
+- **Enabling future work**: Clear provenance aids maintenance and evolution
 
 ---
 
