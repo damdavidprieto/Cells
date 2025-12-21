@@ -5,6 +5,12 @@ A scientifically-grounded cellular evolution simulator that models the emergence
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![p5.js](https://img.shields.io/badge/p5.js-1.9.0-ED225D.svg)](https://p5js.org/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E.svg)](https://www.javascript.com/)
+[![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](DEVELOPMENT.md)
+[![AI Assisted](https://img.shields.io/badge/AI-Antigravity-blue.svg)](ATTRIBUTION.md)
+
+> ⚠️ **Development Status**: This project is in active development (v1.0.0-alpha). See [DEVELOPMENT.md](DEVELOPMENT.md) for current status and limitations.
+
+> 🤖 **AI-Assisted Development**: This project was developed with significant AI assistance (~85-90% code generation). See [ATTRIBUTION.md](ATTRIBUTION.md) for full transparency.
 
 ## 🎮 [Live Demo](https://damdavidprieto.github.io/Cells/)
 
@@ -156,12 +162,37 @@ See [docs/00_Architecture_and_Mechanics.md](docs/00_Architecture_and_Mechanics.m
 
 ---
 
+## 🔍 Transparency & Development
+
+### Development Status
+This project is in **active development** (v1.0.0-alpha). While functional and scientifically grounded, it should be considered experimental/educational software.
+
+- **What works**: Core simulation, evolution, metabolic divergence
+- **Limitations**: Performance with >200 cells, simplified biology
+- **Planned**: Photosynthesis, predator-prey, horizontal gene transfer
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed status and roadmap.
+
+### AI-Assisted Development
+This project was developed through **human-AI collaboration** using Antigravity AI:
+
+- **~85-90% AI-generated code**: Systems, documentation, infrastructure
+- **~10-15% Human-directed**: Design, validation, scientific accuracy
+- **100% Human oversight**: All decisions validated by human expertise
+
+We believe in radical transparency about AI assistance. See [ATTRIBUTION.md](ATTRIBUTION.md) for complete details on tools, methodology, and code authorship.
+
+---
+
 ## 📚 Documentation
 
+- **[Development Status](DEVELOPMENT.md)** - Current status, limitations, and roadmap
+- **[Attribution & Tools](ATTRIBUTION.md)** - AI assistance, code authorship, methodology
 - **[Architecture & Mechanics](docs/00_Architecture_and_Mechanics.md)** - Complete system documentation
-- **[Scientific References](docs/13_scientific_references.md)** - Bibliography
+- **[Scientific References](docs/13_scientific_references.md)** - Bibliography (23 papers)
 - **[LUCA Mutation Rate](docs/LUCA_mutationRate.md)** - Scientific basis for mutation mechanics
 - **[Configuration Guide](docs/02_configuration_guide.md)** - How to adjust parameters
+- **[Quick Start Guide](docs/QUICKSTART.md)** - Beginner-friendly introduction
 - **[Traits Documentation](docs/traits/)** - Detailed trait mechanics
 
 ---
