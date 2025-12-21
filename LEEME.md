@@ -1,249 +1,115 @@
-# 🧬 Cells - Evolution Simulator
+# 🧬 Cells - Simulador de Evolución
 
-A scientifically-grounded cellular evolution simulator that models the emergence and divergence of life from **LUCA** (Last Universal Common Ancestor) in primordial oceans.
+Un simulador de evolución celular científicamente fundamentado que modela el surgimiento y divergencia de la vida desde **LUCA** (Último Antepasado Común Universal) en océanos primordiales.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![p5.js](https://img.shields.io/badge/p5.js-1.9.0-ED225D.svg)](https://p5js.org/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E.svg)](https://www.javascript.com/)
-[![Development Status](https://img.shields.io/badge/status-alpha-orange.svg)](DEVELOPMENT.md)
-[![AI Assisted](https://img.shields.io/badge/AI-Antigravity-blue.svg)](ATTRIBUTION.md)
+[![Estado Desarrollo](https://img.shields.io/badge/estado-alpha-orange.svg)](DESARROLLO.md)
+[![Asistido por IA](https://img.shields.io/badge/IA-Antigravity-blue.svg)](ATRIBUCION.md)
 
-> ⚠️ **Development Status**: This project is in active development (v1.0.0-alpha). See [DEVELOPMENT.md](DEVELOPMENT.md) for current status and limitations.
+> ⚠️ **Estado de Desarrollo**: Este proyecto está en desarrollo activo (v1.0.0-alpha). Ver [DESARROLLO.md](DESARROLLO.md) para estado actual y limitaciones.
 
-> 🤖 **AI-Assisted Development**: This project was developed with significant AI assistance (~85-90% code generation). See [ATTRIBUTION.md](ATTRIBUTION.md) for full transparency.
+> 🤖 **Desarrollo Asistido por IA**: Este proyecto fue desarrollado con asistencia significativa de IA (~85-90% generación de código). Ver [ATRIBUCION.md](ATRIBUCION.md) para transparencia total.
 
-## 🎮 [Live Demo](https://damdavidprieto.github.io/Cells/)
+## 🎮 [Demo en Vivo](https://damdavidprieto.github.io/Cells/)
 
-> **Note**: The live demo will be available once GitHub Pages is enabled in repository settings.
-
----
-
-## 📖 Overview
-
-**Cells** simulates the evolution of primitive cellular life in conditions similar to Earth's Archean Eon (4.0-3.5 billion years ago). Starting with LUCA-like organisms, cells evolve through mutation, natural selection, and metabolic divergence into specialized lineages:
-
-- 🔵 **LUCA** - Primitive chemosynthetic ancestor
-- 🟣 **Fermentation** - Anaerobic metabolism
-- 🟢 **Chemosynthesis** - Specialized chemical energy utilization
-
-The simulation is built on peer-reviewed scientific research, modeling realistic evolutionary pressures, resource competition, and metabolic costs.
+> **Nota**: La demo estará disponible una vez que se habilite GitHub Pages en la configuración del repositorio.
 
 ---
 
-## ✨ Features
+## 📖 Resumen
 
-### 🧬 Evolutionary Mechanics
-- **Mutation rate evolution**: Cells evolve their mutation rate based on environmental stability
-- **Metabolic divergence**: LUCA can evolve into fermentation or chemosynthesis (1% chance per reproduction)
-- **Genetic drift**: Population-level evolutionary dynamics
-- **Natural selection**: Resource scarcity drives adaptation
+**Cells** simula la evolución de vida celular primitiva en condiciones similares al Eón Arcaico de la Tierra (hace 4.0-3.5 mil millones de años). Comenzando con organismos tipo LUCA, las células evolucionan a través de mutación, selección natural y divergencia metabólica en linajes especializados:
 
-### 🔬 Scientific Accuracy
-- **Based on peer-reviewed research**: 23 scientific papers from Nature, Science, Cell, etc.
-- **Realistic metabolism**: LUCA (2.0x cost) → Fermentation (1.5x) → Chemosynthesis (1.0x)
-- **Environmental gradients**: Light, oxygen, nitrogen, phosphorus distribution
-- **Mutation rates**: Modeled after real LUCA mutation rates (10⁻⁵ to 10⁻⁴ per base)
+- 🔵 **LUCA** - Ancestro quimiosintético primitivo
+- 🟣 **Fermentación** - Metabolismo anaeróbico
+- 🟢 **Quimiosíntesis** - Utilización especializada de energía química
 
-### 🎨 Visualization
-- **Real-time evolution tracking**: Mutation rate graph with evolutionary eras
-- **Species notifications**: Alerts when new metabolic types emerge
-- **Color-coded cells**: Visual distinction between metabolism types
-- **Resource grids**: See environmental resource distribution
-- **Development logs**: Download detailed simulation data
-
-### ⚙️ Configurable Parameters
-- LUCA variability levels (NONE, MEDIUM, HIGH)
-- Environmental stability pressure
-- Metabolic efficiency multipliers
-- Resource regeneration rates
-- All parameters documented in `src/utils/Constants.js`
+La simulación está construida sobre investigación científica revisada por pares, modelando presiones evolutivas realistas, competencia por recursos y costos metabólicos.
 
 ---
 
-## 🚀 Quick Start
+## ✨ Características
 
-### Option 1: Open Directly
-1. Clone the repository:
+### 🧬 Mecánicas Evolutivas
+- **Evolución de tasa de mutación**: Las células evolucionan su tasa de mutación basada en estabilidad ambiental
+- **Divergencia metabólica**: LUCA puede evolucionar hacia fermentación o quimiosíntesis (1% probabilidad por reproducción)
+- **Deriva genética**: Dinámicas evolutivas a nivel de población
+- **Selección natural**: La escasez de recursos impulsa la adaptación
+
+### 🔬 Precisión Científica
+- **Basado en investigación**: 23 papers científicos de Nature, Science, Cell, etc.
+- **Metabolismo realista**: LUCA (costo 2.0x) → Fermentación (1.5x) → Quimiosíntesis (1.0x)
+- **Gradientes ambientales**: Distribución de luz, oxígeno, nitrógeno, fósforo
+- **Tasas de mutación**: Modeladas según tasas reales de LUCA (10⁻⁵ a 10⁻⁴ por base)
+
+### 🎨 Visualización
+- **Tracking en tiempo real**: Gráfico de tasa de mutación con eras evolutivas
+- **Notificaciones de especies**: Alertas cuando surgen nuevos tipos metabólicos
+- **Células con código de color**: Distinción visual entre tipos de metabolismo
+- **Grids de recursos**: Ver distribución de recursos ambientales
+- **Logs de desarrollo**: Descarga de datos detallados de simulación
+
+---
+
+## 🚀 Inicio Rápido
+
+### Opción 1: Abrir Directamente
+1. Clonar el repositorio:
    ```bash
    git clone https://github.com/damdavidprieto/Cells.git
    cd Cells
    ```
-2. Open `index.html` in your browser
+2. Abrir `index.html` en tu navegador
 
-### Option 2: Local Server (Recommended)
-1. Clone the repository
-2. Run a local server:
-   ```bash
-   # Using Python 3
-   python -m http.server 8080
-   
-   # Using Node.js (http-server)
-   npx http-server -p 8080
-   
-   # Using npm script
-   npm start
-   ```
-3. Open `http://localhost:8080` in your browser
-
----
-
-## 📊 What to Observe
-
-### Early Simulation (0-2 minutes)
-- **High mutation rates** (0.15-0.25): Chaotic exploration
-- **LUCA dominance**: Gray cells exploring the environment
-- **Resource competition**: Cells cluster near resources
-
-### Mid Simulation (2-10 minutes)
-- **First divergence**: Watch for purple (fermentation) or green (chemosynthesis) cells
-- **Mutation rate decrease**: Population stabilizes (0.08-0.12)
-- **Lineage emergence**: Distinct metabolic strategies
-
-### Late Simulation (10+ minutes)
-- **Specialization**: Cells optimized for specific niches
-- **Low mutation rates** (0.04-0.06): Modern-like stability
-- **Ecosystem balance**: Multiple species coexisting
-
----
-
-## 🧪 Scientific Basis
-
-This simulation is grounded in scientific research on early life:
-
-### Key References
-- **Weiss et al. (2016)** - LUCA physiology and habitat (*Nature Microbiology*)
-- **Poole et al. (1998)** - RNA world and mutation rates (*J. Molecular Evolution*)
-- **Martin & Russell (2007)** - Origin of biochemistry (*Phil. Trans. R. Soc. B*)
-- **Müller et al. (2012)** - Anaerobic metabolism evolution (*Microbiology Reviews*)
-- **Elser et al. (2007)** - Phosphorus limitation (*Ecology Letters*)
-
-See [docs/13_scientific_references.md](docs/13_scientific_references.md) for complete bibliography.
-
----
-
-## 🏗️ Architecture
-
+### Opción 2: Servidor Local (Recomendado)
+```bash
+# Usando npx
+npx http-server -p 8080
 ```
-Cells/
-├── index.html              # Entry point
-├── style.css               # UI styles
-├── src/
-│   ├── utils/
-│   │   └── Constants.js    # Configuration
-│   ├── dna/                # Genetic system
-│   ├── metabolism/         # Metabolic costs
-│   ├── reproduction/       # Cell division
-│   ├── visualization/      # Rendering & tracking
-│   ├── cellular_systems/   # Oxygen tolerance, resource consumption
-│   ├── ecosystem/          # Environment & regeneration
-│   ├── logging/            # Development logging
-│   ├── Entity.js           # Cell class
-│   ├── Environment.js      # World simulation
-│   └── Sketch.js           # Main loop (p5.js)
-└── docs/                   # Detailed documentation
-    ├── 00_Architecture_and_Mechanics.md
-    ├── 13_scientific_references.md
-    ├── LUCA_mutationRate.md
-    └── traits/             # Trait documentation
-```
-
-See [docs/00_Architecture_and_Mechanics.md](docs/00_Architecture_and_Mechanics.md) for complete system documentation.
+3. Abrir `http://localhost:8080` en tu navegador
 
 ---
 
-## 🛠️ Technologies
+## 🔍 Transparencia y Desarrollo
 
-- **[p5.js](https://p5js.org/)** (1.9.0) - Graphics and animation
-- **Vanilla JavaScript** (ES6) - Core logic
-- **HTML5 Canvas** - Rendering
-- **Pure CSS** - UI styling
+### Estado de Desarrollo
+Este proyecto está en **desarrollo activo** (v1.0.0-alpha). Aunque funcional y científicamente fundamentado, debe considerarse software experimental/educativo.
 
-**No build process required** - runs directly in the browser!
+- **Qué funciona**: Simulación core, evolución, divergencia metabólica
+- **Limitaciones**: Rendimiento con >200 células, biología simplificada
+- **Planeado**: Fotosíntesis, predador-presa, transferencia horizontal de genes
 
----
+Ver [DESARROLLO.md](DESARROLLO.md) para estado detallado y roadmap.
 
-## 🔍 Transparency & Development
+### Desarrollo Asistido por IA
+Este proyecto fue desarrollado mediante **colaboración humano-IA** usando Antigravity AI:
 
-### Development Status
-This project is in **active development** (v1.0.0-alpha). While functional and scientifically grounded, it should be considered experimental/educational software.
+- **~85-90% código generado por IA**: Sistemas, documentación, infraestructura
+- **~10-15% dirigido por humano**: Diseño, validación, precisión científica
+- **100% supervisión humana**: Todas las decisiones validadas por experiencia humana
 
-- **What works**: Core simulation, evolution, metabolic divergence
-- **Limitations**: Performance with >200 cells, simplified biology
-- **Planned**: Photosynthesis, predator-prey, horizontal gene transfer
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed status and roadmap.
-
-### AI-Assisted Development
-This project was developed through **human-AI collaboration** using Antigravity AI:
-
-- **~85-90% AI-generated code**: Systems, documentation, infrastructure
-- **~10-15% Human-directed**: Design, validation, scientific accuracy
-- **100% Human oversight**: All decisions validated by human expertise
-
-We believe in radical transparency about AI assistance. See [ATTRIBUTION.md](ATTRIBUTION.md) for complete details on tools, methodology, and code authorship.
+Creemos en la transparencia radical sobre la asistencia de IA. Ver [ATRIBUCION.md](ATRIBUCION.md) para detalles completos sobre herramientas, metodología y autoría de código.
 
 ---
 
-## 📚 Documentation
+## 📚 Documentación
 
-- **[Development Status](DEVELOPMENT.md)** - Current status, limitations, and roadmap
-- **[Attribution & Tools](ATTRIBUTION.md)** - AI assistance, code authorship, methodology
-- **[Architecture & Mechanics](docs/00_Architecture_and_Mechanics.md)** - Complete system documentation
-- **[Scientific References](docs/13_scientific_references.md)** - Bibliography (23 papers)
-- **[LUCA Mutation Rate](docs/LUCA_mutationRate.md)** - Scientific basis for mutation mechanics
-- **[Configuration Guide](docs/02_configuration_guide.md)** - How to adjust parameters
-- **[Quick Start Guide](docs/QUICKSTART.md)** - Beginner-friendly introduction
-- **[Traits Documentation](docs/traits/)** - Detailed trait mechanics
+- **[Estado de Desarrollo](DESARROLLO.md)** - Estado actual, limitaciones y roadmap
+- **[Atribución y Herramientas](ATRIBUCION.md)** - Asistencia IA, autoría, metodología
+- **[Arquitectura y Mecánicas](docs/00_Architecture_and_Mechanics.md)** - Documentación completa del sistema
+- **[Referencias Científicas](docs/13_scientific_references.md)** - Bibliografía (23 papers)
+- **[Guía de Inicio Rápido](docs/QUICKSTART.md)** - Introducción para principiantes
 
 ---
 
-## 🎯 Educational Use
-
-This simulator is ideal for:
-- **Biology education**: Visualizing evolution and natural selection
-- **Astrobiology**: Understanding early life conditions
-- **Computer science**: Genetic algorithms and cellular automata
-- **Science communication**: Demonstrating evolutionary principles
-
-Feel free to use in classrooms, presentations, or research. Attribution appreciated!
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Areas for improvement:
-- Additional metabolic pathways (photosynthesis, aerobic respiration)
-- Predator-prey dynamics
-- Horizontal gene transfer
-- More sophisticated environmental modeling
-- Performance optimizations
-
-Please open an issue to discuss major changes before submitting a PR.
-
----
-
-## 📝 License
-
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Scientific community for rigorous research on early life
-- [p5.js](https://p5js.org/) for making creative coding accessible
-- All researchers cited in [scientific references](docs/13_scientific_references.md)
-
----
-
-## 📧 Contact
+## 📧 Contacto
 
 **David Prieto**
 - GitHub: [@damdavidprieto](https://github.com/damdavidprieto)
-- Repository: [Cells](https://github.com/damdavidprieto/Cells)
+- Repositorio: [Cells](https://github.com/damdavidprieto/Cells)
 
 ---
 
-**Made with 🧬 and ☕ by David Prieto**
-
-*Simulating 4 billion years of evolution, one frame at a time.*
+**Hecho con 🧬 y ☕ por David Prieto**
