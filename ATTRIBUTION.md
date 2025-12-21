@@ -245,37 +245,162 @@ We believe in **radical transparency** about AI assistance:
 
 ### Why Distinguish Human vs AI Content?
 
-The detailed breakdown of authorship serves **practical purposes beyond ethics**:
+> [!IMPORTANT]
+> **The detailed breakdown of authorship serves practical purposes beyond ethics.**
+> 
+> This is not about determining which content is "better" - both human and AI contributions are essential. Rather, it's about **creating a traceable, maintainable, and reusable codebase** that future developers can understand and evolve.
 
-#### 1. **Historification & Project Evolution**
+The distinction between human-directed and AI-generated content provides critical benefits:
+
+---
+
+#### 1. 📜 **Historification & Project Evolution**
+
+> [!NOTE]
+> **Understanding the "why" and "how" of every decision**
+
 - **Understanding decisions**: Human-directed parts show *why* choices were made
+  - Example: "Why LUCA metabolism has 2x cost?" → Human scientific validation
+  - Trace back to original research papers and design rationale
+  
 - **Tracing changes**: AI-generated parts show *how* ideas were implemented
+  - Example: "How is mutation rate calculated?" → AI implementation in `DNAMutator.js`
+  - See exact code generation patterns and structure
+  
 - **Evolution tracking**: See which aspects evolved from human insight vs AI iteration
+  - Human: "We need environmental stability to affect mutation rates"
+  - AI: Implements `EnvironmentalStability` class with specific algorithms
+  
 - **Decision archaeology**: Future maintainers can trace back to original human intent
+  - Years later: "Why this approach?" → Check human design decisions
+  - Avoid breaking conceptual integrity when modifying code
 
-#### 2. **Reusability & Adaptation**
+**Real-world benefit**: When someone wants to modify the mutation system in 2027, they can trace back to the human decision (based on Drake 1991 research) and understand *why* it works this way, not just *how* it's coded.
+
+---
+
+#### 2. 🔄 **Reusability & Adaptation**
+
+> [!TIP]
+> **Separate "what to build" from "how to build it"**
+
 - **Conceptual reuse**: Human-designed architecture can be adapted to other projects
+  - Example: The "environmental stability → mutation pressure" concept
+  - Can be applied to other evolutionary simulations
+  - Design pattern is reusable, implementation is project-specific
+  
 - **Technical reuse**: AI-generated implementations can be regenerated with different parameters
+  - Example: Resource grid system structure
+  - Same AI can generate similar grids for different resources
+  - Implementation details can be regenerated, not copy-pasted
+  
 - **Pattern recognition**: Identify which human decisions led to successful AI implementations
+  - "Modular architecture" (human) → Clean, maintainable code (AI)
+  - "Scientific accuracy priority" (human) → Extensive documentation (AI)
+  
 - **Modular understanding**: Know which parts are "design" vs "implementation"
+  - Design: Can be reused conceptually in other languages/frameworks
+  - Implementation: Specific to JavaScript/p5.js, can be regenerated
 
-#### 3. **Maintenance & Debugging**
+**Real-world benefit**: Another developer creating a plant evolution simulator can reuse the human-designed concepts (environmental pressure, trait evolution) while having AI generate new implementations for plant-specific mechanics.
+
+---
+
+#### 3. 🔧 **Maintenance & Debugging**
+
+> [!WARNING]
+> **Different types of issues require different approaches**
+
 - **Who to ask**: Human for "why this approach?", AI logs for "how was this implemented?"
+  - Bug in mutation logic? Check human design rationale first
+  - Syntax error or optimization? AI implementation detail
+  
 - **Change impact**: Human-designed parts may need conceptual redesign, AI parts can be regenerated
+  - Changing "LUCA should have high mutation" → Needs human scientific validation
+  - Optimizing grid calculations → AI can regenerate more efficient code
+  
 - **Bug classification**: Is this a design flaw (human) or implementation bug (AI)?
+  - "Cells die too fast" → Might be human parameter choice issue
+  - "Grid calculation returns NaN" → AI implementation bug
+  
 - **Update strategy**: Conceptual changes need human review, technical updates can be AI-assisted
+  - Adding new metabolism type → Human designs, AI implements
+  - Refactoring code structure → AI can do with human approval
 
-#### 4. **Learning & Research**
+**Real-world benefit**: When fixing a bug, knowing if it's a conceptual issue (needs domain expertise) or technical issue (needs code review) saves hours of debugging in the wrong direction.
+
+---
+
+#### 4. 🎓 **Learning & Research**
+
+> [!NOTE]
+> **This project is a case study in human-AI collaboration**
+
 - **Collaboration patterns**: Study effective human-AI interaction models
+  - What prompts led to good code?
+  - Which human decisions enabled AI to excel?
+  - Where did AI need more human guidance?
+  
 - **Capability boundaries**: Understand what AI can/cannot do well
+  - AI excels: Code generation, documentation, research compilation
+  - AI struggles: Scientific validation, parameter tuning, conceptual design
+  - Humans excel: Domain expertise, creativity, quality control
+  
 - **Quality factors**: Identify which human inputs lead to better AI outputs
+  - Clear scientific requirements → Better AI implementation
+  - Vague goals → AI needs more iteration
+  
 - **Best practices**: Extract lessons for future human-AI projects
+  - Iterative design-implement-validate cycle works well
+  - AI documentation is thorough but needs human review
+  - Scientific accuracy requires human domain expertise
 
-#### 5. **Legal & Ethical Clarity**
+**Real-world benefit**: Other developers can learn from this project's collaboration model and apply it to their own AI-assisted projects, avoiding pitfalls and leveraging strengths.
+
+---
+
+#### 5. ⚖️ **Legal & Ethical Clarity**
+
+> [!CAUTION]
+> **Clear attribution protects everyone**
+
 - **Copyright**: Clear attribution for licensing purposes
+  - Human contributions: Traditional copyright
+  - AI contributions: Disclosed and attributed
+  - Combined work: Transparent provenance
+  
 - **Responsibility**: Who is accountable for specific decisions
+  - Scientific accuracy: Human validated
+  - Code quality: Human reviewed, AI generated
+  - Design choices: Human decided
+  
 - **Credit**: Fair recognition of both human and AI contributions
+  - Not hiding AI assistance (dishonest)
+  - Not claiming sole authorship (unfair to AI tool)
+  - Not diminishing human role (design is critical)
+  
 - **Transparency**: Honest representation of the development process
+  - Users know what they're getting
+  - Contributors know how to engage
+  - Researchers can study the process
+
+**Real-world benefit**: Clear legal standing for the project, fair credit to all contributors (human and AI), and honest representation that builds trust with users and the community.
+
+---
+
+### Summary: Why This Matters
+
+This detailed attribution isn't bureaucracy - it's **practical infrastructure** for:
+
+- ✅ **Maintainability**: Future developers understand the codebase
+- ✅ **Reusability**: Concepts and code can be adapted appropriately  
+- ✅ **Learning**: Others can study effective human-AI collaboration
+- ✅ **Trust**: Transparency builds credibility and community
+- ✅ **Evolution**: Project can grow while maintaining conceptual integrity
+
+**The goal**: Create a codebase that's not just functional, but *understandable, maintainable, and evolvable* for years to come.
+
+---
 
 ### What This Means
 - **Not hiding AI use**: Openly acknowledging assistance
