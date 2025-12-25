@@ -5,10 +5,10 @@ console.log('🔨 Building PRODUCTION version...\n');
 
 // Archivos y carpetas de desarrollo que NO deben estar en producción
 const devFiles = [
-    'src/logging/LogPersistence.js',      // OLD SYSTEM
     'src/logging/DatabaseLogger.js',       // DEV ONLY
-    'src/logging/DevLogger.js',            // DEV ONLY
-    'src/visualization/DevelopmentMonitor.js'  // DEV ONLY
+    'analyze_logs.js',                     // Analysis script
+    'verify_evolution.js',                 // Verification script
+    'verify_initial_state.js'              // Verification script
 ];
 
 // 1. Crear carpeta build
@@ -42,13 +42,20 @@ console.log('\n🔧 Cleaning index.html...');
 let html = fs.readFileSync('./build/index.html', 'utf8');
 
 devFiles.forEach(file => {
+    // Escape special regex characters in filename
+    const escapedFile = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Pattern 1: Simple script tag
     const scriptTag = `<script src="${file}"></script>`;
-    const scriptTagWithComment = new RegExp(`<script src="${file.replace(/\//g, '\\/')}".*?</script>.*?\\n`, 'g');
-    html = html.replace(scriptTagWithComment, '');
+
+    // Pattern 2: Script tag with extra attributes or newlines
+    const complexScriptTag = new RegExp(`<script[^>]*src=["']${escapedFile}["'][^>]*>.*?</script>`, 'gs');
+
+    html = html.replace(complexScriptTag, '');
     html = html.replace(scriptTag, '');
 });
 
-// Eliminar comentarios DEPRECATED
+// Eliminar comentarios DEPRECATED y bloques de desarrollo
 html = html.replace(/<!--.*?DEPRECATED.*?-->/g, '');
 
 fs.writeFileSync('./build/index.html', html);
@@ -58,9 +65,9 @@ console.log('   ✅ index.html cleaned');
 console.log('\n🔧 Setting PRODUCTION mode in Constants.js...');
 let constants = fs.readFileSync('./build/src/utils/Constants.js', 'utf8');
 
-// Cambiar EXECUTION_MODE a PRODUCTION
+// Cambiar CUALQUIER EXECUTION_MODE a PRODUCTION
 constants = constants.replace(
-    /EXECUTION_MODE:\s*['"]DEVELOPMENT['"]/g,
+    /EXECUTION_MODE:\s*['"][A-Z_]+['"]/g,
     "EXECUTION_MODE: 'PRODUCTION'"
 );
 
