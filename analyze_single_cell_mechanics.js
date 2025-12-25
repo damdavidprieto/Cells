@@ -24,6 +24,7 @@ const cellLogs = data.events ? data.events.filter(e => e.event_type === 'single_
 
 console.log(`Deep Analysis Frames found: ${cellLogs.length}`);
 console.log(`Execution Mode in Log: ${data.execution_mode || "Unknown"}`);
+console.log(`Scenario: ${data.config?.scenario || "UNDEFINED (Pre-Feature)"}`);
 console.log(`Run ID: ${data.run_id}`);
 console.log(`Total Frames: ${data.total_frames}`);
 console.log(`Top Keys: ${Object.keys(data).join(', ')}`);

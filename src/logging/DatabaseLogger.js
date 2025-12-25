@@ -26,7 +26,13 @@ class DatabaseLogger {
     generateRunId() {
         const now = new Date();
         const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
-        return `run_${timestamp}`;
+
+        let prefix = 'run';
+        if (GameConstants.SCENARIO && GameConstants.SCENARIO !== 'STANDARD') {
+            prefix = `run_${GameConstants.SCENARIO}`;
+        }
+
+        return `${prefix}_${timestamp}`;
     }
 
     /**
