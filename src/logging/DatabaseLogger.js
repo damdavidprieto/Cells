@@ -120,7 +120,8 @@ class DatabaseLogger {
                 config: {
                     grid_size: GameConstants.GRID_SIZE,
                     initial_population: 20,
-                    execution_mode: GameConstants.EXECUTION_MODE
+                    execution_mode: GameConstants.EXECUTION_MODE,
+                    scenario: GameConstants.SCENARIO || 'STANDARD' // Log the evolutionary scenario
                 },
                 end_time: null
             };

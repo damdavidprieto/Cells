@@ -320,6 +320,7 @@
                             <th>Inicio</th>
                             <th>Fin</th>
                             <th>Modo</th>
+                            <th>Escenario</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -569,6 +570,7 @@
                         <td>${new Date(run.start_time).toLocaleString()}</td>
                         <td>${run.end_time ? new Date(run.end_time).toLocaleString() : 'En curso'}</td>
                         <td>${run.mode}</td>
+                        <td>${run.config && run.config.scenario ? run.config.scenario : 'N/A'}</td>
                         <td>
                             <button onclick="viewRun('${run.run_id}')" style="padding: 4px 8px; font-size: 12px;">Ver</button>
                             <button onclick="exportRun('${run.run_id}')" style="padding: 4px 8px; font-size: 12px;">Exportar</button>

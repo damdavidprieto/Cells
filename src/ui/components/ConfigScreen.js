@@ -152,29 +152,45 @@ class ConfigScreen {
         </div>
 
         <div class="config-actions">
-            <div class="scenario-selector" style="margin-bottom: 20px; width: 100%;">
-                <label for="scenario-select" style="display:block; margin-bottom: 5px; color: #aaa;">Escenario (Solo Single Cell):</label>
-                <select id="scenario-select" style="width: 100%; padding: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
-                    <option value="STANDARD">🔵 Estándar: LUCA en Vent (Ideal)</option>
-                    <option value="PRESSURE_OXYGEN">💀 Presión: Alta Toxicidad O₂ (Forzar SOD)</option>
-                    <option value="PRESSURE_LIGHT">☀️ Presión: Superficie UV/Luz (Forzar Pigmentos)</option>
-                    <option value="PRESSURE_SCARCITY">📉 Presión: Escasez Extrema (Forzar Eficiencia)</option>
-                    <option value="PRESSURE_THERMAL">🌋 Presión: Hipertermia (Forzar Membrana)</option>
-                </select>
+            <!-- PRODUCTION / STANDARD CONTROLS -->
+            <div class="production-controls" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="reset-btn" class="btn-secondary" style="flex: 1;">
+                    🔄 Restaurar LUCA
+                </button>
+                <button id="start-production-btn" class="btn-play" style="flex: 1;">
+                    ▶️ Iniciar Simulación
+                </button>
             </div>
 
-            <button id="reset-btn" class="btn-secondary">
-                🔄 Restaurar LUCA
-            </button>
-            <button id="start-production-btn" class="btn-play">
-                ▶️ Iniciar Simulación
-            </button>
-            <button id="start-dev-btn" class="btn-dev">
-                🛠️ Modo Desarrollo
-            </button>
-            <button id="start-single-btn" class="btn-secondary" style="background: #e67e22; border-color: #d35400;">
-                🔬 Single Cell Mode
-            </button>
+            <!-- DEVELOPMENT CONTROLS (Hidden in Production) -->
+            <div id="dev-controls-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 0.8em; text-transform: uppercase; color: #666; margin-bottom: 10px; font-weight: bold;">
+                    🛠️ Zona de Ingeniería (Local/Dev)
+                </p>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <!-- General Dev Mode -->
+                    <button id="start-dev-btn" class="btn-dev" style="flex: 1; min-width: 150px;">
+                        🛠️ Modo Desarrollo
+                    </button>
+
+                    <!-- Single Cell Cluster (Grouped) -->
+                    <div class="single-cell-cluster" style="flex: 2; min-width: 300px; background: rgba(230, 126, 34, 0.1); border: 1px solid rgba(230, 126, 34, 0.3); padding: 10px; border-radius: 6px; display: flex; gap: 10px; align-items: center;">
+                        <div style="flex-grow: 1;">
+                            <select id="scenario-select" style="width: 100%; padding: 8px; background: #222; color: #ecf0f1; border: 1px solid #555; border-radius: 4px; font-size: 0.9em;">
+                                <option value="STANDARD">🔵 Estándar (Ideal)</option>
+                                <option value="PRESSURE_OXYGEN">💀 Toxicidad O₂</option>
+                                <option value="PRESSURE_LIGHT">☀️ Alta radiación UV</option>
+                                <option value="PRESSURE_SCARCITY">📉 Escasez Recursos</option>
+                                <option value="PRESSURE_THERMAL">🌋 Hipertermia</option>
+                            </select>
+                        </div>
+                        <button id="start-single-btn" class="btn-secondary" style="background: #e67e22; border-color: #d35400; color: white; white-space: nowrap; padding: 8px 15px;">
+                            🔬 Single Cell
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="version-info">
@@ -223,6 +239,19 @@ class ConfigScreen {
         const productionBtn = document.getElementById('start-production-btn');
         const devBtn = document.getElementById('start-dev-btn');
         const singleBtn = document.getElementById('start-single-btn');
+        const devContainer = document.getElementById('dev-controls-container');
+
+        // Check for local environment
+        const isLocal = window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1' ||
+            window.location.protocol === 'file:';
+
+        if (devContainer && isLocal) {
+            devContainer.style.display = 'block';
+        } else if (devContainer) {
+            // Ensure hidden in production (redundant as it's hidden by default, but safe)
+            devContainer.style.display = 'none';
+        }
 
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
