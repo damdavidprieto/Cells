@@ -1,0 +1,360 @@
+/**
+ * Componente: Pantalla de Configuración Ambiental
+ * Permite ajustar parámetros del entorno antes de iniciar la simulación.
+ * El centro (50%) representa el entorno de LUCA científicamente riguroso.
+ */
+class ConfigScreen {
+    constructor() {
+        this.container = null;
+
+        // Valores científicos de LUCA (centro = 50%)
+        // Basados en investigación del proyecto (4.0-3.5 Ga)
+        this.lucaBaseline = {
+            uv_intensity: 100,              // UV 10-100x moderna (sin capa de ozono)
+            metabolic_cost: 0.05,           // Metabolismo primitivo
+            reproduction_threshold: 0.75,   // Balance supervivencia/reproducción
+            membrane_permeability: 0.1,     // Difusión pasiva (membrana primitiva)
+            thermal_stress: 0.02,           // 2% por grado (océano cálido 50-80°C)
+            oxygen_toxicity: 0.05           // SOD primitivo (ambiente anóxico)
+        };
+
+        // Rangos para cada parámetro (min, max)
+        this.ranges = {
+            uv_intensity: [25, 200],        // 25% a 200% del baseline
+            metabolic_cost: [0.02, 0.10],   // Muy lento a muy rápido
+            reproduction_threshold: [0.5, 0.95], // Fácil a muy difícil
+            membrane_permeability: [0.03, 0.3],  // Poca a mucha absorción
+            thermal_stress: [0.005, 0.05],  // Bajo a alto estrés
+            oxygen_toxicity: [0.02, 0.15]   // Baja a alta toxicidad
+        };
+
+        // Valores actuales (inicializados al baseline)
+        this.currentValues = { ...this.lucaBaseline };
+    }
+
+    mount(parentId) {
+        const parent = document.getElementById(parentId);
+        if (!parent) return;
+        //este es el que tiene que ir directamente al juego
+        const html = `
+<div id="config-screen" class="config-screen">
+    <div class="config-content">
+        <h1>⚙️ Configuración Ambiental</h1>
+        <p class="subtitle">Ajusta las condiciones del entorno primordial</p>
+        
+        <div class="config-info">
+            <strong>🔬 Referencia Científica:</strong> El centro (50%) representa el entorno de LUCA 
+            (Last Universal Common Ancestor) hace 4.0-3.5 Ga, basado en evidencia geológica y bioquímica.
+        </div>
+
+        <div class="parameters-grid">
+            <!-- UV Radiation -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">☀️</span>
+                    <span class="param-name">Radiación UV</span>
+                    <span class="param-value" id="uv-value">100</span>
+                </div>
+                <input type="range" id="uv-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Protegido</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Letal</span>
+                </div>
+                <p class="param-desc">Intensidad UV sin capa de ozono. LUCA: 10-100x moderna</p>
+            </div>
+
+            <!-- Metabolic Cost -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">⚡</span>
+                    <span class="param-name">Costo Metabólico</span>
+                    <span class="param-value" id="metabolic-value">0.05</span>
+                </div>
+                <input type="range" id="metabolic-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Eficiente</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Costoso</span>
+                </div>
+                <p class="param-desc">Energía consumida por frame. LUCA: metabolismo primitivo</p>
+            </div>
+
+            <!-- Reproduction Threshold -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">🧬</span>
+                    <span class="param-name">Umbral Reproducción</span>
+                    <span class="param-value" id="reproduction-value">75%</span>
+                </div>
+                <input type="range" id="reproduction-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Fácil</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Difícil</span>
+                </div>
+                <p class="param-desc">% de recursos necesarios para reproducirse</p>
+            </div>
+
+            <!-- Membrane Permeability -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">💧</span>
+                    <span class="param-name">Permeabilidad Membrana</span>
+                    <span class="param-value" id="membrane-value">0.10</span>
+                </div>
+                <input type="range" id="membrane-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Impermeable</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Permeable</span>
+                </div>
+                <p class="param-desc">Difusión pasiva de nutrientes. LUCA: membrana primitiva</p>
+            </div>
+
+            <!-- Thermal Stress -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">🌡️</span>
+                    <span class="param-name">Estrés Térmico</span>
+                    <span class="param-value" id="thermal-value">2.0%</span>
+                </div>
+                <input type="range" id="thermal-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Tolerante</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Sensible</span>
+                </div>
+                <p class="param-desc">Costo por desviación térmica. LUCA: océano 50-80°C</p>
+            </div>
+
+            <!-- Oxygen Toxicity -->
+            <div class="parameter-group">
+                <div class="parameter-header">
+                    <span class="param-icon">💀</span>
+                    <span class="param-name">Toxicidad O₂</span>
+                    <span class="param-value" id="oxygen-value">0.05</span>
+                </div>
+                <input type="range" id="oxygen-slider" class="param-slider" 
+                    min="0" max="100" value="50" step="1">
+                <div class="param-labels">
+                    <span>Tolerante</span>
+                    <span class="baseline">LUCA</span>
+                    <span>Tóxico</span>
+                </div>
+                <p class="param-desc">Daño oxidativo. LUCA: SOD primitivo, ambiente anóxico</p>
+            </div>
+        </div>
+
+        <div class="config-actions">
+            <button id="reset-btn" class="btn-secondary">
+                🔄 Restaurar LUCA
+            </button>
+            <button id="start-production-btn" class="btn-play">
+                ▶️ Iniciar Simulación
+            </button>
+            <button id="start-dev-btn" class="btn-dev">
+                🛠️ Modo Desarrollo
+            </button>
+            <button id="start-single-btn" class="btn-secondary" style="background: #e67e22; border-color: #d35400;">
+                🔬 Single Cell Mode
+            </button>
+        </div>
+
+        <div class="version-info">
+            v1.0.0-alpha • <a href="https://github.com/damdavidprieto/Cells" target="_blank">Ver en GitHub</a>
+        </div>
+    </div>
+</div>`;
+
+        parent.insertAdjacentHTML('beforeend', html);
+        this.container = document.getElementById('config-screen');
+
+        // Inicializar eventos
+        this.initializeSliders();
+        this.initializeButtons();
+    }
+
+    initializeSliders() {
+        const sliders = {
+            'uv': { param: 'uv_intensity', format: (v) => v.toFixed(0) },
+            'metabolic': { param: 'metabolic_cost', format: (v) => v.toFixed(3) },
+            'reproduction': { param: 'reproduction_threshold', format: (v) => (v * 100).toFixed(0) + '%' },
+            'membrane': { param: 'membrane_permeability', format: (v) => v.toFixed(2) },
+            'thermal': { param: 'thermal_stress', format: (v) => (v * 100).toFixed(1) + '%' },
+            'oxygen': { param: 'oxygen_toxicity', format: (v) => v.toFixed(3) }
+        };
+
+        for (let [key, config] of Object.entries(sliders)) {
+            const slider = document.getElementById(`${key}-slider`);
+            const valueDisplay = document.getElementById(`${key}-value`);
+
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', (e) => {
+                    const percent = parseFloat(e.target.value) / 100;
+                    const [min, max] = this.ranges[config.param];
+                    const value = min + (max - min) * percent;
+
+                    this.currentValues[config.param] = value;
+                    valueDisplay.textContent = config.format(value);
+                });
+            }
+        }
+    }
+
+    initializeButtons() {
+        const resetBtn = document.getElementById('reset-btn');
+        const productionBtn = document.getElementById('start-production-btn');
+        const devBtn = document.getElementById('start-dev-btn');
+        const singleBtn = document.getElementById('start-single-btn');
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                console.log('🔄 [ConfigScreen] Restaurando valores de LUCA...');
+                this.resetToLUCA();
+                console.log('✅ [ConfigScreen] Valores restaurados al baseline científico');
+
+                // Feedback visual
+                resetBtn.textContent = '✅ Restaurado';
+                setTimeout(() => {
+                    resetBtn.textContent = '🔄 Restaurar LUCA';
+                }, 1000);
+            });
+        }
+
+        if (productionBtn) {
+            productionBtn.addEventListener('click', () => {
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('▶️ [ConfigScreen] Iniciando modo PRODUCTION...');
+                console.log('═══════════════════════════════════════════════════════');
+
+                // Deshabilitar botones
+                this.disableButtons();
+
+                // Feedback visual
+                productionBtn.innerHTML = '⏳ Cargando...';
+
+                // Iniciar juego
+                setTimeout(() => {
+                    this.startGame('PRODUCTION');
+                }, 100);
+            });
+        }
+
+        if (devBtn) {
+            devBtn.addEventListener('click', () => {
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('🛠️ [ConfigScreen] Iniciando modo DEVELOPMENT...');
+                console.log('📊 Configuración aplicada:');
+                console.log('  - UV Intensity:', this.currentValues.uv_intensity);
+                console.log('  - Metabolic Cost:', this.currentValues.metabolic_cost);
+                console.log('  - Reproduction Threshold:', this.currentValues.reproduction_threshold);
+                console.log('  - Membrane Permeability:', this.currentValues.membrane_permeability);
+                console.log('  - Thermal Stress:', this.currentValues.thermal_stress);
+                console.log('  - Oxygen Toxicity:', this.currentValues.oxygen_toxicity);
+                console.log('═══════════════════════════════════════════════════════');
+
+                // Deshabilitar botones
+                this.disableButtons();
+
+                // Feedback visual
+                devBtn.innerHTML = '⏳ Cargando...';
+
+                // Iniciar juego
+                setTimeout(() => {
+                    this.startGame('DEVELOPMENT');
+                }, 100);
+            });
+        }
+
+        if (singleBtn) {
+            singleBtn.addEventListener('click', () => {
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('🔬 [ConfigScreen] Iniciando SINGLE CELL MODE...');
+                console.log('═══════════════════════════════════════════════════════');
+
+                // Deshabilitar botones
+                this.disableButtons();
+
+                // Feedback visual
+                singleBtn.innerHTML = '⏳ Cargando...';
+
+                // Iniciar juego
+                setTimeout(() => {
+                    this.startGame('SINGLE_CELL_MODE');
+                }, 100);
+            });
+        }
+    }
+
+    disableButtons() {
+        const buttons = ['reset-btn', 'start-production-btn', 'start-dev-btn', 'start-single-btn'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        });
+    }
+
+    resetToLUCA() {
+        // Resetear todos los sliders al 50%
+        const sliders = ['uv', 'metabolic', 'reproduction', 'membrane', 'thermal', 'oxygen'];
+        sliders.forEach(key => {
+            const slider = document.getElementById(`${key}-slider`);
+            if (slider) {
+                slider.value = 50;
+                slider.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+
+    startGame(mode) {
+        // Aplicar configuración a GameConstants
+        GameConstants.UV_SURFACE_INTENSITY = this.currentValues.uv_intensity;
+        GameConstants.BASE_METABOLIC_COST = this.currentValues.metabolic_cost;
+        GameConstants.REPRODUCTION_THRESHOLD = this.currentValues.reproduction_threshold;
+        GameConstants.MEMBRANE_PERMEABILITY = this.currentValues.membrane_permeability;
+        GameConstants.THERMAL_STRESS_MULTIPLIER = this.currentValues.thermal_stress;
+        GameConstants.OXIDATIVE_DAMAGE_RATE = this.currentValues.oxygen_toxicity;
+
+        console.log('✅ [ConfigScreen] Configuración aplicada a GameConstants');
+        console.log('🎮 [ConfigScreen] Iniciando simulación...');
+
+        // Mostrar alerta visual
+        let modeText = 'Producción';
+        if (mode === 'DEVELOPMENT') modeText = 'Desarrollo';
+        if (mode === 'SINGLE_CELL_MODE') modeText = 'Single Cell (Análisis)';
+
+        alert(`🎮 Iniciando simulación en modo ${modeText}...\n\n⚠️ El navegador puede tardar unos segundos en cargar.\n\nMira la consola (F12) para ver el progreso.`);
+
+        // Iniciar juego
+        if (typeof GameController !== 'undefined' && GameController.startGame) {
+            GameController.startGame(mode);
+            this.hide();
+            console.log('✅ [ConfigScreen] Simulación iniciada correctamente');
+        } else {
+            console.error('❌ [ConfigScreen] GameController.startGame no está disponible');
+            alert('❌ Error: No se pudo iniciar el juego. Recarga la página (F5).');
+        }
+    }
+
+    hide() {
+        if (this.container) {
+            this.container.style.display = 'none';
+        }
+    }
+
+    show() {
+        if (this.container) {
+            this.container.style.display = 'flex';
+        }
+    }
+}

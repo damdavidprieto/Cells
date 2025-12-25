@@ -51,10 +51,20 @@ class Environment {
         this.co2Grid = []; // CO₂ - primordial atmosphere (high concentration)
         this.h2Grid = []; // H₂ - hydrogen from hydrothermal vents (LUCA metabolism)
         this.fe2Grid = []; // Fe²⁺ - ferrous iron (Archean ocean, O₂ sink)
+        this.temperatureGrid = []; // Temperature - thermal gradients (50-80°C)
 
-        // Physical zones
-        this.sedimentDepth = 0.10; // Bottom 10% is sediment (changed from 15%)
+        // Physical zones (3-layer system)
+        // ATMOSPHERE (top 10%): Gas phase, cells cannot live here
+        this.atmosphereDepth = 0.10;
+        this.atmosphereRow = floor(this.rows * this.atmosphereDepth);
+
+        // WATER COLUMN (middle 80%): Habitable zone for cells
+        this.waterStartRow = this.atmosphereRow;
+
+        // SEDIMENT (bottom 10%): Hydrothermal vents, cells cannot spawn here
+        this.sedimentDepth = 0.10;
         this.sedimentRow = floor(this.rows * (1 - this.sedimentDepth));
+        this.waterEndRow = this.sedimentRow;
 
         // ENVIRONMENTAL STABILITY SYSTEM
         // Tracks environmental chaos/stability to influence mutation rate evolution
@@ -79,6 +89,24 @@ class Environment {
         this.fe2Grid = ChemicalGrids.initializeFe2(this.cols, this.rows, this.resolution);
 
         this.uvRadiationGrid = PhysicalGrids.initializeUV(this.cols, this.rows, this.resolution);
+        this.temperatureGrid = PhysicalGrids.initializeTemperature(this.cols, this.rows, this.resolution);
+    }
+
+    // Force ideal conditions at a specific location (for Single Cell Analysis)
+    forceIdealConditions(x, y) {
+        let col = floor(x / this.resolution);
+        let row = floor(y / this.resolution);
+
+        if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
+            // Maximize resources for analysis
+            this.h2Grid[col][row] = GameConstants.H2_MAX_ACCUMULATION;
+            this.co2Grid[col][row] = GameConstants.CO2_MAX_ACCUMULATION;
+            this.phosphorusGrid[col][row] = 100;
+            this.nitrogenGrid[col][row] = 100;
+            this.temperatureGrid[col][row] = 60; // Ideal thermal optimum
+
+            console.log(`[Environment] Forced ideal conditions at ${col},${row}`);
+        }
     }
 
     update() {
@@ -88,109 +116,109 @@ class Environment {
         GridRegeneration.regenerateNitrogen(this);
         GridRegeneration.regeneratePhosphorus(this);
         GridRegeneration.regenerateH2(this);
-        GridRegeneration.regenerateOxygen(this);  // NEW - Photolysis UV
-        OxygenRegeneration.oxidarHierro(this);    // NEW - Fe²⁺ oxidation (O₂ sink)
+        GridRegeneration.regenerateOxygen(this);  // Photolysis UV
+        OxygenRegeneration.oxidarHierro(this);    // Fe²⁺ oxidation (O₂ sink)
+
+        // NEW: Diffusion from infinite reservoirs (atmosphere & ocean)
+        if (typeof ReservoirSystem !== 'undefined') {
+            ReservoirSystem.diffuseFromAtmosphere(this);
+            ReservoirSystem.diffuseFromOcean(this);
+            ReservoirSystem.enhanceVentFlux(this);
+        } else {
+            console.warn('[Environment] ReservoirSystem not loaded!');
+        }
+
+        // NEW: Internal Diffusion System (simulates fluid dynamics)
+        if (typeof DiffusionSystem !== 'undefined') {
+            DiffusionSystem.update(this);
+        } else {
+            console.warn('[Environment] DiffusionSystem not loaded!');
+        }
+
+        // FORCE IDEAL CONDITIONS (Single Cell Mode only)
+        // Keeps resources maxed out around the single cell to separate
+        // metabolic analysis from resource depletion mechanics
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' &&
+            GameConstants.SINGLE_CELL_MODE.FORCE_IDEAL_CONDITIONS &&
+            window.entities && window.entities.length > 0) {
+            let cell = window.entities[0];
+            this.forceIdealConditions(cell.pos.x, cell.pos.y);
+        }
+
+        // LOGGING: Environmental Stats (Diffusion verification)
+        if (typeof frameCount !== 'undefined' &&
+            GameConstants.DATABASE_LOGGING.enabled &&
+            GameConstants.DATABASE_LOGGING.log_env_stats &&
+            frameCount % GameConstants.DATABASE_LOGGING.env_stats_interval === 0) {
+
+            this.calculateAndLogStats();
+        }
     }
 
     show() {
-        // VERTICAL GRADIENT BACKGROUND
-        for (let y = 0; y < height; y++) {
-            let rowIndex = floor(y / this.resolution);
-            let inter = y / height;
-
-            let c;
-            if (rowIndex >= this.sedimentRow) {
-                // SEDIMENT ZONE (dark brown/purple tint)
-                let sedimentInter = (y - this.sedimentRow * this.resolution) / (height - this.sedimentRow * this.resolution);
-                c = lerpColor(
-                    color(50, 30, 40),   // Dark purple-brown at top of sediment
-                    color(25, 15, 20),   // Almost black with purple at bottom
-                    sedimentInter
-                );
-            } else {
-                // WATER ZONE (light blue to dark blue)
-                c = lerpColor(
-                    color(20, 60, 120),  // Top: lighter blue
-                    color(5, 15, 30),    // Bottom: dark blue
-                    inter
-                );
-            }
-
-            stroke(c);
-            line(0, y, width, y);
-        }
-
-        // SEDIMENT BOUNDARY LINE (clear delimitation)
-        let sedimentY = this.sedimentRow * this.resolution;
-
-        // Main boundary line (thick and visible)
-        stroke(80, 60, 50);
-        strokeWeight(3);
-        line(0, sedimentY, width, sedimentY);
-
-        // Highlight line above (subtle glow effect)
-        stroke(100, 80, 70, 150);
-        strokeWeight(1);
-        line(0, sedimentY - 1, width, sedimentY - 1);
-
-        // Shadow line below
-        stroke(30, 20, 25, 200);
-        strokeWeight(2);
-        line(0, sedimentY + 3, width, sedimentY + 3);
-
         noStroke();
 
-        // Light grid visualization disabled (too much visual clutter)
-        // UV radiation provides similar gradient information
-        /*
-        // Draw LIGHT grid (YELLOW/GOLD for sunlight)
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                let lightVal = this.lightGrid[i][j];
-                if (lightVal > 5) {
-                    let alpha = map(lightVal, 0, 100, 0, 140);
-                    fill(255, 220, 80, alpha); // Golden sunlight
-                    rect(i * this.resolution, j * this.resolution, this.resolution, this.resolution);
-                }
-            }
-        }
-        */
+        // Render Grid Cells
+        for (let x = 0; x < this.cols; x++) {
+            for (let y = 0; y < this.rows; y++) {
+                let px = x * this.resolution;
+                let py = y * this.resolution;
 
-        // Draw NITROGEN grid (PURPLE/VIOLET in sediment)
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                let nitrogenVal = this.nitrogenGrid[i][j];
-                if (nitrogenVal > 5) {
-                    let alpha = map(nitrogenVal, 0, 100, 0, 130);
-                    fill(180, 80, 255, alpha); // Purple nitrogen
-                    rect(i * this.resolution, j * this.resolution, this.resolution, this.resolution);
+                let r, g, b;
+
+                // 1. Base Color by Zone (Atmosphere, Water, Sediment)
+                if (y < this.atmosphereRow) {
+                    // ATMOSPHERE: Pale Blue / White
+                    r = 200; g = 230; b = 255;
+                } else if (y >= this.sedimentRow) {
+                    // SEDIMENT: Dark Red/Brown (Volcanic)
+                    r = 50; g = 20; b = 10;
+                } else {
+                    // WATER: Deep Blue Gradient
+                    let depth = (y - this.atmosphereRow) / (this.sedimentRow - this.atmosphereRow);
+                    r = 10; g = 20 + depth * 20; b = 60 + depth * 40;
                 }
+
+                // 2. Resource Overlay (Additive Blending)
+
+                // H2 (Vents) - Green Glow
+                let h2Val = this.h2Grid[x][y];
+                if (h2Val > 10) {
+                    let intensity = map(h2Val, 10, 200, 0, 150);
+                    r += 0; g += intensity; b += 0;
+                }
+
+                // CO2 - Purple Haze
+                let co2Val = this.co2Grid[x][y];
+                if (co2Val > 50) {
+                    let intensity = map(co2Val, 50, 200, 0, 80);
+                    r += intensity; g += 0; b += intensity;
+                }
+
+                // O2 - Cyan Brightness
+                let o2Val = this.oxygenGrid[x][y];
+                if (o2Val > 5) {
+                    let intensity = map(o2Val, 5, 50, 0, 100);
+                    r += 0; g += intensity; b += intensity;
+                }
+
+                fill(constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255));
+                rect(px, py, this.resolution, this.resolution);
             }
         }
 
-        // Draw PHOSPHORUS grid (ORANGE/AMBER in deep sediment)
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                let phosphorusVal = this.phosphorusGrid[i][j];
-                if (phosphorusVal > 5) {
-                    let alpha = map(phosphorusVal, 0, 80, 0, 150);
-                    fill(255, 140, 60, alpha); // Orange/amber phosphorus
-                    rect(i * this.resolution, j * this.resolution, this.resolution, this.resolution);
-                }
-            }
-        }
+        // Draw Zone Boundaries
+        let atmosphereY = this.atmosphereRow * this.resolution;
+        stroke(255, 255, 255, 100);
+        strokeWeight(2);
+        line(0, atmosphereY, width, atmosphereY);
 
-        // Draw OXYGEN grid (CYAN/BLUE)
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                let oxygenVal = this.oxygenGrid[i][j];
-                if (oxygenVal > 5) {
-                    let alpha = map(oxygenVal, 0, 100, 0, 80);
-                    fill(80, 200, 255, alpha); // Cyan oxygen
-                    rect(i * this.resolution, j * this.resolution, this.resolution, this.resolution);
-                }
-            }
-        }
+        let sedimentY = this.sedimentRow * this.resolution;
+        stroke(200, 50, 50, 150);
+        strokeWeight(2);
+        line(0, sedimentY, width, sedimentY);
+
+        noStroke();
     }
 
     consumeLight(x, y, amount) {
@@ -251,6 +279,17 @@ class Environment {
         return 0;
     }
 
+    // Get temperature at position (°C)
+    // Returns temperature gradient: 50-60°C surface, 70-80°C vents
+    getTemperature(x, y) {
+        let i = floor(x / this.resolution);
+        let j = floor(y / this.resolution);
+        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
+            return this.temperatureGrid[i][j];
+        }
+        return 60; // Default mid-range temperature
+    }
+
     // Produce CO₂ (metabolic byproduct)
     produceCO2(x, y, amount) {
         let i = floor(x / this.resolution);
@@ -292,6 +331,13 @@ class Environment {
     isInSediment(y) {
         let rowIndex = floor(y / this.resolution);
         return rowIndex >= this.sedimentRow;
+    }
+
+    // Check if position is valid for cells (water zone only)
+    // Cells cannot live in atmosphere (gas) or sediment (solid)
+    isValidCellPosition(y) {
+        let rowIndex = floor(y / this.resolution);
+        return rowIndex >= this.waterStartRow && rowIndex < this.waterEndRow;
     }
 
     // Get viscosity factor at position
@@ -392,5 +438,66 @@ class Environment {
         // Low death rate (< 0.05) = high stability
         // High death rate (> 0.3) = low stability
         return map(constrain(deathRate, 0, 0.3), 0, 0.3, 1, 0);
+    }
+
+    // ===== STATS CALCULATION FOR LOGGING =====
+    calculateAndLogStats() {
+        if (!window.databaseLogger) return;
+
+        let h2Stats = this.getGridStats(this.h2Grid);
+        let co2Stats = this.getGridStats(this.co2Grid);
+        let o2Stats = this.getGridStats(this.oxygenGrid);
+        let tempStats = this.getGridStats(this.temperatureGrid);
+
+        // Specific check for Vents (bottom of map) vs Surface (top) for H2
+        // H2 should be high at bottom (vents) and low at top
+        let ventH2 = this.getAverageAtRow(this.h2Grid, this.rows - 2);
+        let surfaceH2 = this.getAverageAtRow(this.h2Grid, 2);
+
+        window.databaseLogger.logEnvironmentStats(frameCount, {
+            h2_avg: h2Stats.avg,
+            h2_max: h2Stats.max,
+            h2_min: h2Stats.min,
+            h2_vent: ventH2,
+            h2_surface: surfaceH2,
+
+            o2_avg: o2Stats.avg,
+            o2_max: o2Stats.max,
+
+            co2_avg: co2Stats.avg,
+            temp_avg: tempStats.avg
+        });
+    }
+
+    getGridStats(grid) {
+        let sum = 0;
+        let max = -Infinity;
+        let min = Infinity;
+        let count = 0;
+
+        for (let x = 0; x < this.cols; x++) {
+            for (let y = 0; y < this.rows; y++) {
+                let val = grid[x][y];
+                sum += val;
+                if (val > max) max = val;
+                if (val < min) min = val;
+                count++;
+            }
+        }
+
+        return {
+            avg: count > 0 ? sum / count : 0,
+            max: max,
+            min: min
+        };
+    }
+
+    getAverageAtRow(grid, rowIdx) {
+        if (rowIdx < 0 || rowIdx >= this.rows) return 0;
+        let sum = 0;
+        for (let x = 0; x < this.cols; x++) {
+            sum += grid[x][rowIdx];
+        }
+        return sum / this.cols;
     }
 }

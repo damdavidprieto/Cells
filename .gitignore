@@ -56,3 +56,8 @@ coverage/
 # Misc
 *.bak
 *.old
+
+# Development Scripts
+# Note: .dev/ folder is INTENTIONALLY TRACKED in the repository
+# It contains safe development scripts and documentation that can be shared publicly
+# No credentials or sensitive data should be placed in .dev/

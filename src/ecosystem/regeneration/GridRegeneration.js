@@ -89,6 +89,7 @@ class GridRegeneration {
 
     /**
      * Regenerate nitrogen (slow, in sediment only)
+     * BALANCE FIX: Doubled regeneration rate for viable LUCA environment
      */
     static regenerateNitrogen(environment) {
         for (let i = 0; i < environment.cols; i++) {
@@ -98,8 +99,8 @@ class GridRegeneration {
                     let depthRatio = j / environment.rows;
                     let maxNitrogen = 100 * exp(-4 * (1 - depthRatio));
 
-                    if (environment.nitrogenGrid[i][j] < maxNitrogen && random(1) < 0.02) {
-                        environment.nitrogenGrid[i][j] += 0.3; // Slower than light
+                    if (environment.nitrogenGrid[i][j] < maxNitrogen && random(1) < 0.04) {  // 4% (was 2%)
+                        environment.nitrogenGrid[i][j] += 0.6;  // 2x faster (was 0.3)
                     }
                 }
             }
@@ -117,16 +118,18 @@ class GridRegeneration {
     /**
      * Regenerate H₂ (continuous production in vents)
      * Hydrothermal activity produces H₂ continuously
+     * SCIENTIFIC FIX: H₂ diffuses upward from vents (Sleep et al. 2011)
+     * Not confined to sediment - creates vertical gradient
      */
     static regenerateH2(environment) {
         for (let i = 0; i < environment.cols; i++) {
             for (let j = 0; j < environment.rows; j++) {
                 if (j >= environment.sedimentRow) {
-                    // Only regenerate in sediment zone (vents)
-                    environment.h2Grid[i][j] += GameConstants.H2_VENT_PRODUCTION;
-                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j],
-                        GameConstants.H2_MAX_ACCUMULATION);
+                    // Sediment zone (vents): High production
+                    environment.h2Grid[i][j] += 2.0;  // 2x faster (was implicit 1.0)
+                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j], 250);
                 }
+                // REMOVED: Fake random diffusion. Now handled by proper DiffusionSystem.
             }
         }
     }

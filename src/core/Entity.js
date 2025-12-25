@@ -1,6 +1,9 @@
 // Entity - Main cell class (refactored to use modular components)
 class Entity {
     constructor(x, y, dna = null) {
+        // Unique Identifier for tracing
+        this.id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `cell_${Math.random().toString(36).substr(2, 9)}`;
+
         this.pos = createVector(x, y);
         this.vel = p5.Vector.random2D();
         this.acc = createVector(0, 0);
@@ -35,13 +38,54 @@ class Entity {
         this.sodProtein = 0.5;  // Current SOD level (0.0 - 1.0)
         this.oxidativeDamage = 0;  // Accumulated oxidative damage
 
+        // ORGANELL SYSTEM INTEGRATION
+        this.organelles = [];
+        this.initializeOrganelles();
+
         // Movement offset for perlin noise visualization
         this.noiseOffset = random(1000);
     }
 
+    initializeOrganelles() {
+        // 1. Ribosomes (Universal) - Always present if LUCA enabled (which is always true for now)
+        if (this.dna.metabolisms.luca && this.dna.metabolisms.luca.enabled) {
+            this.organelles.push(new Ribosome());
+        }
+
+        // 2. Flagella (Locomotion)
+        // Explicitly encoded in flagellaLevel
+        if (this.dna.flagellaLevel > 0) {
+            this.organelles.push(new Flagellum(this.dna.flagellaLevel));
+        }
+
+        // 3. Hydrogenosomes (Fermentation)
+        // PHENOTYPIC EXPRESSION: Only build if fermentation efficiency > threshold
+        if (this.dna.metabolisms.fermentation &&
+            this.dna.metabolisms.fermentation.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD) {
+            this.organelles.push(new Hydrogenosome());
+        }
+
+        // 4. Chemosynthetic Enzymes
+        // PHENOTYPIC EXPRESSION: Only build if chemosynthesis efficiency > threshold
+        if (this.dna.metabolisms.chemosynthesis &&
+            this.dna.metabolisms.chemosynthesis.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD) {
+            this.organelles.push(new ChemosyntheticEnzymes());
+        }
+    }
+
     update(environment) {
+        // Apply natural movement behavior (Chemotaxis + Random Walk)
+        this.applyNaturalBehavior(environment);
+
         // Movement
         this.move(environment);
+
+        // Metabolic consumption (Restored)
+        this.eat(environment);
+
+        // PASSIVE DIFFUSION (Osmosis) - New Mechanic
+        // Free nutrient uptake in rich environments (Vents)
+        MembraneSystem.performPassiveDiffusion(this, environment);
 
         // Apply all costs
         this.applyMetabolicCosts(environment);
@@ -63,6 +107,20 @@ class Entity {
         this.age++;
     }
 
+    applyNaturalBehavior(environment) {
+        // 1. Random Brownian Noise (Base movement - "Temperature")
+        // This replaces the old external random force in Skecth.js
+        let randomForce = p5.Vector.random2D().mult(0.1);
+        this.applyForce(randomForce);
+
+        // 2. Chemotaxis (Biased drift towards nutrients - "Smell")
+        // Only active if ChemotaxisSystem is available (it should be)
+        if (typeof ChemotaxisSystem !== 'undefined') {
+            let biasForce = ChemotaxisSystem.calculateBias(this, environment);
+            this.applyForce(biasForce);
+        }
+    }
+
     move(environment) {
         this.vel.add(this.acc);
         this.vel.limit(this.maxSpeed);
@@ -73,6 +131,26 @@ class Entity {
 
         this.pos.add(this.vel);
         this.acc.mult(0);
+
+        // BOUNDARY ENFORCEMENT: Keep cells in water zone only
+        if (typeof environment.waterStartRow !== 'undefined' && typeof environment.waterEndRow !== 'undefined') {
+            const waterStartY = environment.waterStartRow * environment.resolution;
+            const waterEndY = environment.waterEndRow * environment.resolution;
+
+            // If cell moved into atmosphere, push back to water
+            if (this.pos.y < waterStartY) {
+                this.pos.y = waterStartY + 1;
+                this.vel.y = abs(this.vel.y); // Bounce downward
+                console.log(`[Boundary] Cell ${this.id} pushed out of atmosphere`);
+            }
+
+            // If cell moved into sediment, push back to water
+            if (this.pos.y >= waterEndY) {
+                this.pos.y = waterEndY - 1;
+                this.vel.y = -abs(this.vel.y); // Bounce upward
+                console.log(`[Boundary] Cell ${this.id} pushed out of sediment`);
+            }
+        }
 
         this.edges();
     }
@@ -86,17 +164,25 @@ class Entity {
         // Apply pigment cost (color-based)
         let pigmentCost = ColorSystem.calculatePigmentCost(this.dna.color);
 
-        this.energy -= (costs.energy * sizeMultiplier) + pigmentCost;
+        // Calculate Organelle Maintenance Costs
+        let organelleMaintenance = 0;
+        for (let organelle of this.organelles) {
+            organelleMaintenance += organelle.getMaintenanceCost();
+        }
+
+        this.energy -= (costs.energy * sizeMultiplier) + pigmentCost + organelleMaintenance;
         this.oxygen -= costs.oxygen * sizeMultiplier;
         this.nitrogen -= costs.nitrogen * sizeMultiplier;
     }
 
     applyFlagellaCosts() {
-        // Maintenance cost
-        this.energy -= FlagellaCosts.calculateMaintenance(this.dna.flagellaLevel);
-
-        // Movement cost
-        this.energy -= FlagellaCosts.calculateMovementCost(this.vel, this.dna.flagellaLevel);
+        // Costs are now handled via Organelle system if Flagellum is present
+        // Movement cost is dynamic, so we check for Flagellum organelle(s)
+        for (let organelle of this.organelles) {
+            if (organelle.name === 'Flagellum') {
+                this.energy -= organelle.getMovementCost(this.vel);
+            }
+        }
     }
 
     checkDeath() {
@@ -234,16 +320,7 @@ class Entity {
 
         // LOG UV DAMAGE (development mode)
         if (typeof developmentMonitor !== 'undefined' && GameConstants.getCurrentMode().LOG_UV_DAMAGE) {
-            let severity = effectiveUV > 60 ? 'HIGH' : effectiveUV > 30 ? 'MED' : 'LOW';
-            let depth = floor((this.pos.y / height) * 100);
-            developmentMonitor.log('uvDamage',
-                `UV ${severity}: ${effectiveUV.toFixed(1)} → ${repairCost.toFixed(2)}`,
-                {
-                    effectiveUV: effectiveUV,
-                    repairCost: repairCost,
-                    depth: depth
-                }
-            );
+            // REMOVED (DevelopmentMonitor deprecated)
         }
 
         // 2. IMPERFECT REPAIR may cause mutations
@@ -252,15 +329,7 @@ class Entity {
             this.uvMutationPending = true;
 
             // LOG UV MUTATION
-            if (typeof developmentMonitor !== 'undefined' && GameConstants.getCurrentMode().LOG_MUTATIONS) {
-                developmentMonitor.log('mutations',
-                    `UV mutation (repair: ${(this.dna.dnaRepairEfficiency * 100).toFixed(0)}%)`,
-                    {
-                        cause: 'UV_DAMAGE',
-                        repairEff: this.dna.dnaRepairEfficiency.toFixed(2)
-                    }
-                );
-            }
+            // REMOVED (DevelopmentMonitor deprecated)
         }
 
         // 3. LETHAL DAMAGE (rare but possible)
@@ -270,15 +339,7 @@ class Entity {
             this.deathCause = 'UV_RADIATION';
 
             // LOG UV DEATH
-            if (typeof developmentMonitor !== 'undefined' && GameConstants.getCurrentMode().LOG_DEATHS) {
-                developmentMonitor.log('deaths',
-                    `UV LETHAL: ${effectiveUV.toFixed(1)}`,
-                    {
-                        cause: 'UV_RADIATION',
-                        effectiveUV: effectiveUV
-                    }
-                );
-            }
+            // REMOVED (DevelopmentMonitor deprecated)
         }
     }
 }

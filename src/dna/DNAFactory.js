@@ -63,8 +63,87 @@ class DNAFactory {
             // Low efficiency = more oxidative damage, high efficiency = better protection but energy cost
             sodEfficiency: random(0.3, 0.7),  // Primitive SOD (LUCA had basic O₂ defense)
 
-            // METABOLISM & ORGANELLES
-            metabolismType: 'luca', // 'luca', 'fermentation', 'chemosynthesis'
+            // THERMAL ADAPTATION SYSTEM
+            // LUCA lived in warm primordial ocean (50-80°C) near hydrothermal vents
+            // Scientific evidence (Martin & Russell 2007, Weiss et al. 2016):
+            // - LUCA was moderately thermophilic (~60°C)
+            // - Not extremophile, but adapted to warm ocean
+            // - Intermediate between surface (50°C) and vents (80°C)
+            thermalOptimum: random(58, 62),      // Optimal ~60°C (moderate thermophile)
+            thermalTolerance: random(8, 12),     // Temperature tolerance range (±10°C avg)
+
+            // MULTI-METABOLISM SYSTEM (Phase 1)
+            // Cells can have multiple metabolic pathways with individual efficiencies
+            // LUCA starts with Wood-Ljungdahl only, others evolve gradually
+            metabolisms: {
+                // 1. WOOD-LJUNGDAHL PATHWAY (Acetogenesis)
+                // LUCA's primary metabolism: H₂ + CO₂ → Acetyl-CoA
+                // SCIENTIFIC BASIS: Weiss et al. (2016), Martin & Russell (2007)
+                // Lane (2015) - ~0.5 ATP/acetyl-CoA (primitive, inefficient metabolism)
+                woodLjungdahl: {
+                    enabled: true,              // ✅ LUCA starts with this
+                    efficiency: random(0.7, 0.9), // 70-90% efficiency
+                    substrates: { H2: 0.4, CO2: 0.2 },
+                    energyYield: 1.5,           // Reduced from 2.5 - primitive metabolism is less efficient
+                    requiresO2: false,
+                    requiresLight: false,
+                    geochemicalBonus: true      // Bonus in sediment (vents)
+                },
+
+                // 2. FERMENTATION (Anaerobic glycolysis)
+                // Uses internal energy stores → CO₂ + ATP
+                fermentation: {
+                    enabled: false,             // Evolves later
+                    efficiency: 0.0,
+                    substrates: { energy: 1.0 },  // Uses stored energy
+                    energyYield: 2.0,
+                    requiresO2: false,
+                    requiresLight: false
+                },
+
+                // 3. ANOXIGENIC PHOTOSYNTHESIS (Purple/Green bacteria)
+                // H₂ + CO₂ + light → carbohydrates + H₂O
+                // Uses H₂ as electron donor (instead of H₂S)
+                anoxigenicPhotosynthesis: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { H2: 0.3, CO2: 0.2, light: 50 },
+                    energyYield: 6.0,
+                    requiresO2: false,
+                    requiresLight: true,
+                    minLightLevel: 30
+                },
+
+                // 4. OXYGENIC PHOTOSYNTHESIS (Cyanobacteria)
+                // CO₂ + H₂O + light → glucose + O₂
+                // ⚠️ PRODUCES O₂ - Changes atmosphere!
+                oxigenicPhotosynthesis: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { CO2: 0.6, light: 80 },
+                    energyYield: 12.0,
+                    requiresO2: false,
+                    requiresLight: true,
+                    minLightLevel: 50,
+                    producesO2: 0.6             // Produces oxygen!
+                },
+
+                // 5. AEROBIC RESPIRATION (Electron transport chain)
+                // Energy + O₂ → CO₂ + H₂O + 36 ATP
+                // Most efficient metabolism
+                aerobicRespiration: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { energy: 1.0, O2: 0.6 },
+                    energyYield: 36.0,          // Very efficient!
+                    requiresO2: true,
+                    requiresLight: false
+                }
+            },
+
+            // Legacy compatibility (deprecated)
+            metabolismType: 'luca',
+
             organelles: {
                 ribosomes: true, // All cells have ribosomes (universal)
                 hydrogenosomes: false, // Enables fermentation

@@ -3,7 +3,8 @@ const GameConstants = {
     // ===== EXECUTION MODE =====
     // DEVELOPMENT: Accelerated simulation (2x speed), debug monitor visible, logs enabled
     // PRODUCTION: Normal speed, clean UI, no debug logs
-    EXECUTION_MODE: 'DEVELOPMENT',  // Options: 'DEVELOPMENT', 'PRODUCTION'
+    // SINGLE_CELL_MODE: Analysis mode with 1 cell in ideal conditions
+    EXECUTION_MODE: 'PRODUCTION',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE'
 
     // Mode-specific settings
     DEVELOPMENT: {
@@ -13,7 +14,8 @@ const GameConstants = {
         LOG_MUTATIONS: true,          // Log mutation events
         LOG_DEATHS: true,             // Log death events
         LOG_REPRODUCTIONS: false,     // Too frequent, disable by default
-        LOG_METABOLIC_DIVERGENCE: true // Log LUCA → Fermentation/Chemosynthesis
+        LOG_METABOLIC_DIVERGENCE: true, // Log LUCA → Fermentation/Chemosynthesis
+        REPRODUCTION_CHANCE_MULTIPLIER: 5.0 // 5x faster reproduction in Dev Mode
     },
 
     PRODUCTION: {
@@ -24,6 +26,21 @@ const GameConstants = {
         LOG_DEATHS: false,
         LOG_REPRODUCTIONS: false,
         LOG_METABOLIC_DIVERGENCE: false
+    },
+
+    SINGLE_CELL_MODE: {
+        FPS: 60,
+        LOG_VERBOSITY: 2,
+        INITIAL_POPULATION: 1, // Start with exactly 1 cell
+        REPRODUCTION_ENABLED: true, // User requested mitosis enabled
+        FORCE_IDEAL_CONDITIONS: false, // User requested "normal vents"
+        AUTO_DOWNLOAD_LOGS: true,
+        LOG_DOWNLOAD_DELAY: 60000, // 1 minute
+        LOG_DEATHS: true,
+        LOG_REPRODUCTIONS: true,
+        LOG_METABOLIC_DIVERGENCE: true,
+        // Special flags
+        LOG_EVERY_FRAME: true         // High frequency logging
     },
 
     // Helper method to get current mode settings
@@ -150,16 +167,16 @@ const GameConstants = {
     BROWNIAN_SPEED: 0.1,
 
     // Metabolism
-    LUCA_MULTIPLIER: 2.0,
-    FERMENTATION_MULTIPLIER: 1.5,
-    CHEMOSYNTHESIS_MULTIPLIER: 1.0,
-    BASE_METABOLIC_COST: 0.05,
-    OXYGEN_COST: 0.02,
+    // Legacy multipliers removed - now handled by multi-pathway metabolism system
+    BASE_METABOLIC_COST: 0.05,  // Base maintenance cost (scientifically calibrated)
+    OXYGEN_COST: 0.02,          // Cost of oxygen toxicity management
 
     // Reproduction
-    REPRODUCTION_THRESHOLD: 0.75,
-    REPRODUCTION_PHOSPHORUS_THRESHOLD: 0.6,
-    REPRODUCTION_CHANCE: 0.005,
+    // SCIENTIFIC BASIS: LUCA had primitive metabolism, needed lower threshold
+    // Weiss et al. (2016) - LUCA reproduced rapidly to compensate high mortality
+    REPRODUCTION_THRESHOLD: 0.60,           // Reduced from 0.75 - more accessible for primitive cells
+    REPRODUCTION_PHOSPHORUS_THRESHOLD: 0.5, // Reduced from 0.6 to 0.5 to facilitate division
+    REPRODUCTION_CHANCE: 0.01,              // Increased from 0.005 - faster reproduction (~20-30 min cycle)
     LUCA_NITROGEN_THRESHOLD: 0.3,
 
     // Mutation
@@ -179,10 +196,19 @@ const GameConstants = {
     SIZE_MIN: 5,
     SIZE_MAX: 40,
 
-    // Divergence
+    // Divergence & Progressive Evolution
     LUCA_DIVERGENCE_CHANCE: 0.01,
     CROSS_METABOLISM_CHANCE: 0.00001,
     CROSS_METABOLISM_MORTALITY: 0.8,
+
+    // NEW: Continuous Evolution Thresholds
+    // Efficiency required to express the phenotype (build the organelle)
+    // 0.15 = 15% efficiency needed. Below this, the gene is "latent" (present but disabled)
+    ORGANELLE_EFFICIENCY_THRESHOLD: 0.15,
+
+    // Range of efficiency drift per mutation event (Continuous Evolution)
+    METABOLIC_DRIFT_RANGE: 0.02,
+
 
     // ===== ENVIRONMENTAL STABILITY SYSTEM =====
     // Controls evolutionary pressure on mutation rates
@@ -215,11 +241,12 @@ const GameConstants = {
 
     // ===== INITIAL RESOURCES (LUCA ERA: 4.0-3.5 Ga) =====
     // Scientifically calibrated for pre-photosynthesis primordial ocean
-    INITIAL_ENERGY: 100,
-    INITIAL_OXYGEN: 10,           // Reduced from 100 - LUCA lived in nearly anoxic conditions
-    INITIAL_NITROGEN: 50,
-    INITIAL_PHOSPHORUS: 30,
-    INITIAL_CO2: 90,              // NEW - High CO₂ in primordial atmosphere
+    // Reduced to force a "foraging phase" before first mitosis (delayed reproduction)
+    INITIAL_ENERGY: 80,           // Threshold ~88. Needs to eat/photosynthesize first.
+    INITIAL_OXYGEN: 10,           // Reduced - LUCA lived in nearly anoxic conditions
+    INITIAL_NITROGEN: 40,         // Threshold ~44. Needs to scavenge nitrogen.
+    INITIAL_PHOSPHORUS: 45,       // Threshold ~50. Deficit of 5 units (requires foraging).
+    INITIAL_CO2: 90,              // High CO₂ in primordial atmosphere
 
     // O₂ Grid Range (trazas por fotólisis UV)
     OXYGEN_GRID_MIN: 5,           // Minimum O₂ (traces from UV photolysis)
@@ -233,10 +260,11 @@ const GameConstants = {
     // H₂ Grid Range (vents hidrotermales - LUCA metabolism)
     // SCIENTIFIC BASIS: Martin & Russell 2007 - Alkaline hydrothermal vents
     // H₂ is the primary electron donor for LUCA's Wood-Ljungdahl pathway
+    // PURIST UPDATE: Increased flux to match "Lost City" massive energy output
     H2_GRID_MIN: 10,              // Minimum H₂ in water column
-    H2_GRID_MAX: 100,             // Maximum H₂ in vents (high concentration)
-    H2_VENT_PRODUCTION: 0.5,      // Continuous H₂ production in vents
-    H2_MAX_ACCUMULATION: 120,     // Cap for H₂ accumulation in vents
+    H2_GRID_MAX: 200,             // Maximum H₂ in vents (Increased from 100)
+    H2_VENT_PRODUCTION: 5.0,      // Continuous H₂ production (Increased from 0.5 - 10x flux)
+    H2_MAX_ACCUMULATION: 250,     // Cap for H₂ accumulation (Increased from 120)
 
     // Fe²⁺ Grid Range (hierro ferroso - océano Arcaico)
     // SCIENTIFIC BASIS: Holland 2006, Lyons et al. 2014
@@ -257,12 +285,89 @@ const GameConstants = {
     OXIDATIVE_DAMAGE_RATE: 0.05,     // Damage per unit of excess O₂ (1-2% O₂ → O₂⁻)
     SOD_MAINTENANCE_COST: 0.05,      // Energy cost per frame to maintain SOD (~1% basal metabolism, reduced from 0.1)
 
-    // Development Logging System
-    DEVELOPMENT_LOGGING: {
-        enabled: true,  // Set to true to enable logging (WARNING: generates downloads)
-        circuits: ['death', 'reproduction'],  // Or ['all'] for everything
-        max_log_size_mb: 10,
-        max_cells_logged: 50,
-        sampling_rate: 10  // Log every N frames
-    }
+
+    // Chemotaxis (New Mechanic - Biased Random Walk)
+    // SCIENTIFIC BASIS: Primitive gradient sensing (Run-and-Tumble precursor)
+    CHEMOTAXIS_STRENGTH: 0.5,        // Strength of bias towards nutrient (H2)
+    MEMBRANE_SENSITIVITY: 0.1,       // Minimum concentration diff to react
+    MEMBRANE_PERMEABILITY: 0.15,     // Increased from 0.1 - higher diffusion in vents (steep gradients)
+
+    // Temperature System
+    // SCIENTIFIC BASIS: LUCA lived in warm primordial ocean (50-80°C)
+    // Hydrothermal vents (70-80°C) vs surface water (50-60°C)
+    TEMPERATURE_ENABLED: true,
+    TEMPERATURE_MIN: 50,                     // Minimum temperature (°C) - surface
+    TEMPERATURE_MAX: 80,                     // Maximum temperature (°C) - vents
+    THERMAL_OPTIMUM_MUTATION_RANGE: 3,       // Mutation range for thermalOptimum (±°C)
+    THERMAL_TOLERANCE_MUTATION_RANGE: 1,     // Mutation range for thermalTolerance (±°C)
+    THERMAL_STRESS_MULTIPLIER: 0.005,         // Metabolic cost increase per °C deviation (0.5% per degree)
+
+    // ===== RESERVOIR SYSTEM - Infinite Resource Pools =====
+    // Simulates atmosphere and ocean beyond visible grid
+    // Solves "closed ecosystem" problem (resources deplete too fast)
+
+    // Atmospheric Reservoir (Archean Era: 4.0-3.5 Ga)
+    // Top 10% of grid = atmosphere (gas phase, cells cannot live here)
+    ATMOSPHERIC_O2: 0.1,              // Traces of O₂ from UV photolysis (<0.001% PAL)
+    ATMOSPHERIC_N2: 1000,             // Abundant N₂ (70-80% of atmosphere)
+    ATMOSPHERIC_CO2: 500,             // High CO₂ (10-20%, greenhouse gas)
+
+    // Oceanic Reservoir (Global ocean beyond grid edges)
+    // Left/Right edges connect to infinite ocean
+    OCEANIC_PHOSPHORUS: 30,           // Limited but available (weathering)
+    OCEANIC_NITROGEN: 50,             // Moderate (atmospheric fixation)
+    OCEANIC_FE2: 100,                 // High Fe²⁺ (ferrous iron, Archean ocean)
+    OCEANIC_O2: 5,                    // Traces (pre-photosynthesis)
+
+    // Diffusion Rates (% of gradient transferred per frame)
+    // Based on Fick's Law: J = -D × (C_reservoir - C_grid)
+    ATMOSPHERE_O2_DIFFUSION: 0.05,    // 5% of gradient (slow, low solubility)
+    ATMOSPHERE_N2_DIFFUSION: 0.03,    // 3% of gradient (slowest, very low solubility)
+    ATMOSPHERE_CO2_DIFFUSION: 0.08,   // 8% of gradient (fastest, high solubility)
+    OCEAN_PHOSPHORUS_DIFFUSION: 0.02, // 2% of gradient (slow, ionic diffusion)
+    OCEAN_NITROGEN_DIFFUSION: 0.04,   // 4% of gradient (moderate)
+    OCEAN_FE2_DIFFUSION: 0.03,        // 3% of gradient (moderate, ionic)
+    OCEAN_O2_DIFFUSION: 0.04,         // 4% of gradient (moderate)
+
+    // Vent Flux Enhancement (Sediment zone)
+    // Simulates continuous hydrothermal activity
+    VENT_FE2_FLUX: 2.0,               // Fe²⁺ production rate (ferrous iron)
+    VENT_PHOSPHORUS_FLUX: 0.5,        // Phosphorus production rate (weathering)
+
+    // ===== DIFFUSION SYSTEM CONFIGURATION =====
+    // Controls how resources spread across the grid
+    DIFFUSION: {
+        ENABLED: true,
+        ITERATIONS: 1,                 // Diffusion steps per frame (higher = faster but heavier)
+
+        // Diffusion Coefficients (0.0 - 1.0)
+        // Rate at which resource spreads to neighbors per step
+        RATES: {
+            ATMOSPHERE: 0.25,          // Fast mixing in gas
+            WATER: 0.1,                // Moderate diffusion in liquid
+            SEDIMENT: 0.005            // Very slow diffusion in solid
+        },
+
+        // Interface Transfer Rates (Boundary Crossing)
+        INTERFACES: {
+            AIR_WATER: 0.05,           // Gas exchange (slow)
+            WATER_SEDIMENT: 0.01       // Leaching/Seeping (very slow)
+        }
+    },
+
+    // ===== DATABASE LOGGING SYSTEM (IndexedDB) =====
+    // New logging system using IndexedDB (no backend, no network)
+    // Only active in DEVELOPMENT mode
+    DATABASE_LOGGING: {
+        enabled: true,                // Enable IndexedDB logging
+        log_cell_events: true,        // Log cell births, deaths, state changes
+        log_mutations: true,          // Log all mutations
+        log_frame_stats: true,        // Log population stats per frame
+        log_env_stats: true,          // Log environment stats (diffusion)
+        frame_stats_interval: 10,     // Log stats every N frames
+        env_stats_interval: 60,       // Log environment stats every 60 frames (1 sec)
+    },
+
+    // Legacy localStorage-based logging system removed
+    // Now using DatabaseLogger (IndexedDB) - see DATABASE_LOGGING above
 };
