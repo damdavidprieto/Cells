@@ -103,29 +103,57 @@ class ColorSystem {
     }
 
     /**
-     * Apply color variation to base metabolism color
      * Allows evolution within metabolism type
      * @param {string} metabolismType - Metabolism type
      * @param {Array} dnaColor - DNA color values
      * @returns {Array} Final RGB color
      */
     static applyColorVariation(metabolismType, dnaColor) {
-        const level = GameConstants.COLOR_EVOLUTION_LEVEL;
-        const config = GameConstants.COLOR_EVOLUTION[level];
+        // ... kept for compatibility or base variation ...
+        // Better: this should be part of the phenotypic calculation
+        return this.calculatePhenotypicColor({ metabolisms: { [metabolismType]: { efficiency: 1.0 } }, color: dnaColor });
+    }
 
-        let baseColor = this.getMetabolismBaseColor(metabolismType);
+    /**
+     * Calculate final phenotypic color based on metabolic mix
+     * Blends colors of all enabled metabolisms weighted by efficiency
+     */
+    static calculatePhenotypicColor(dna) {
+        let totalWeight = 0;
+        let r = 0, g = 0, b = 0;
 
-        if (!config.allowVariation) {
-            return baseColor;  // Fixed by metabolism
+        // 1. Blend Base Colors of Metabolisms
+        for (let [type, data] of Object.entries(dna.metabolisms || {})) {
+            // Only enabled genes contribute to color
+            // Efficiency acts as the weight (more efficient = more dominant color)
+            // We use a small base weight (0.1) so even inefficient genes have visible tint
+            let weight = data.enabled ? data.efficiency : (data.efficiency * 0.2);
+
+            if (weight > 0) {
+                let base = this.getMetabolismBaseColor(type);
+                r += base[0] * weight;
+                g += base[1] * weight;
+                b += base[2] * weight;
+                totalWeight += weight;
+            }
         }
 
-        // Apply DNA color as variation around base (±50%)
-        let finalColor = [
-            constrain(baseColor[0] + (dnaColor[0] - 128) * 0.5, 0, 255),
-            constrain(baseColor[1] + (dnaColor[1] - 128) * 0.5, 0, 255),
-            constrain(baseColor[2] + (dnaColor[2] - 128) * 0.5, 0, 255)
-        ];
+        // Avoid division by zero (shouldn't happen with LUCA)
+        if (totalWeight === 0) return dna.color || [128, 128, 128];
 
-        return finalColor;
+        r /= totalWeight;
+        g /= totalWeight;
+        b /= totalWeight;
+
+        // 2. Apply Individual Variation (Genetic Drift)
+        // DNA color acts as a modifier/tint on top of the metabolic base
+        // We blend 70% metabolic base + 30% DNA tint
+        let dnaColor = dna.color || [128, 128, 128];
+
+        r = r * 0.7 + dnaColor[0] * 0.3;
+        g = g * 0.7 + dnaColor[1] * 0.3;
+        b = b * 0.7 + dnaColor[2] * 0.3;
+
+        return [constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255)];
     }
 }

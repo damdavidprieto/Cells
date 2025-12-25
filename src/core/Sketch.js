@@ -1,197 +1,210 @@
-let environment;
-let entities = [];
-let lucaBaseDNA = null; // Store the first LUCA DNA as reference
-let mutationTracker;  // Track mutation rate evolution
-let speciesNotifier;  // Notify when new species emerge
-let developmentMonitor;  // Development debug monitor
-let devLogger;  // Development logging system
-let deathCountThisFrame = 0;  // Track deaths for stability calculation
+// Variables Globales (Mantenidas para compatibilidad con p5.js y depuración)
+let uiManager;
+let deathCountThisFrame = 0;
 
+/**
+ * SETUP: Configuración inicial de p5.js
+ * Solo crea el canvas, instancia los gestores y pausa la ejecución.
+ */
 function setup() {
     let canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvas-container');
 
-    environment = new Environment();
-    mutationTracker = new MutationRateTracker();
-    speciesNotifier = new SpeciesNotifier();
+    // Instanciar Gestor de UI (Monta los componentes)
+    uiManager = new UIManager();
+    window.uiManager = uiManager; // Acceso global para GameController
 
-    // Initialize development monitor if in dev mode
-    if (GameConstants.getCurrentMode().SHOW_DEBUG_MONITOR) {
-        developmentMonitor = new DevelopmentMonitor();
-    }
-
-    // Initialize development logger
-    devLogger = new DevLogger();
-    devLogger.initializeMetadata();
-
-    // Spawn initial entities (all LUCA)
-    for (let i = 0; i < 20; i++) {
-        let entity = new Entity(random(width), random(height));
-        entity.id = i;  // Assign ID for logging
-        entity.reproductionCount = 0;  // Track reproductions
-        if (i === 0) {
-            lucaBaseDNA = entity.dna; // Store first LUCA as reference
-        }
-        entities.push(entity);
-    }
+    // PAUSAR hasta que el usuario elija modo en la pantalla de configuración
+    noLoop();
 }
 
+/**
+ * DRAW: Bucle principal de renderizado (60 FPS)
+ * Delega la lógica a los sistemas instanciados por GameController.
+ */
 function draw() {
-    // Reset death counter
+    if (!window.gameInstance || !window.gameInstance.isRunning) return;
+
+    const game = window.gameInstance;
+    const env = game.environment;
+    const ents = window.entities;
+
+    // 1. Renderizar Entorno (Fondo y Grids)
     deathCountThisFrame = 0;
+    env.update();
+    env.show();
 
-    // Increment frame counter for logging
-    if (typeof devLogger !== 'undefined') {
-        devLogger.incrementFrame();
-    }
-
-    // Draw Environment first
-    environment.update();
-    environment.show();
-
-    // Update environmental stability (every N frames)
+    // 2. Calcular Estabilidad Ambiental (cada N frames)
     if (frameCount % GameConstants.STABILITY_CALCULATION_INTERVAL === 0) {
-        environment.currentStability = environment.calculateEnvironmentalStability(entities, deathCountThisFrame);
+        env.currentStability = env.calculateEnvironmentalStability(ents, deathCountThisFrame);
     }
 
-    // Process Entities
-    for (let i = entities.length - 1; i >= 0; i--) {
-        let e = entities[i];
+    // 3. Procesar Entidades (Células)
+    for (let i = ents.length - 1; i >= 0; i--) {
+        let e = ents[i];
 
-        // Behaviors
-        e.applyForce(p5.Vector.random2D().mult(0.1));
-        e.eat(environment);
-        e.update(environment); // Pass environment for viscosity
+        // Comportamientos
+        // Comportamientos
+        // e.applyForce(p5.Vector.random2D().mult(0.1)); // REMOVED: Moved to Entity.applyNaturalBehavior (Chemotaxis)
+        e.eat(env);
+        e.update(env);
         e.show();
 
-        // Collision with others
-        for (let j = 0; j < entities.length; j++) {
-            if (i !== j) {
-                e.checkCollision(entities[j]);
-            }
+        // Colisiones
+        for (let j = 0; j < ents.length; j++) {
+            if (i !== j) e.checkCollision(ents[j]);
         }
 
-        // Reproduction (pass environmental stability for evolutionary pressure)
-        let child = e.reproduce(environment.currentStability);
+        // Reproducción
+        let child = e.reproduce(env.currentStability);
         if (child != null) {
-            child.id = entities.length;  // Assign unique ID
+            child.id = ents.length;
             child.reproductionCount = 0;
             e.reproductionCount = (e.reproductionCount || 0) + 1;
-            devLogger.logReproduction(e, child);
-            entities.push(child);
+
+            // DatabaseLogger
+            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_mutations) {
+                game.databaseLogger.logMutation(frameCount, e.id, child.id, {
+                    parent_dna: e.dna,
+                    child_dna: child.dna
+                });
+            }
+            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
+                game.databaseLogger.logCellEvent(frameCount, 'birth', child.id, {
+                    position: { x: child.pos.x, y: child.pos.y },
+                    dna: child.dna,
+                    parent_id: e.id
+                });
+            }
+
+            ents.push(child);
         }
 
+        // Muerte
         if (e.isDead) {
-            // Determine death cause
-            let cause = 'unknown';
-            if (e.energy <= 0) cause = 'energy_depletion';
-            else if (e.oxygen <= 0) cause = 'oxygen_depletion';
-            else if (e.phosphorus <= 0) cause = 'phosphorus_depletion';
-            else if (e.nitrogen <= 0) cause = 'nitrogen_depletion';
-            else if (e.deathCause) cause = e.deathCause;  // UV or other
+            let cause = getDeathCause(e);
 
-            devLogger.logDeath(e, cause);
+            // DatabaseLogger
+            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
+                game.databaseLogger.logCellEvent(frameCount, 'death', e.id, {
+                    cause: cause,
+                    position: { x: e.pos.x, y: e.pos.y },
+                    final_state: {
+                        energy: e.energy,
+                        oxygen: e.oxygen,
+                        phosphorus: e.phosphorus,
+                        nitrogen: e.nitrogen
+                    }
+                });
+            }
 
-            // RECICLAJE BIOLÓGICO DE FÓSFORO (CRÍTICO para sostenibilidad)
-            // Cuando célula muere, libera 80% de su P acumulado
-            // Sin esto, P se agota en ~268 frames (población colapsa)
-            // Con esto, ciclo biogeoquímico cerrado (sostenible)
-            PhosphorusRegeneration.reciclarFosforo(environment, e.pos.x, e.pos.y, e.phosphorus);
+            // Reciclaje de Fósforo
+            PhosphorusRegeneration.reciclarFosforo(env, e.pos.x, e.pos.y, e.phosphorus);
 
-            entities.splice(i, 1);
+            ents.splice(i, 1);
             deathCountThisFrame++;
         }
     }
 
-    // Update mutation rate tracker
-    mutationTracker.update(entities);
+    // 5. Actualizar Trackers y UI
 
-    // Check for new species and update notifications
-    speciesNotifier.checkForNewSpecies(entities);
-    speciesNotifier.update();
+    game.speciesNotifier.checkForNewSpecies(ents);
+    game.speciesNotifier.update();
 
-    // Spawn new entities if population drops too low (Conservation)
-    if (entities.length < 5 && random(1) < 0.05) {
-        entities.push(new Entity(random(width), random(height)));
+    // Conservación (evitar extinción total en demo)
+    // DISABLED: Para análisis científico real. Si mueren, deben extinguirse.
+    /*
+    if (ents.length < 5 && random(1) < 0.05) {
+        // Safe spawn in lower water column (near food)
+        let waterBottom = game.environment.waterEndRow * game.environment.resolution;
+        let spawnY = random(waterBottom - 200, waterBottom - 20);
+        ents.push(new Entity(random(width), spawnY));
     }
+    */
 
-    // Calculate total resources for stats (all FOUR grids)
-    let totalLight = 0;
-    let totalOxygen = 0;
-    let totalNitrogen = 0;
-    let totalPhosphorus = 0;
+    // Calcular estadísticas para UI
+    const stats = calculateStats(env, ents);
+    uiManager.update(stats);
 
-    for (let i = 0; i < environment.cols; i++) {
-        for (let j = 0; j < environment.rows; j++) {
-            totalLight += environment.lightGrid[i][j];
-            totalOxygen += environment.oxygenGrid[i][j];
-            totalNitrogen += environment.nitrogenGrid[i][j];
-            totalPhosphorus += environment.phosphorusGrid[i][j];
+    // NEW: Log frame stats to DatabaseLogger (every N frames)
+    if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_frame_stats) {
+        if (frameCount % GameConstants.DATABASE_LOGGING.frame_stats_interval === 0) {
+            const avgEnergy = ents.reduce((sum, e) => sum + e.energy, 0) / (ents.length || 1);
+            game.databaseLogger.logFrameStats(frameCount, {
+                population: ents.length,
+                deaths: deathCountThisFrame,
+                births: 0, // Se podría trackear en el loop
+                avg_energy: avgEnergy,
+                species_count: stats.speciesCount
+            });
         }
     }
 
-    // SPECIES TRACKING
-    // Count unique metabolism types as species
-    let metabolismCounts = { luca: 0, fermentation: 0, chemosynthesis: 0 };
-    let uniqueSpecies = new Set();
-
-    for (let entity of entities) {
-        // Count metabolism types
-        metabolismCounts[entity.dna.metabolismType]++;
-        uniqueSpecies.add(entity.dna.metabolismType);
+    // SINGLE CELL ANALYSIS LOGGING
+    // Logs detailed internal state of the specific cell every frame
+    if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' && game.databaseLogger && ents.length > 0) {
+        if (GameConstants.SINGLE_CELL_MODE.LOG_EVERY_FRAME) {
+            game.databaseLogger.logSingleCellAnalysis(frameCount, ents[0]);
+        }
     }
 
-    // Update UI
-    let entityCountEl = document.getElementById('entity-count');
-    let lightCountEl = document.getElementById('light-count');
-    let oxygenCountEl = document.getElementById('oxygen-count');
-    let nitrogenCountEl = document.getElementById('nitrogen-count');
-    let phosphorusCountEl = document.getElementById('phosphorus-count');
-    let speciesCountEl = document.getElementById('species-count');
-    let lucaCountEl = document.getElementById('luca-count');
-    let fermentationCountEl = document.getElementById('fermentation-count');
-    let chemosynthesisCountEl = document.getElementById('chemosynthesis-count');
+    // 6. Renderizar Overlays (Monitors, Notifications)
+    renderOverlays(game);
+}
 
-    if (entityCountEl) entityCountEl.innerText = entities.length;
-    if (lightCountEl) lightCountEl.innerText = floor(totalLight);
-    if (oxygenCountEl) oxygenCountEl.innerText = floor(totalOxygen);
-    if (nitrogenCountEl) nitrogenCountEl.innerText = floor(totalNitrogen);
-    if (phosphorusCountEl) phosphorusCountEl.innerText = floor(totalPhosphorus);
-    if (speciesCountEl) speciesCountEl.innerText = uniqueSpecies.size; // Count unique metabolism types
-    if (lucaCountEl) lucaCountEl.innerText = metabolismCounts.luca;
-    if (fermentationCountEl) fermentationCountEl.innerText = metabolismCounts.fermentation;
-    if (chemosynthesisCountEl) chemosynthesisCountEl.innerText = metabolismCounts.chemosynthesis;
+// --- Funciones Auxiliares para limpiar draw() ---
 
-    // Render mutation rate tracker (position depends on mode)
-    // In DEVELOPMENT mode: left side to avoid monitor overlap
-    // In PRODUCTION mode: right side (normal position)
-    if (GameConstants.getCurrentMode().SHOW_DEBUG_MONITOR) {
-        mutationTracker.render(10, 10, 220, 180);  // Left side
-    } else {
-        mutationTracker.render(width - 230, 10, 220, 180);  // Right side
+function getDeathCause(e) {
+    if (e.energy <= 0) return 'energy_depletion';
+    if (e.oxygen <= 0) return 'oxygen_depletion';
+    if (e.phosphorus <= 0) return 'phosphorus_depletion';
+    if (e.nitrogen <= 0) return 'nitrogen_depletion';
+    return e.deathCause || 'unknown';
+}
+
+function calculateStats(env, ents) {
+    let totalLight = 0, totalOx = 0, totalNi = 0, totalPh = 0;
+
+    // Sumar recursos (optimizable, pero ok para esta escala)
+    for (let i = 0; i < env.cols; i++) {
+        for (let j = 0; j < env.rows; j++) {
+            totalLight += env.lightGrid[i][j];
+            totalOx += env.oxygenGrid[i][j];
+            totalNi += env.nitrogenGrid[i][j];
+            totalPh += env.phosphorusGrid[i][j];
+        }
     }
 
-    // Render species notifications (center bottom)
-    speciesNotifier.render();
+    let metaCounts = { luca: 0, fermentation: 0, chemosynthesis: 0 };
+    let speciesSet = new Set();
 
-    // Render development monitor (right panel) if in dev mode
-    if (developmentMonitor) {
-        developmentMonitor.render();
+    for (let e of ents) {
+        metaCounts[e.dna.metabolismType]++;
+        speciesSet.add(e.dna.metabolismType);
     }
+
+    return {
+        entityCount: ents.length,
+        speciesCount: speciesSet.size,
+        lucaCount: metaCounts.luca,
+        fermentationCount: metaCounts.fermentation,
+        chemosynthesisCount: metaCounts.chemosynthesis,
+        totalOxygen: totalOx,
+        totalNitrogen: totalNi,
+        totalPhosphorus: totalPh
+    };
+}
+
+function renderOverlays(game) {
+
+
+    game.speciesNotifier.render();
 }
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
-    environment = new Environment(); // Re-init grid
-}
-
-// Global function to download development logs
-function downloadDevLogs() {
-    if (typeof devLogger !== 'undefined' && devLogger.enabled) {
-        console.log('[DevLogger] Downloading logs...');
-        devLogger.downloadLogs(entities);
-    } else {
-        console.warn('[DevLogger] Logging is not enabled or devLogger not initialized');
-        alert('Logging is not enabled. Set DEVELOPMENT_LOGGING.enabled = true in Constants.js');
+    if (window.gameInstance) {
+        window.environment = new Environment(); // Re-init grid
+        window.gameInstance.environment = window.environment;
     }
 }

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico IndexedDB - CellsDevLogs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #90caf9;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #4fc3f7;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            color: #81c784;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .status.ok {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .status.warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card .label {
+            color: #90caf9;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .info-card .value {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+
+        button.success {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+        }
+
+        .log-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 300px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔬 Diagnóstico IndexedDB</h1>
+        <p class="subtitle">Sistema de análisis para CellsDevLogs</p>
+
+        <!-- Estado General -->
+        <div class="section">
+            <h2>📊 Estado General</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="label">Estado IndexedDB</div>
+                    <div class="value" id="db-status">Verificando...</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Base de Datos</div>
+                    <div class="value" id="db-name">CellsDevLogs</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Versión</div>
+                    <div class="value" id="db-version">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Última Ejecución</div>
+                    <div class="value" id="last-run">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="section">
+            <h2>📈 Estadísticas de Datos</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="label">Total Ejecuciones</div>
+                    <div class="value" id="total-runs">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Eventos de Células</div>
+                    <div class="value" id="total-events">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Mutaciones</div>
+                    <div class="value" id="total-mutations">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Estadísticas de Frames</div>
+                    <div class="value" id="total-stats">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="section">
+            <h2>🛠️ Acciones</h2>
+            <div class="button-group">
+                <button onclick="runDiagnostic()" class="success">🔍 Ejecutar Diagnóstico Completo</button>
+                <button onclick="listAllRuns()">📋 Listar Todas las Ejecuciones</button>
+                <button onclick="viewLastRun()">👁️ Ver Última Ejecución</button>
+                <button onclick="exportLastRun()">💾 Exportar Última Ejecución</button>
+                <button onclick="clearDatabase()" class="danger">🗑️ Limpiar Base de Datos</button>
+            </div>
+        </div>
+
+        <!-- Visual Analysis -->
+        <div class="section hidden" id="analysis-section">
+            <h2>📊 Análisis Visual</h2>
+            <div class="charts-container">
+                <div class="chart-box">
+                    <canvas id="populationChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <canvas id="deathChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultados -->
+        <div class="section">
+            <h2>📝 Resultados</h2>
+            <div id="results" class="log-output">Esperando acción...</div>
+        </div>
+
+        <!-- Tabla de Ejecuciones -->
+        <div class="section hidden" id="runs-section">
+            <h2>📊 Ejecuciones Registradas</h2>
+            <div class="table-container">
+                <table id="runs-table">
+                    <thead>
+                        <tr>
+                            <th>Run ID</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Modo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="runs-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_NAME = 'CellsDevLogs';
+        const DB_VERSION = 1;
+        let db = null;
+
+        // Utilidades de logging
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = {
+                'info': '💡',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            }[type] || '📝';
+
+            resultsDiv.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('results').textContent = '';
+        }
+
+        // Abrir base de datos
+        async function openDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => {
+                    log(`Error abriendo base de datos: ${request.error}`, 'error');
+                    reject(request.error);
+                };
+
+                request.onsuccess = () => {
+                    db = request.result;
+                    log('Base de datos abierta correctamente', 'success');
+                    document.getElementById('db-version').textContent = db.version;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    log('Base de datos no existe o necesita actualización', 'warning');
+                    const db = event.target.result;
+
+                    // Crear stores si no existen
+                    if (!db.objectStoreNames.contains('runs')) {
+                        const runsStore = db.createObjectStore('runs', { keyPath: 'run_id' });
+                        runsStore.createIndex('start_time', 'start_time', { unique: false });
+                        log('Store "runs" creado', 'info');
+                    }
+
+                    if (!db.objectStoreNames.contains('cell_events')) {
+                        const eventsStore = db.createObjectStore('cell_events', { autoIncrement: true });
+                        eventsStore.createIndex('run_id', 'run_id', { unique: false });
+                        eventsStore.createIndex('frame', 'frame_number', { unique: false });
+                        eventsStore.createIndex('event_type', 'event_type', { unique: false });
+                        log('Store "cell_events" creado', 'info');
+                    }
+
+                    if (!db.objectStoreNames.contains('mutations')) {
+                        const mutationsStore = db.createObjectStore('mutations', { autoIncrement: true });
+                        mutationsStore.createIndex('run_id', 'run_id', { unique: false });
+                        mutationsStore.createIndex('frame', 'frame_number', { unique: false });
+                        log('Store "mutations" creado', 'info');
+                    }
+
+                    if (!db.objectStoreNames.contains('frame_stats')) {
+                        const statsStore = db.createObjectStore('frame_stats', { autoIncrement: true });
+                        statsStore.createIndex('run_id', 'run_id', { unique: false });
+                        statsStore.createIndex('frame', 'frame_number', { unique: false });
+                        log('Store "frame_stats" creado', 'info');
+                    }
+                };
+            });
+        }
+
+        // Contar registros en un store
+        async function countRecords(storeName) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.count();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Obtener todas las ejecuciones
+        async function getAllRuns() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['runs'], 'readonly');
+                const store = transaction.objectStore('runs');
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Obtener eventos de una ejecución
+        async function getRunEvents(runId) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['cell_events'], 'readonly');
+                const store = transaction.objectStore('cell_events');
+                const index = store.index('run_id');
+                const request = index.getAll(runId);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Obtener mutaciones de una ejecución
+        async function getRunMutations(runId) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['mutations'], 'readonly');
+                const store = transaction.objectStore('mutations');
+                const index = store.index('run_id');
+                const request = index.getAll(runId);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Obtener estadísticas de una ejecución
+        async function getRunStats(runId) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['frame_stats'], 'readonly');
+                const store = transaction.objectStore('frame_stats');
+                const index = store.index('run_id');
+                const request = index.getAll(runId);
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Diagnóstico completo
+        async function runDiagnostic() {
+            clearLog();
+            log('=== INICIANDO DIAGNÓSTICO COMPLETO ===', 'info');
+
+            try {
+                // 1. Verificar IndexedDB
+                log('1. Verificando soporte de IndexedDB...', 'info');
+                if (!window.indexedDB) {
+                    log('IndexedDB NO está soportado en este navegador', 'error');
+                    document.getElementById('db-status').textContent = '❌ No Soportado';
+                    return;
+                }
+                log('IndexedDB está soportado', 'success');
+                document.getElementById('db-status').textContent = '✅ Soportado';
+
+                // 2. Abrir base de datos
+                log('2. Abriendo base de datos...', 'info');
+                await openDatabase();
+
+                // 3. Verificar stores
+                log('3. Verificando object stores...', 'info');
+                const stores = ['runs', 'cell_events', 'mutations', 'frame_stats'];
+                for (const storeName of stores) {
+                    if (db.objectStoreNames.contains(storeName)) {
+                        const count = await countRecords(storeName);
+                        log(`   ✓ Store "${storeName}": ${count} registros`, 'success');
+
+                        // Actualizar UI
+                        if (storeName === 'runs') document.getElementById('total-runs').textContent = count;
+                        if (storeName === 'cell_events') document.getElementById('total-events').textContent = count;
+                        if (storeName === 'mutations') document.getElementById('total-mutations').textContent = count;
+                        if (storeName === 'frame_stats') document.getElementById('total-stats').textContent = count;
+                    } else {
+                        log(`   ✗ Store "${storeName}" NO existe`, 'error');
+                    }
+                }
+
+                // 4. Obtener última ejecución
+                log('4. Buscando última ejecución...', 'info');
+                const runs = await getAllRuns();
+                if (runs.length > 0) {
+                    runs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                    const lastRun = runs[0];
+                    log(`   Última ejecución: ${lastRun.run_id}`, 'success');
+                    log(`   Inicio: ${lastRun.start_time}`, 'info');
+                    log(`   Modo: ${lastRun.mode}`, 'info');
+                    document.getElementById('last-run').textContent = lastRun.run_id;
+
+                    // Obtener datos de la última ejecución
+                    const events = await getRunEvents(lastRun.run_id);
+                    const mutations = await getRunMutations(lastRun.run_id);
+                    const stats = await getRunStats(lastRun.run_id);
+
+                    log(`   Eventos: ${events.length}`, 'info');
+                    log(`   Mutaciones: ${mutations.length}`, 'info');
+                    log(`   Stats: ${stats.length}`, 'info');
+                } else {
+                    log('   No hay ejecuciones registradas', 'warning');
+                    document.getElementById('last-run').textContent = 'Ninguna';
+                }
+
+                log('=== DIAGNÓSTICO COMPLETADO ===', 'success');
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Listar todas las ejecuciones
+        async function listAllRuns() {
+            clearLog();
+            log('Obteniendo lista de ejecuciones...', 'info');
+
+            try {
+                if (!db) await openDatabase();
+
+                const runs = await getAllRuns();
+                log(`Total de ejecuciones: ${runs.length}`, 'success');
+
+                if (runs.length === 0) {
+                    log('No hay ejecuciones registradas', 'warning');
+                    return;
+                }
+
+                // Ordenar por fecha (más reciente primero)
+                runs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+
+                // Mostrar tabla
+                const tbody = document.getElementById('runs-tbody');
+                tbody.innerHTML = '';
+
+                for (const run of runs) {
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>${run.run_id}</td>
+                        <td>${new Date(run.start_time).toLocaleString()}</td>
+                        <td>${run.end_time ? new Date(run.end_time).toLocaleString() : 'En curso'}</td>
+                        <td>${run.mode}</td>
+                        <td>
+                            <button onclick="viewRun('${run.run_id}')" style="padding: 4px 8px; font-size: 12px;">Ver</button>
+                            <button onclick="exportRun('${run.run_id}')" style="padding: 4px 8px; font-size: 12px;">Exportar</button>
+                        </td>
+                    `;
+                }
+
+                document.getElementById('runs-section').classList.remove('hidden');
+                log('Tabla de ejecuciones actualizada', 'success');
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Ver última ejecución
+        async function viewLastRun() {
+            clearLog();
+            log('Obteniendo datos de la última ejecución...', 'info');
+
+            try {
+                if (!db) await openDatabase();
+
+                const runs = await getAllRuns();
+                if (runs.length === 0) {
+                    log('No hay ejecuciones registradas', 'warning');
+                    return;
+                }
+
+                runs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                const lastRun = runs[0];
+
+                await viewRun(lastRun.run_id);
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Ver una ejecución específica
+        async function viewRun(runId) {
+            clearLog();
+            log(`=== EJECUCIÓN: ${runId} ===`, 'info');
+
+            try {
+                if (!db) await openDatabase();
+
+                const events = await getRunEvents(runId);
+                const mutations = await getRunMutations(runId);
+                const stats = await getRunStats(runId);
+
+                log(`Total eventos: ${events.length}`, 'info');
+                log(`Total mutaciones: ${mutations.length}`, 'info');
+                log(`Total stats: ${stats.length}`, 'info');
+
+                // Mostrar primeros 10 eventos
+                if (events.length > 0) {
+                    log('\n--- PRIMEROS 10 EVENTOS ---', 'info');
+                    events.slice(0, 10).forEach((event, i) => {
+                        log(`${i + 1}. Frame ${event.frame_number} - ${event.event_type} - Cell ${event.cell_id}`, 'info');
+                    });
+                }
+
+                // Mostrar primeras 5 mutaciones
+                if (mutations.length > 0) {
+                    log('\n--- PRIMERAS 5 MUTACIONES ---', 'info');
+                    mutations.slice(0, 5).forEach((mut, i) => {
+                        log(`${i + 1}. Frame ${mut.frame_number} - Parent ${mut.parent_id} → Child ${mut.child_id}`, 'info');
+                    });
+                }
+
+                // Mostrar eventos de Feeding Debug (Si existen)
+                const feedingEvents = events.filter(e => e.event_type === 'feeding_debug');
+                if (feedingEvents.length > 0) {
+                    log('\n--- 🥣 TRACE DE ALIMENTACIÓN (Cell 0) ---', 'highlight');
+                    feedingEvents.forEach(e => {
+                        const d = e.data;
+                        log(`F${e.frame_number}: H₂ Grid: ${d.h2_available?.toFixed(2)} | Energy Gained: ${d.energy_gained?.toFixed(2)} | Pos: (${d.pos?.x?.toFixed(0)}, ${d.pos?.y?.toFixed(0)})`, 'info');
+                    });
+                }
+
+                // Mostrar últimas 5 estadísticas
+                if (stats.length > 0) {
+                    log('\n--- ÚLTIMAS 5 ESTADÍSTICAS ---', 'info');
+                    stats.slice(-5).forEach((stat, i) => {
+                        log(`${i + 1}. Frame ${stat.frame_number} - Pop: ${stat.population}, Avg Energy: ${stat.avg_energy?.toFixed(2)}`, 'info');
+                    });
+                }
+
+                // Renderizar Gráficas
+                renderCharts(stats, events);
+
+                log('\n=== FIN DE DATOS ===', 'success');
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // --- Gráficas con Chart.js ---
+        let popChart = null;
+        let deathChart = null;
+
+        function renderCharts(stats, events) {
+            document.getElementById('analysis-section').classList.remove('hidden');
+
+            // 1. Gráfica de Población y Energía
+            const ctxPop = document.getElementById('populationChart').getContext('2d');
+
+            // Destruir chart previo si existe
+            if (popChart) popChart.destroy();
+
+            // Preparar datos
+            // Stats vienen ordenados por frame? Deberían, pero ordenamos por si acaso
+            stats.sort((a, b) => a.frame_number - b.frame_number);
+
+            const labels = stats.map(s => s.frame_number);
+            const populationData = stats.map(s => s.population);
+            const energyData = stats.map(s => s.avg_energy);
+
+            popChart = new Chart(ctxPop, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Población',
+                            data: populationData,
+                            borderColor: '#4caf50',
+                            yAxisID: 'y',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Energía Media',
+                            data: energyData,
+                            borderColor: '#ff9800',
+                            yAxisID: 'y1',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Dinámica de Población y Energía',
+                            color: '#fff'
+                        },
+                        legend: {
+                            labels: { color: '#fff' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#ccc' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Población', color: '#4caf50' },
+                            ticks: { color: '#4caf50' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Energía', color: '#ff9800' },
+                            ticks: { color: '#ff9800' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+
+            // 2. Gráfica de Causas de Muerte
+            const ctxDeath = document.getElementById('deathChart').getContext('2d');
+
+            if (deathChart) deathChart.destroy();
+
+            // Agrupar muertes por causa
+            const deaths = events.filter(e => e.event_type === 'death');
+            const deathCauses = {};
+            deaths.forEach(d => {
+                const cause = d.data && d.data.cause ? d.data.cause : 'unknown';
+                deathCauses[cause] = (deathCauses[cause] || 0) + 1;
+            });
+
+            const causeLabels = Object.keys(deathCauses);
+            const causeData = Object.values(deathCauses);
+
+            // Colores para las causas
+            const colors = [
+                '#f44336', // Rojo
+                '#9c27b0', // Morado
+                '#3f51b5', // Indigo
+                '#ffeb3b', // Amarillo
+                '#795548', // Café
+                '#607d8b'  // Gris
+            ];
+
+            deathChart = new Chart(ctxDeath, {
+                type: 'doughnut',
+                data: {
+                    labels: causeLabels,
+                    datasets: [{
+                        data: causeData,
+                        backgroundColor: colors.slice(0, causeLabels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Causas de Muerte (Total: ${deaths.length})`,
+                            color: '#fff'
+                        },
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#fff' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Exportar última ejecución
+        async function exportLastRun() {
+            try {
+                if (!db) await openDatabase();
+
+                const runs = await getAllRuns();
+                if (runs.length === 0) {
+                    alert('No hay ejecuciones para exportar');
+                    return;
+                }
+
+                runs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                const lastRun = runs[0];
+
+                await exportRun(lastRun.run_id);
+
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        // Exportar una ejecución específica
+        async function exportRun(runId) {
+            clearLog();
+            log(`Exportando ejecución: ${runId}...`, 'info');
+
+            try {
+                if (!db) await openDatabase();
+
+                const events = await getRunEvents(runId);
+                const mutations = await getRunMutations(runId);
+                const stats = await getRunStats(runId);
+
+                const exportData = {
+                    run_id: runId,
+                    export_time: new Date().toISOString(),
+                    summary: {
+                        total_events: events.length,
+                        total_mutations: mutations.length,
+                        total_stats: stats.length
+                    },
+                    events: events,
+                    mutations: mutations,
+                    frame_stats: stats
+                };
+
+                // Crear y descargar archivo JSON
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cells_dev_${runId}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                log(`Exportación completada: ${events.length} eventos, ${mutations.length} mutaciones, ${stats.length} stats`, 'success');
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Limpiar base de datos
+        async function clearDatabase() {
+            if (!confirm('⚠️ ¿Estás seguro de que quieres eliminar TODA la base de datos?\n\nEsta acción NO se puede deshacer.')) {
+                return;
+            }
+
+            clearLog();
+            log('Eliminando base de datos...', 'warning');
+
+            try {
+                if (db) {
+                    db.close();
+                    db = null;
+                }
+
+                const request = indexedDB.deleteDatabase(DB_NAME);
+
+                request.onsuccess = () => {
+                    log('Base de datos eliminada correctamente', 'success');
+                    document.getElementById('db-status').textContent = '🗑️ Eliminada';
+                    document.getElementById('total-runs').textContent = '0';
+                    document.getElementById('total-events').textContent = '0';
+                    document.getElementById('total-mutations').textContent = '0';
+                    document.getElementById('total-stats').textContent = '0';
+                    document.getElementById('last-run').textContent = '-';
+                    document.getElementById('runs-section').classList.add('hidden');
+                };
+
+                request.onerror = () => {
+                    log(`Error eliminando base de datos: ${request.error}`, 'error');
+                };
+
+            } catch (error) {
+                log(`ERROR: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Ejecutar diagnóstico al cargar la página
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostic, 500);
+        });
+    </script>
+</body>
+
+</html>

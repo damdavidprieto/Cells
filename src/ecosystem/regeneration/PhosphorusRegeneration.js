@@ -241,22 +241,12 @@ class PhosphorusRegeneration {
                         // Tasa demasiado baja sin reciclaje biológico
                         // Consumo (0.3/frame) >> Producción (0.0015/frame)
                         // Ratio: 200:1 (insostenible)
-                        if (random(1) < 0.01) {
+                        // BALANCE FIX: Increased from 1% to 2% and amount from 0.15 to 0.3
+                        // Tasa efectiva: 0.3 × 0.02 = 0.006 P/frame (4x original 0.0015)
+                        if (random(1) < 0.02) {  // 2% (was 1%)
 
-                            // 5. AÑADIR P AL GRID
-                            // ¿Qué hace?: Incrementa P en esta celda
-                            // ¿Por qué?: Simula liberación de PO₄³⁻ por meteorización
-                            // Cantidad: 0.15 unidades (muy pequeña)
-                            // 
-                            // PROCESO REAL:
-                            // Apatita: Ca₅(PO₄)₃(OH)
-                            // + H₂CO₃ (ácido carbónico del CO₂ disuelto)
-                            // → 5Ca²⁺ + 3PO₄³⁻ + OH⁻ + H₂O
-                            // 
-                            // SIMPLIFICACIÓN:
-                            // Solo trackea PO₄³⁻, no Ca²⁺
-                            // Tasa constante, no dependiente de pH/CO₂
-                            environment.phosphorusGrid[i][j] += 0.15;
+                            // BALANCE FIX: Doubled amount for viable LUCA environment
+                            environment.phosphorusGrid[i][j] += 0.3;  // 2x (was 0.15)
 
                             // EFECTO EN JUEGO:
                             // - P aumenta MUY lentamente en sedimento

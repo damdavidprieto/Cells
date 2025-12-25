@@ -49,11 +49,27 @@ class ReproductionSystem {
         // PHOSPHORUS is CRITICAL for reproduction (DNA/RNA replication)
         let phosphorusRequired = entity.maxResources * GameConstants.REPRODUCTION_PHOSPHORUS_THRESHOLD;
 
-        return entity.energy > reproductionThreshold &&
-            entity.oxygen > reproductionThreshold &&
-            entity.nitrogen > nitrogenRequired &&
-            entity.phosphorus > phosphorusRequired &&
-            random(1) < GameConstants.REPRODUCTION_CHANCE;
+        // Check Oxygen ONLY if NOT LUCA (Anaerobic)
+        let oxygenCheck = true;
+        if (entity.dna.metabolismType !== 'luca') {
+            oxygenCheck = entity.oxygen > reproductionThreshold;
+        }
+
+        // Use mode-specific reproduction chance if defined, otherwise global
+        let mode = GameConstants.getCurrentMode();
+        let chance = mode.REPRODUCTION_CHANCE_MULTIPLIER
+            ? GameConstants.REPRODUCTION_CHANCE * mode.REPRODUCTION_CHANCE_MULTIPLIER
+            : GameConstants.REPRODUCTION_CHANCE;
+
+        // Calculate estimated cost of building organelles for the offspring
+        // We assume offspring is similar to parent for this check
+        let constructionCost = this.estimateConstructionCost(entity.dna);
+
+        return entity.energy > (reproductionThreshold + constructionCost.energy) &&
+            oxygenCheck &&
+            entity.nitrogen > (nitrogenRequired + constructionCost.nitrogen) &&
+            entity.phosphorus > (phosphorusRequired + constructionCost.phosphorus) &&
+            random(1) < chance;
     }
 
     static reproduce(parent, environmentalStability = 0.5) {
@@ -80,16 +96,37 @@ class ReproductionSystem {
         // Create child entity
         let child = new Entity(parent.pos.x, parent.pos.y, childDNA);
 
+        // Validate child position (ensure in water zone, not atmosphere or sediment)
+        if (typeof environment !== 'undefined' && !environment.isValidCellPosition(child.pos.y)) {
+            // Reposition to nearest valid water row
+            let waterStartY = environment.waterStartRow * environment.resolution;
+            let waterEndY = environment.waterEndRow * environment.resolution;
+            child.pos.y = constrain(child.pos.y, waterStartY, waterEndY - 1);
+        }
+
+        // RESOURCE INHERITANCE FIX (Conservation of Mass)
+        // Child inherits exactly what the parent lost (the other 50%)
+        // The Entity constructor gives default start values, so we MUST overwrite them
+        child.energy = parent.energy;
+        child.oxygen = parent.oxygen;
+        child.nitrogen = parent.nitrogen;
+        child.phosphorus = parent.phosphorus;
+
         // Apply construction costs for flagella
         this.applyConstructionCosts(parent, child);
 
-        // LOG REPRODUCTION (development mode)
-        if (typeof developmentMonitor !== 'undefined' && GameConstants.getCurrentMode().LOG_REPRODUCTIONS) {
-            developmentMonitor.log('reproductions',
-                `${parent.dna.metabolismType} → gen ${childDNA.generation}`,
+        // LOG REPRODUCTION (DatabaseLogger)
+        if (window.databaseLogger) {
+            window.databaseLogger.logCellEvent(
+                frameCount,
+                'reproduction',
+                parent.id || 'unknown', // Parent ID
                 {
-                    metabolism: parent.dna.metabolismType,
-                    generation: childDNA.generation
+                    child_id: child.id || 'unknown',
+                    parent_energy: parent.energy,
+                    child_energy: child.energy,
+                    generation: childDNA.generation,
+                    metabolism: parent.dna.metabolismType
                 }
             );
         }
@@ -98,12 +135,71 @@ class ReproductionSystem {
     }
 
     static applyConstructionCosts(parent, child) {
-        let costs = FlagellaCosts.calculateConstructionCost(
-            parent.dna.flagellaLevel,
-            child.dna.flagellaLevel
-        );
+        // 1. Calculate cost of ALL organelles (Ribosomes, Flagella, etc.)
+        // We iterate over the CHILD's organelles because that's what is being built.
+        let totalEnergyCost = 0;
+        let totalPhosphorusCost = 0;
+        let totalNitrogenCost = 0;
 
-        child.energy -= costs.energy;
-        child.phosphorus -= costs.phosphorus;
+        for (let organelle of child.organelles) {
+            // Flagella cost is dynamic based on previous level, but for simplicity
+            // and robustness, we treat "mitosis" as building a new set from scratch
+            // (or from the pool of resources we just inherited).
+
+            // For Flagella, we use the specific cost function if it exists, otherwise standard
+            let cost = null;
+            if (organelle instanceof Flagellum) {
+                // Determine target level (child's level)
+                cost = organelle.getConstructionCost(child.dna.flagellaLevel);
+            } else {
+                cost = organelle.getConstructionCost();
+            }
+
+            if (cost) {
+                totalEnergyCost += cost.energy || 0;
+                totalPhosphorusCost += cost.phosphorus || 0;
+                totalNitrogenCost += cost.nitrogen || 0;
+            }
+        }
+
+        // 2. Deduct from CHILD resources
+        // The child "pays" for its body using the materials (Energy/Matter) it inherited.
+        // If it runs out, it starts very weak or dies (natural selection).
+        child.energy -= totalEnergyCost;
+        child.phosphorus -= totalPhosphorusCost;
+        child.nitrogen -= totalNitrogenCost;
+
+        // Log the cost for debugging
+        if (window.databaseLogger) {
+            // We can log this as a separate event or just know it happens
+        }
+    }
+
+    // Helper for canReproduce (Optional: strict checking)
+    static estimateConstructionCost(dna) {
+        let e = 0, p = 0, n = 0;
+
+        // Ribosomes
+        if (dna.organelles.ribosomes) {
+            let cost = new Ribosome().getConstructionCost();
+            e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
+        }
+        // Hydrogenosomes
+        if (dna.organelles.hydrogenosomes) {
+            let cost = new Hydrogenosome().getConstructionCost();
+            e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
+        }
+        // Chemosynthetic Enzymes
+        if (dna.organelles.chemosynthetic_enzymes) {
+            let cost = new ChemosyntheticEnzymes().getConstructionCost();
+            e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
+        }
+        // Flagella
+        if (dna.flagellaLevel > 0) {
+            let cost = new Flagellum().getConstructionCost(dna.flagellaLevel);
+            e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
+        }
+
+        return { energy: e, phosphorus: p, nitrogen: n };
     }
 }

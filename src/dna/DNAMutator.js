@@ -73,8 +73,26 @@ class DNAMutator {
             // DNA Repair Efficiency (evolves with UV pressure)
             dnaRepairEfficiency: constrain(
                 parentDNA.dnaRepairEfficiency + random(-GameConstants.DNA_REPAIR_MUTATION_RANGE * mr, GameConstants.DNA_REPAIR_MUTATION_RANGE * mr),
-                GameConstants.DNA_REPAIR_MIN,
                 GameConstants.DNA_REPAIR_MAX
+            ),
+
+            // SOD Efficiency (Oxygen Tolerance) - BUG FIX: Now inherited!
+            sodEfficiency: constrain(
+                parentDNA.sodEfficiency + random(-0.1 * mr, 0.1 * mr),
+                0.1, 1.0 // Min 0.1 to avoid complete lack of protection
+            ),
+
+            // THERMAL ADAPTATION - Temperature niche specialization
+            // Cells evolve optimal temperature and tolerance for their environment
+            thermalOptimum: constrain(
+                parentDNA.thermalOptimum + random(-GameConstants.THERMAL_OPTIMUM_MUTATION_RANGE * mr, GameConstants.THERMAL_OPTIMUM_MUTATION_RANGE * mr),
+                GameConstants.TEMPERATURE_MIN,
+                GameConstants.TEMPERATURE_MAX
+            ),
+            thermalTolerance: constrain(
+                parentDNA.thermalTolerance + random(-GameConstants.THERMAL_TOLERANCE_MUTATION_RANGE * mr, GameConstants.THERMAL_TOLERANCE_MUTATION_RANGE * mr),
+                3,  // Minimum tolerance (very specialized)
+                20  // Maximum tolerance (generalist)
             ),
 
             // METABOLISM & ORGANELLES - INHERIT FROM PARENT
@@ -84,6 +102,11 @@ class DNAMutator {
                 hydrogenosomes: parentDNA.organelles.hydrogenosomes,
                 chemosynthetic_enzymes: parentDNA.organelles.chemosynthetic_enzymes
             },
+
+            // MULTI-METABOLISM SYSTEM - Deep copy from parent
+            // Each metabolism pathway is inherited with its efficiency and enabled state
+            metabolisms: this.copyMetabolisms(parentDNA.metabolisms),
+
             generation: parentDNA.generation + 1,
             evolutionaryEra: parentDNA.evolutionaryEra  // Will be updated below
         };
@@ -98,6 +121,42 @@ class DNAMutator {
         this.applyMetabolicDivergence(parentDNA, childDNA);
 
         return childDNA;
+    }
+
+    /**
+     * Deep copy metabolisms object
+     * Ensures all metabolism pathways are properly inherited
+     */
+    static copyMetabolisms(parentMetabolisms) {
+        if (!parentMetabolisms) {
+            // Fallback: create default LUCA metabolisms if missing
+            return DNAFactory.createLUCA().metabolisms;
+        }
+
+        let metabolismsCopy = {};
+        for (let [name, data] of Object.entries(parentMetabolisms)) {
+            metabolismsCopy[name] = {
+                enabled: data.enabled,
+                efficiency: data.efficiency,
+                substrates: { ...data.substrates },  // Shallow copy is enough for substrates
+                energyYield: data.energyYield,
+                requiresO2: data.requiresO2,
+                requiresLight: data.requiresLight
+            };
+
+            // Copy optional fields if present
+            if (data.minLightLevel !== undefined) {
+                metabolismsCopy[name].minLightLevel = data.minLightLevel;
+            }
+            if (data.producesO2 !== undefined) {
+                metabolismsCopy[name].producesO2 = data.producesO2;
+            }
+            if (data.geochemicalBonus !== undefined) {
+                metabolismsCopy[name].geochemicalBonus = data.geochemicalBonus;
+            }
+        }
+
+        return metabolismsCopy;
     }
 
     /**
@@ -191,45 +250,55 @@ class DNAMutator {
     }
 
     static applyMetabolicDivergence(parentDNA, childDNA) {
-        // === DIVERGENCE MECHANIC ===
-        // LUCA can diverge into specialized types
-        if (parentDNA.metabolismType === 'luca' && random(1) < GameConstants.LUCA_DIVERGENCE_CHANCE) {
-            // 1% chance to specialize (represents millions of years)
-            if (random(1) < 0.5) {
-                // Evolve to FERMENTATION
-                childDNA.metabolismType = 'fermentation';
-                childDNA.organelles.hydrogenosomes = true;
-                // Color shift to reddish/purple (anaerobic)
-                childDNA.color = [180, 100, 150];
-            } else {
-                // Evolve to CHEMOSYNTHESIS
-                childDNA.metabolismType = 'chemosynthesis';
-                childDNA.organelles.chemosynthetic_enzymes = true;
-                // Color shift to greenish/yellow (chemical energy)
-                childDNA.color = [150, 200, 100];
+        // === CONTINUOUS METABOLIC EVOLUTION ===
+        // Instead of hard switching (mutation), we drift efficiencies of all latent pathways.
+        // This allows gradual evolution: LUCA -> (LUCA+primitive Fermentation) -> Fermentation
+
+        this.mutateMetabolicEfficiencies(childDNA);
+
+        // Update Dominant Metabolism Label
+        // The cell is classified by its most efficient pathway
+        let bestType = 'luca';
+        let bestEff = childDNA.metabolisms.luca ? childDNA.metabolisms.luca.efficiency : 0;
+
+        for (let [type, data] of Object.entries(childDNA.metabolisms)) {
+            if (data.efficiency > bestEff) {
+                bestEff = data.efficiency;
+                bestType = type;
             }
         }
+        childDNA.metabolismType = bestType;
 
-        // === EXTREMELY RARE CROSS-METABOLISM TRANSITION ===
-        // Specialized cells can RARELY transition (0.001% chance, 80% mortality)
-        if (parentDNA.metabolismType !== 'luca' && random(1) < GameConstants.CROSS_METABOLISM_CHANCE) {
-            // 80% chance of death during transition
-            if (random(1) < GameConstants.CROSS_METABOLISM_MORTALITY) {
-                childDNA._lethal = true; // Mark for death
-                return;
-            }
+        // NEW: Recalculate Phenotypic Color based on metabolic mix
+        // The color now reflects the cell's "metabolic cocktail"
+        childDNA.color = ColorSystem.calculatePhenotypicColor(childDNA);
+    }
 
-            // Successful transition (extremely rare)
-            if (parentDNA.metabolismType === 'fermentation') {
-                childDNA.metabolismType = 'chemosynthesis';
-                childDNA.organelles.chemosynthetic_enzymes = true;
-                childDNA.organelles.hydrogenosomes = false;
-                childDNA.color = [150, 200, 100];
-            } else if (parentDNA.metabolismType === 'chemosynthesis') {
-                childDNA.metabolismType = 'fermentation';
-                childDNA.organelles.hydrogenosomes = true;
-                childDNA.organelles.chemosynthetic_enzymes = false;
-                childDNA.color = [180, 100, 150];
+    /**
+     * Mutate efficiencies of ALL metabolic pathways
+     * Allows latent genes to evolve until they cross the threshold
+     */
+    static mutateMetabolicEfficiencies(dna) {
+        let mr = dna.mutationRate;
+
+        for (let [name, data] of Object.entries(dna.metabolisms)) {
+            // Apply drift: +/- small amount (e.g. 0.02)
+            // Evolution can push improved efficiency OR degradation (atrophy)
+            let drift = random(-GameConstants.METABOLIC_DRIFT_RANGE * mr, GameConstants.METABOLIC_DRIFT_RANGE * mr);
+
+            // LUCA pathway is robust (harder to break completely)
+            // Others can drift to 0 (gene loss)
+            let minEff = name === 'luca' ? 0.1 : 0.0;
+
+            data.efficiency = constrain(data.efficiency + drift, minEff, GameConstants.EFFICIENCY_MAX);
+
+            // AUTO-ENABLE/DISABLE BASED ON THRESHOLD (Phenotypic Expression)
+            // If efficiency > threshold, the gene is expressed (organelle is built)
+            // If efficiency < threshold, the gene is latent (silenced)
+            if (name === 'luca') {
+                data.enabled = true; // LUCA always enabled as fallback
+            } else {
+                data.enabled = data.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD;
             }
         }
     }
@@ -244,7 +313,7 @@ class DNAMutator {
      */
     static applyUVMutation(childDNA) {
         // Apply extra mutation to one random trait
-        let traits = ['size', 'color', 'metabolicEfficiency', 'storageCapacity', 'dnaRepairEfficiency'];
+        let traits = ['size', 'color', 'metabolicEfficiency', 'storageCapacity', 'dnaRepairEfficiency', 'sodEfficiency', 'thermalOptimum', 'thermalTolerance'];
         let randomTrait = random(traits);
 
         switch (randomTrait) {
@@ -285,6 +354,25 @@ class DNAMutator {
                     GameConstants.DNA_REPAIR_MIN,
                     GameConstants.DNA_REPAIR_MAX
                 );
+                break;
+
+            case 'sodEfficiency':
+                childDNA.sodEfficiency += random(-0.1, 0.1);
+                childDNA.sodEfficiency = constrain(childDNA.sodEfficiency, 0.1, 1.0);
+                break;
+
+            case 'thermalOptimum':
+                childDNA.thermalOptimum += random(-5, 5);
+                childDNA.thermalOptimum = constrain(
+                    childDNA.thermalOptimum,
+                    GameConstants.TEMPERATURE_MIN,
+                    GameConstants.TEMPERATURE_MAX
+                );
+                break;
+
+            case 'thermalTolerance':
+                childDNA.thermalTolerance += random(-2, 2);
+                childDNA.thermalTolerance = constrain(childDNA.thermalTolerance, 3, 20);
                 break;
         }
 
