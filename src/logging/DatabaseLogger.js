@@ -364,7 +364,14 @@ class DatabaseLogger {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `cells_dev_${this.runId}.json`;
+
+        // Generate filename based on mode
+        let filenamePrefix = 'cells_dev';
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE') {
+            filenamePrefix = 'cells_single_cell';
+        }
+
+        a.download = `${filenamePrefix}_${this.runId}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

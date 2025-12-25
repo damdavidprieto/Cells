@@ -4,7 +4,9 @@ const GameConstants = {
     // DEVELOPMENT: Accelerated simulation (2x speed), debug monitor visible, logs enabled
     // PRODUCTION: Normal speed, clean UI, no debug logs
     // SINGLE_CELL_MODE: Analysis mode with 1 cell in ideal conditions
-    EXECUTION_MODE: 'PRODUCTION',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE'
+    EXECUTION_MODE: 'SINGLE_CELL_MODE',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE'
+    SCENARIO: 'STANDARD',                // Options: 'STANDARD', 'PRESSURE_OXYGEN', 'PRESSURE_LIGHT', 'PRESSURE_SCARCITY', 'PRESSURE_THERMAL'
+
 
     // Mode-specific settings
     DEVELOPMENT: {
@@ -33,14 +35,14 @@ const GameConstants = {
         LOG_VERBOSITY: 2,
         INITIAL_POPULATION: 1, // Start with exactly 1 cell
         REPRODUCTION_ENABLED: true, // User requested mitosis enabled
-        FORCE_IDEAL_CONDITIONS: false, // User requested "normal vents"
-        AUTO_DOWNLOAD_LOGS: true,
-        LOG_DOWNLOAD_DELAY: 60000, // 1 minute
+        FORCE_IDEAL_CONDITIONS: false, // User requested "normal vents" (full environment)
+        AUTO_DOWNLOAD_LOGS: false,    // Disabled: User prefers diagnose-database.html
+        LOG_DOWNLOAD_DELAY: 60000,
         LOG_DEATHS: true,
         LOG_REPRODUCTIONS: true,
         LOG_METABOLIC_DIVERGENCE: true,
         // Special flags
-        LOG_EVERY_FRAME: true         // High frequency logging
+        LOG_EVERY_FRAME: true         // High frequency logging for deep analysis
     },
 
     // Helper method to get current mode settings
@@ -245,7 +247,7 @@ const GameConstants = {
     INITIAL_ENERGY: 80,           // Threshold ~88. Needs to eat/photosynthesize first.
     INITIAL_OXYGEN: 10,           // Reduced - LUCA lived in nearly anoxic conditions
     INITIAL_NITROGEN: 40,         // Threshold ~44. Needs to scavenge nitrogen.
-    INITIAL_PHOSPHORUS: 45,       // Threshold ~50. Deficit of 5 units (requires foraging).
+    INITIAL_PHOSPHORUS: 45,       // Reverted to 45: Forces foraging phase (must absorb from vents).
     INITIAL_CO2: 90,              // High CO₂ in primordial atmosphere
 
     // O₂ Grid Range (trazas por fotólisis UV)
@@ -332,7 +334,8 @@ const GameConstants = {
     // Vent Flux Enhancement (Sediment zone)
     // Simulates continuous hydrothermal activity
     VENT_FE2_FLUX: 2.0,               // Fe²⁺ production rate (ferrous iron)
-    VENT_PHOSPHORUS_FLUX: 0.5,        // Phosphorus production rate (weathering)
+    // SCIENTIFIC BASIS: Apatite dissolution in heated vent fluids (10-100x seawater)
+    VENT_PHOSPHORUS_FLUX: 1.5,        // Increased from 0.5 to match local abundance theory
 
     // ===== DIFFUSION SYSTEM CONFIGURATION =====
     // Controls how resources spread across the grid

@@ -152,6 +152,17 @@ class ConfigScreen {
         </div>
 
         <div class="config-actions">
+            <div class="scenario-selector" style="margin-bottom: 20px; width: 100%;">
+                <label for="scenario-select" style="display:block; margin-bottom: 5px; color: #aaa;">Escenario (Solo Single Cell):</label>
+                <select id="scenario-select" style="width: 100%; padding: 10px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                    <option value="STANDARD">🔵 Estándar: LUCA en Vent (Ideal)</option>
+                    <option value="PRESSURE_OXYGEN">💀 Presión: Alta Toxicidad O₂ (Forzar SOD)</option>
+                    <option value="PRESSURE_LIGHT">☀️ Presión: Superficie UV/Luz (Forzar Pigmentos)</option>
+                    <option value="PRESSURE_SCARCITY">📉 Presión: Escasez Extrema (Forzar Eficiencia)</option>
+                    <option value="PRESSURE_THERMAL">🌋 Presión: Hipertermia (Forzar Membrana)</option>
+                </select>
+            </div>
+
             <button id="reset-btn" class="btn-secondary">
                 🔄 Restaurar LUCA
             </button>
@@ -274,8 +285,11 @@ class ConfigScreen {
 
         if (singleBtn) {
             singleBtn.addEventListener('click', () => {
+                const scenarioSelect = document.getElementById('scenario-select');
+                const scenario = scenarioSelect ? scenarioSelect.value : 'STANDARD';
+
                 console.log('═══════════════════════════════════════════════════════');
-                console.log('🔬 [ConfigScreen] Iniciando SINGLE CELL MODE...');
+                console.log(`🔬 [ConfigScreen] Iniciando SINGLE CELL MODE (${scenario})...`);
                 console.log('═══════════════════════════════════════════════════════');
 
                 // Deshabilitar botones
@@ -286,7 +300,7 @@ class ConfigScreen {
 
                 // Iniciar juego
                 setTimeout(() => {
-                    this.startGame('SINGLE_CELL_MODE');
+                    this.startGame('SINGLE_CELL_MODE', scenario);
                 }, 100);
             });
         }
@@ -316,7 +330,7 @@ class ConfigScreen {
         });
     }
 
-    startGame(mode) {
+    startGame(mode, scenario = 'STANDARD') {
         // Aplicar configuración a GameConstants
         GameConstants.UV_SURFACE_INTENSITY = this.currentValues.uv_intensity;
         GameConstants.BASE_METABOLIC_COST = this.currentValues.metabolic_cost;
@@ -325,13 +339,15 @@ class ConfigScreen {
         GameConstants.THERMAL_STRESS_MULTIPLIER = this.currentValues.thermal_stress;
         GameConstants.OXIDATIVE_DAMAGE_RATE = this.currentValues.oxygen_toxicity;
 
+        GameConstants.SCENARIO = scenario;
+
         console.log('✅ [ConfigScreen] Configuración aplicada a GameConstants');
         console.log('🎮 [ConfigScreen] Iniciando simulación...');
 
         // Mostrar alerta visual
         let modeText = 'Producción';
         if (mode === 'DEVELOPMENT') modeText = 'Desarrollo';
-        if (mode === 'SINGLE_CELL_MODE') modeText = 'Single Cell (Análisis)';
+        if (mode === 'SINGLE_CELL_MODE') modeText = `Single Cell (${scenario})`;
 
         alert(`🎮 Iniciando simulación en modo ${modeText}...\n\n⚠️ El navegador puede tardar unos segundos en cargar.\n\nMira la consola (F12) para ver el progreso.`);
 

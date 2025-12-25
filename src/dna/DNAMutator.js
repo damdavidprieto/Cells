@@ -257,12 +257,15 @@ class DNAMutator {
         this.mutateMetabolicEfficiencies(childDNA);
 
         // Update Dominant Metabolism Label
-        // The cell is classified by its most efficient pathway
-        let bestType = 'luca';
-        let bestEff = childDNA.metabolisms.luca ? childDNA.metabolisms.luca.efficiency : 0;
+        // HYSTERESIS: Only switch if significantly better (prevent flickering)
+        let currentType = childDNA.metabolismType || 'luca';
+        let bestType = currentType;
+        let currentEff = childDNA.metabolisms[currentType] ? childDNA.metabolisms[currentType].efficiency : 0;
+        let bestEff = currentEff;
 
         for (let [type, data] of Object.entries(childDNA.metabolisms)) {
-            if (data.efficiency > bestEff) {
+            // Must be enabled AND significantly better (e.g. +10%) to justify switching machinery
+            if (data.enabled && data.efficiency > (bestEff * 1.1)) {
                 bestEff = data.efficiency;
                 bestType = type;
             }
@@ -299,6 +302,16 @@ class DNAMutator {
                 data.enabled = true; // LUCA always enabled as fallback
             } else {
                 data.enabled = data.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD;
+            }
+
+            // SYNC ORGANELLES WITH METABOLISM
+            if (name === 'fermentation') {
+                dna.organelles.hydrogenosomes = data.enabled;
+            }
+            if (name === 'anoxigenicPhotosynthesis' || name === 'oxigenicPhotosynthesis') {
+                // Map photosynthesis to "chemo" enzymes for visualization for now
+                // TODO: Create dedicated Chromatophores/Chloroplasts
+                if (data.enabled) dna.organelles.chemosynthetic_enzymes = true;
             }
         }
     }

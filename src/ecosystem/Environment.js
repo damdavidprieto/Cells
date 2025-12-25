@@ -98,14 +98,76 @@ class Environment {
         let row = floor(y / this.resolution);
 
         if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
-            // Maximize resources for analysis
-            this.h2Grid[col][row] = GameConstants.H2_MAX_ACCUMULATION;
-            this.co2Grid[col][row] = GameConstants.CO2_MAX_ACCUMULATION;
-            this.phosphorusGrid[col][row] = 100;
-            this.nitrogenGrid[col][row] = 100;
-            this.temperatureGrid[col][row] = 60; // Ideal thermal optimum
+            // Apply based on SCENARIO if defined
+            this.applyScenario(col, row);
 
-            console.log(`[Environment] Forced ideal conditions at ${col},${row}`);
+            // Log for verification
+            console.log(`[Environment] Conditions forced at ${col},${row} for scenario: ${GameConstants.SCENARIO}`);
+        }
+    }
+
+    applyScenario(col, row) {
+        const scenario = GameConstants.SCENARIO || 'STANDARD';
+
+        // Base Ideal Conditions (STANDARD)
+        // High H2 for LUCA, decent resources
+        this.h2Grid[col][row] = GameConstants.H2_GRID_MAX; // Max Energy
+        this.co2Grid[col][row] = GameConstants.CO2_MAX_ACCUMULATION; // Max Carbon
+        this.phosphorusGrid[col][row] = 100; // Abundant
+        this.nitrogenGrid[col][row] = 100; // Abundant
+
+        switch (scenario) {
+            case 'PRESSURE_OXYGEN':
+                // High Oxygen everywhere to force SOD evolution
+                // Surround the cell with toxic O2
+                for (let i = 0; i < this.cols; i++) {
+                    for (let j = 0; j < this.rows; j++) {
+                        this.oxygenGrid[i][j] = GameConstants.OXYGEN_TOXIC_THRESHOLD * 1.5;
+                    }
+                }
+                // Leave a tiny safe bubble? No, pressure must be immediate but survivable?
+                // Actually LUCA starts with some O2 tolerance (10), Toxic is 20.
+                // Let's set it to 15 (Stressful) - 25 (Lethal).
+                this.oxygenGrid[col][row] = 12; // Mild stress locally
+                console.log("⚠️ Applied PRESSURE_OXYGEN: Global O2 toxicity spike.");
+                break;
+
+            case 'PRESSURE_LIGHT':
+                // High UV/Light, move cell to surface?
+                // The cell is spawned in deep sediment. We must bring Light TO the sediment or simulate a transparent ocean.
+                // Let's make the whole ocean transparent for this test.
+                for (let i = 0; i < this.cols; i++) {
+                    for (let j = 0; j < this.rows; j++) {
+                        this.lightGrid[i][j] = 100; // Full blast
+                        this.uvRadiationGrid[i][j] = 80; // High UV
+                    }
+                }
+                console.log("⚠️ Applied PRESSURE_LIGHT: Global high visibility and UV.");
+                break;
+
+            case 'PRESSURE_SCARCITY':
+                // Reduce all resources to bare minimum
+                this.h2Grid[col][row] = 20; // Barely enough (Cost is ~0.05/frame)
+                this.phosphorusGrid[col][row] = 50; // Just below threshold? No, just scarce
+                // Global reduction
+                for (let i = 0; i < this.cols; i++) {
+                    for (let j = 0; j < this.rows; j++) {
+                        this.h2Grid[i][j] *= 0.1;
+                        this.phosphorusGrid[i][j] *= 0.1;
+                    }
+                }
+                console.log("⚠️ Applied PRESSURE_SCARCITY: Famine conditions.");
+                break;
+
+            case 'PRESSURE_THERMAL':
+                // High Temp
+                for (let i = 0; i < this.cols; i++) {
+                    for (let j = 0; j < this.rows; j++) {
+                        this.temperatureGrid[i][j] = 90; // Hot!
+                    }
+                }
+                console.log("⚠️ Applied PRESSURE_THERMAL: Global warming.");
+                break;
         }
     }
 
