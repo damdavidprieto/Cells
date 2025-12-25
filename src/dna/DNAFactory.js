@@ -76,15 +76,15 @@ class DNAFactory {
             // Cells can have multiple metabolic pathways with individual efficiencies
             // LUCA starts with Wood-Ljungdahl only, others evolve gradually
             metabolisms: {
-                // 1. WOOD-LJUNGDAHL PATHWAY (Acetogenesis)
-                // LUCA's primary metabolism: H₂ + CO₂ → Acetyl-CoA
+                // 1. LUCA (Wood-Ljungdahl Pathway)
+                // Primary metabolism: H₂ + CO₂ → Acetyl-CoA
                 // SCIENTIFIC BASIS: Weiss et al. (2016), Martin & Russell (2007)
                 // Lane (2015) - ~0.5 ATP/acetyl-CoA (primitive, inefficient metabolism)
-                woodLjungdahl: {
+                luca: {
                     enabled: true,              // ✅ LUCA starts with this
                     efficiency: random(0.7, 0.9), // 70-90% efficiency
                     substrates: { H2: 0.4, CO2: 0.2 },
-                    energyYield: 1.5,           // Reduced from 2.5 - primitive metabolism is less efficient
+                    energyYield: 1.5,           // Reduced from 2.5 - primitive metabolism
                     requiresO2: false,
                     requiresLight: false,
                     geochemicalBonus: true      // Bonus in sediment (vents)

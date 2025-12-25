@@ -97,9 +97,14 @@ class ColorSystem {
         const baseColors = {
             'luca': [200, 200, 220],           // Gray/white
             'fermentation': [180, 100, 150],    // Purple
-            'chemosynthesis': [150, 200, 100]   // Green-yellow
+            'chemosynthesis': [150, 200, 100],   // Green-yellow
+
+            // New Scientific Names (Standardized)
+            'anoxigenicPhotosynthesis': [50, 150, 50],   // Green (Chlorobi)
+            'oxigenicPhotosynthesis': [0, 200, 200],     // Cyan (Cyanobacteria)
+            'aerobicRespiration': [220, 80, 80]          // Red (Oxidative)
         };
-        return baseColors[metabolismType] || [200, 200, 220];
+        return baseColors[metabolismType] || [180, 180, 180];
     }
 
     /**
