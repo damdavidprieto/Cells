@@ -179,7 +179,11 @@ class Environment {
         GridRegeneration.regeneratePhosphorus(this);
         GridRegeneration.regenerateH2(this);
         GridRegeneration.regenerateOxygen(this);  // Photolysis UV
-        OxygenRegeneration.oxidarHierro(this);    // Fe²⁺ oxidation (O₂ sink)
+
+        // Skip Iron Sink during Great Oxidation Event to allow buildup
+        if (!this.progressiveOxygenEnabled) {
+            OxygenRegeneration.oxidarHierro(this);    // Fe²⁺ oxidation (O₂ sink)
+        }
 
         // NEW: Diffusion from infinite reservoirs (atmosphere & ocean)
         if (typeof ReservoirSystem !== 'undefined') {

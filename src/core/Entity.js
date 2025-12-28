@@ -36,7 +36,8 @@ class Entity {
 
         // SOD (Superoxide Dismutase) - Oxygen tolerance system
         this.sodProtein = 0.5;  // Current SOD level (0.0 - 1.0)
-        this.oxidativeDamage = 0;  // Accumulated oxidative damage
+        this.oxidativeDamage = 0;  // accumulated damage in this frame
+        this.structuralDamage = 0; // NEW: Cumulative Structural Integrity (0-100)
 
         // ORGANELL SYSTEM INTEGRATION
         this.organelles = [];
@@ -98,7 +99,13 @@ class Entity {
         // Oxygen tolerance system (SOD)
         OxygenTolerance.updateSODLevels(this);
         this.oxidativeDamage = OxygenTolerance.calculateOxidativeDamage(this, environment);
-        this.energy -= this.oxidativeDamage;  // Oxidative damage reduces energy
+
+        // STRUCTURAL INTEGRITY SYSTEM
+        // 1. Accumulate Damage (Oxidative Stress)
+        this.structuralDamage += this.oxidativeDamage;
+
+        // 2. Active Repair (Spend Energy to fix Damage)
+        this.applyRepair();
 
         // Apply UV damage if enabled
         if (GameConstants.UV_RADIATION_ENABLED) {
@@ -194,10 +201,70 @@ class Entity {
         }
     }
 
+    applyRepair() {
+        if (this.structuralDamage <= 0) return;
+
+        // Repair Capacity depends on DNA trait (Repair Efficiency)
+        // Reduced by thermal stress (proteins denature)
+        let repairEfficiency = this.dna.dnaRepairEfficiency || 0.5;
+        let baseSpeed = GameConstants.BASE_REPAIR_SPEED || 0.1;
+
+        let repairCapacity = baseSpeed * repairEfficiency;
+
+        // Cap repair at current damage (can't repair what's not broken)
+        let damageToFix = Math.min(this.structuralDamage, repairCapacity);
+
+        // Calculate Energy Cost
+        // More efficient repair systems might cost less energy per point? 
+        // For now, fixed cost per point of damage
+        let energyCost = damageToFix * GameConstants.REPAIR_ENERGY_COST;
+
+        if (this.energy >= energyCost) {
+            // Full repair step
+            this.energy -= energyCost;
+            this.structuralDamage -= damageToFix;
+        } else {
+            // Partial repair (Starvation Mode)
+            // Can only repair what we have energy for
+            let possibleFix = this.energy / GameConstants.REPAIR_ENERGY_COST;
+            this.energy = 0;
+            this.structuralDamage -= possibleFix;
+        }
+
+        // Clamp to 0
+        if (this.structuralDamage < 0) this.structuralDamage = 0;
+    }
+
     checkDeath() {
         // Death if ANY critical resource runs out
-        if (this.energy <= 0 || this.oxygen <= 0 || this.nitrogen <= 0 || this.phosphorus <= 0) {
+        if (this.energy <= 0) {
             this.isDead = true;
+            this.deathCause = 'energy_depletion';
+            return;
+        }
+
+        if (this.oxygen <= 0) {
+            this.isDead = true;
+            this.deathCause = 'oxygen_depletion';
+            return;
+        }
+
+        if (this.nitrogen <= 0) {
+            this.isDead = true;
+            this.deathCause = 'nitrogen_depletion';
+            return;
+        }
+
+        if (this.phosphorus <= 0) {
+            this.isDead = true;
+            this.deathCause = 'phosphorus_depletion';
+            return;
+        }
+
+        // NEW: Structural Failure (Lysis)
+        if (this.structuralDamage >= GameConstants.MAX_STRUCTURAL_DAMAGE) {
+            this.isDead = true;
+            this.deathCause = 'structural_failure'; // Lysis due to oxidative stress/UV
         }
     }
 

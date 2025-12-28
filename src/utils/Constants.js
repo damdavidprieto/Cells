@@ -9,8 +9,7 @@ const GameConstants = {
     // PRODUCTION: Normal speed, clean UI, no debug logs
     // SINGLE_CELL_MODE: Analysis mode with 1 cell in ideal conditions
     EXECUTION_MODE: 'SINGLE_CELL_MODE',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE'
-    SCENARIO: 'STANDARD',                // Options: 'STANDARD', 'PRESSURE_OXYGEN', 'PRESSURE_LIGHT', 'PRESSURE_SCARCITY', 'PRESSURE_THERMAL'
-
+    SCENARIO: 'PRESSURE_OXYGEN',         // Keep Oxygen Pressure scenario
 
     // Mode-specific settings
     DEVELOPMENT: {
@@ -35,7 +34,8 @@ const GameConstants = {
     },
 
     SINGLE_CELL_MODE: {
-        FPS: 60,
+        FPS: 120,                     // Doubled FPS limit (MAX SPEED)
+        PHYSICS_STEPS: 5,             // HYPER-SPEED: 5 logic updates per frame (Total speed: 120*5 = 600 ticks/sec)
         LOG_VERBOSITY: 2,
         INITIAL_POPULATION: 1, // Start with exactly 1 cell
         REPRODUCTION_ENABLED: true, // User requested mitosis enabled
@@ -315,12 +315,18 @@ const GameConstants = {
     // SCIENTIFIC BASIS: Fridovich 1995, Imlay 2013, Raymond 2006
     // SOD is ancestral enzyme (present in LUCA) that protects against O₂ toxicity
     // 2O₂⁻ + 2H⁺ → H₂O₂ + O₂ (converts toxic superoxide to less toxic peroxide)
-    OXYGEN_SAFE_THRESHOLD: 10,       // O₂ level below which damage is negligible (~0.5% PAL)
-    OXYGEN_TOXIC_THRESHOLD: 20,      // O₂ level above which damage is severe (~1% PAL)
-    OXIDATIVE_DAMAGE_RATE: 0.05,     // Damage per unit of excess O₂ (1-2% O₂ → O₂⁻)
-    SOD_MAINTENANCE_COST: 0.05,      // Energy cost per frame to maintain SOD (~1% basal metabolism, reduced from 0.1)
+    // OXYGEN & OXIDATIVE STRESS
+    OXYGEN_SAFE_THRESHOLD: 10,    // Levels below this are safe (microaerophilic)
+    OXIDATIVE_DAMAGE_RATE: 0.15,  // TRIPLED (was 0.05): Damage per frame per excess O2 unit
+    SOD_MAINTENANCE_COST: 0.1,    // Energy per frame per SOD unit (protein turnover)
 
+    // REPAIR & REGENERATION SYSTEM
+    MAX_STRUCTURAL_DAMAGE: 100,      // Death at >100% damage (Lysis)
+    REPAIR_ENERGY_COST: 0.5,         // Energy cost to repair 1.0 Structural Damage
+    BASE_REPAIR_SPEED: 0.1,          // Base damage points repaired per frame (multiplied by repairEfficiency)
 
+    // UV RADIATION
+    UV_RADIATION_ENABLED: true,   // Enable UV mechanics
     // Chemotaxis (New Mechanic - Biased Random Walk)
     // SCIENTIFIC BASIS: Primitive gradient sensing (Run-and-Tumble precursor)
     CHEMOTAXIS_STRENGTH: 0.5,        // Strength of bias towards nutrient (H2)
