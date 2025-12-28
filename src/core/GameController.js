@@ -16,6 +16,13 @@ class GameController {
         window.environment = null;
         window.entities = [];
         window.lucaBaseDNA = null;
+
+        // Ensure database logs are closed properly on tab close
+        window.addEventListener('beforeunload', () => {
+            if (this.databaseLogger) {
+                this.databaseLogger.endRun();
+            }
+        });
     }
 
     /**
@@ -95,9 +102,13 @@ class GameController {
             window.entities.push(entity);
 
             // Force environment to be perfect around this cell immediately
+            // Force environment to be perfect around this cell immediately
+            // DISABLED: User requested to match Development mode behavior
+            /*
             if (GameConstants.SINGLE_CELL_MODE.FORCE_IDEAL_CONDITIONS) {
                 this.environment.forceIdealConditions(idealX, idealY);
             }
+            */
         }
         // STANDARD MODES
         else {

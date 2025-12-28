@@ -22,9 +22,16 @@ const data = JSON.parse(fs.readFileSync(logPath, 'utf8'));
 // CORRECTION: Single Cell logs are stored in 'cell_events' store with event_type 'single_cell_analysis'
 const cellLogs = data.events ? data.events.filter(e => e.event_type === 'single_cell_analysis') : [];
 
-console.log(`Deep Analysis Frames found: ${cellLogs.length}`);
+// Try to get scenario from config or parse from run_id
+let scenario = data.config?.scenario;
+if (!scenario && data.run_id) {
+    const match = data.run_id.match(/run_(.+?)_\d{4}-\d{2}-\d{2}/);
+    if (match) {
+        scenario = match[1];
+    }
+}
 console.log(`Execution Mode in Log: ${data.execution_mode || "Unknown"}`);
-console.log(`Scenario: ${data.config?.scenario || "UNDEFINED (Pre-Feature)"}`);
+console.log(`Scenario: ${scenario || "UNDEFINED"}`);
 console.log(`Run ID: ${data.run_id}`);
 console.log(`Total Frames: ${data.total_frames}`);
 console.log(`Top Keys: ${Object.keys(data).join(', ')}`);

@@ -136,8 +136,8 @@ class SpeciesNotifier {
             case 'chemosynthesis':
                 return {
                     name: 'Chemosynthesis Cell',
-                    color: [150, 200, 100],
-                    icon: '🟢'
+                    color: [240, 200, 60],
+                    icon: '🟡'
                 };
             default:
                 return {

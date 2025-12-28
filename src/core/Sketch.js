@@ -29,6 +29,11 @@ function draw() {
     const env = game.environment;
     const ents = window.entities;
 
+    // 0. Gobernanza (Control de Rendimiento)
+    if (game.governor) {
+        game.governor.update();
+    }
+
     // 1. Renderizar Entorno (Fondo y Grids)
     deathCountThisFrame = 0;
     env.update();
@@ -55,8 +60,15 @@ function draw() {
             if (i !== j) e.checkCollision(ents[j]);
         }
 
-        // Reproducción
-        let child = e.reproduce(env.currentStability);
+        // Reproducción (Controlled by Governor)
+        let child = null;
+        if (game.governor && game.governor.canReproduce()) {
+            child = e.reproduce(env.currentStability);
+        } else if (!game.governor) {
+            // Fallback if governor missing
+            child = e.reproduce(env.currentStability);
+        }
+
         if (child != null) {
             child.id = ents.length;
             child.reproductionCount = 0;
@@ -129,11 +141,22 @@ function draw() {
     // NEW: Log frame stats to DatabaseLogger (every N frames)
     if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_frame_stats) {
         if (frameCount % GameConstants.DATABASE_LOGGING.frame_stats_interval === 0) {
-            const avgEnergy = ents.reduce((sum, e) => sum + e.energy, 0) / (ents.length || 1);
+            let totalEnergy = 0;
+            let activePopulation = 0;
+
+            for (let e of ents) {
+                if (!e.isDead) { // Only count living cells for realistic average
+                    totalEnergy += e.energy;
+                    activePopulation++;
+                }
+            }
+
+            const avgEnergy = activePopulation > 0 ? (totalEnergy / activePopulation) : 0;
+
             game.databaseLogger.logFrameStats(frameCount, {
-                population: ents.length,
+                population: activePopulation, // Log active population
                 deaths: deathCountThisFrame,
-                births: 0, // Se podría trackear en el loop
+                births: 0,
                 avg_energy: avgEnergy,
                 species_count: stats.speciesCount
             });
@@ -196,9 +219,13 @@ function calculateStats(env, ents) {
 }
 
 function renderOverlays(game) {
-
-
+    // 1. Species Notifier (Toasts)
     game.speciesNotifier.render();
+
+    // 2. UI Manager Canvas Components (Cell Inspector, etc.)
+    if (window.uiManager) {
+        window.uiManager.render();
+    }
 }
 
 function windowResized() {

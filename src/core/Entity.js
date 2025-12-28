@@ -42,6 +42,10 @@ class Entity {
         this.organelles = [];
         this.initializeOrganelles();
 
+        // REPRODUCTION COOLDOWN (Cell Cycle)
+        // Prevents exponential explosions. Time until next division possible.
+        this.reproductionCooldown = 0;
+
         // Movement offset for perlin noise visualization
         this.noiseOffset = random(1000);
     }
@@ -103,6 +107,11 @@ class Entity {
 
         // Check death
         this.checkDeath();
+
+        // Update Reproduction Cooldown
+        if (this.reproductionCooldown > 0) {
+            this.reproductionCooldown--;
+        }
 
         this.age++;
     }

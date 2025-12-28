@@ -92,6 +92,20 @@ class MembraneSystem {
                     entity.phosphorus += takenP;
                 }
             }
+
+            // 3. NITROGEN DIFFUSION (MISSING LINK FIXED)
+            // Ammonia (NH4+) diffusion from environment
+            let envN = environment.nitrogenGrid[gridX][gridY];
+            let cellN = entity.nitrogen;
+
+            if (envN > cellN) {
+                let nDiff = (envN - cellN) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Similar to P
+                let takenN = Math.min(nDiff, envN);
+                if (takenN > 0) {
+                    environment.nitrogenGrid[gridX][gridY] -= takenN;
+                    entity.nitrogen += takenN;
+                }
+            }
         }
     }
 }

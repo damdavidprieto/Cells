@@ -160,7 +160,14 @@ class DatabaseLogger {
             frame_number: frame,
             event_type: eventType, // 'birth', 'death', 'state'
             cell_id: cellId,
-            data: data,
+            data: {
+                ...data,
+                // Evolutionary Metrics Trace
+                sod: data.sod,
+                oxidativeDamage: data.oxidativeDamage,
+                death_reason: data.death_reason,
+                oxygen_level: data.oxygen_level
+            },
             timestamp: new Date().toISOString()
         };
 
@@ -256,7 +263,9 @@ class DatabaseLogger {
                 // Add more internal state if needed
                 age: cell.age,
                 sod: cell.sodProtein,
-                oxidativeDamage: cell.oxidativeDamage
+                oxidativeDamage: cell.oxidativeDamage,
+                color: cell.dna.color,
+                metabolicEfficiency: cell.dna.metabolicEfficiency // Useful for tracking brightness/hue shifts
             },
             timestamp: new Date().toISOString()
         };

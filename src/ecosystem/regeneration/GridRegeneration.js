@@ -96,12 +96,10 @@ class GridRegeneration {
             for (let j = 0; j < environment.rows; j++) {
                 if (j >= environment.sedimentRow) {
                     // Only regenerate in sediment zone
-                    let depthRatio = j / environment.rows;
-                    let maxNitrogen = 100 * exp(-4 * (1 - depthRatio));
-
-                    if (environment.nitrogenGrid[i][j] < maxNitrogen && random(1) < 0.04) {  // 4% (was 2%)
-                        environment.nitrogenGrid[i][j] += 0.6;  // 2x faster (was 0.3)
-                    }
+                    // SCIENTIFIC UPDATE: Nitrogen Fixation at Vents
+                    // Ammonia (NH4+) is produced continuously at alkaline vents
+                    environment.nitrogenGrid[i][j] += GameConstants.VENT_NITROGEN_FLUX;
+                    environment.nitrogenGrid[i][j] = min(environment.nitrogenGrid[i][j], GameConstants.NITROGEN_GRID_MAX);
                 }
             }
         }
@@ -126,8 +124,8 @@ class GridRegeneration {
             for (let j = 0; j < environment.rows; j++) {
                 if (j >= environment.sedimentRow) {
                     // Sediment zone (vents): High production
-                    environment.h2Grid[i][j] += 2.0;  // 2x faster (was implicit 1.0)
-                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j], 250);
+                    environment.h2Grid[i][j] += GameConstants.H2_VENT_PRODUCTION;
+                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j], GameConstants.H2_MAX_ACCUMULATION);
                 }
                 // REMOVED: Fake random diffusion. Now handled by proper DiffusionSystem.
             }

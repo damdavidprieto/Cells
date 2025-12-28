@@ -97,11 +97,12 @@ class ColorSystem {
         const baseColors = {
             'luca': [200, 200, 220],           // Gray/white
             'fermentation': [180, 100, 150],    // Purple
-            'chemosynthesis': [150, 200, 100],   // Green-yellow
+            'chemosynthesis': [240, 200, 60],   // Gold/Yellow (Chemical Energy) - Distinct from H2 Green
 
             // New Scientific Names (Standardized)
-            'anoxigenicPhotosynthesis': [50, 150, 50],   // Green (Chlorobi)
-            'oxigenicPhotosynthesis': [0, 200, 200],     // Cyan (Cyanobacteria)
+            'anoxigenicPhotosynthesis': [200, 0, 200],   // PURPLE (Debug Trace) - Was Gold, Was Green
+            // 'anoxigenicPhotosynthesis': [50, 150, 50],   // Green (Chlorobi) - OLD (Caused green cell bug)
+            'oxigenicPhotosynthesis': [0, 150, 255],     // Blue/Azure (Cyanobacteria) - Changed from Greenish-Cyan to avoid confusion
             'aerobicRespiration': [220, 80, 80]          // Red (Oxidative)
         };
         return baseColors[metabolismType] || [180, 180, 180];
@@ -128,37 +129,51 @@ class ColorSystem {
         let r = 0, g = 0, b = 0;
 
         // 1. Blend Base Colors of Metabolisms
-        for (let [type, data] of Object.entries(dna.metabolisms || {})) {
-            // Only enabled genes contribute to color
-            // Efficiency acts as the weight (more efficient = more dominant color)
-            // We use a small base weight (0.1) so even inefficient genes have visible tint
-            let weight = data.enabled ? data.efficiency : (data.efficiency * 0.2);
+        if (GameConstants.ENABLE_METABOLIC_COLOR) {
+            for (let [type, data] of Object.entries(dna.metabolisms || {})) {
+                // GRADUAL COLOR EXPRESSION:
+                // Pigment production scales linearly with metabolic efficiency.
+                let weight = data.efficiency;
 
-            if (weight > 0) {
-                let base = this.getMetabolismBaseColor(type);
-                r += base[0] * weight;
-                g += base[1] * weight;
-                b += base[2] * weight;
-                totalWeight += weight;
+                if (weight > 0) {
+                    let base = this.getMetabolismBaseColor(type);
+                    r += base[0] * weight;
+                    g += base[1] * weight;
+                    b += base[2] * weight;
+                    totalWeight += weight;
+                }
             }
         }
 
-        // Avoid division by zero (shouldn't happen with LUCA)
-        if (totalWeight === 0) return dna.color || [128, 128, 128];
-
-        r /= totalWeight;
-        g /= totalWeight;
-        b /= totalWeight;
+        // Default or Fallback to Gray if no metabolism active or DISABLED
+        if (totalWeight === 0) {
+            r = 200; g = 200; b = 200; // Force Gray Base
+            totalWeight = 1;
+        } else {
+            r /= totalWeight;
+            g /= totalWeight;
+            b /= totalWeight;
+        }
 
         // 2. Apply Individual Variation (Genetic Drift)
         // DNA color acts as a modifier/tint on top of the metabolic base
-        // We blend 70% metabolic base + 30% DNA tint
-        let dnaColor = dna.color || [128, 128, 128];
+        if (GameConstants.ENABLE_DNA_COLOR_TINT) {
+            let dnaColor = dna.color || [128, 128, 128];
+            r = r * 0.7 + dnaColor[0] * 0.3;
+            g = g * 0.7 + dnaColor[1] * 0.3;
+            b = b * 0.7 + dnaColor[2] * 0.3;
+        }
 
-        r = r * 0.7 + dnaColor[0] * 0.3;
-        g = g * 0.7 + dnaColor[1] * 0.3;
-        b = b * 0.7 + dnaColor[2] * 0.3;
+        let finalR = constrain(r, 0, 255);
+        let finalG = constrain(g, 0, 255);
+        let finalB = constrain(b, 0, 255);
 
-        return [constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255)];
+        // DEBUG: Trace Green Cells (Hybrid Theory)
+        // If Green is dominant and Red/Blue are lower
+        if (finalG > finalR + 20 && finalG > finalB + 20) {
+            console.log("🟢 GREEN CELL DETECTED! Mixing:", dna.metabolisms, "Color:", [finalR, finalG, finalB], "DNA tint:", dna.color);
+        }
+
+        return [finalR, finalG, finalB];
     }
 }

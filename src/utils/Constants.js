@@ -1,5 +1,9 @@
+
 // Game Constants
 const GameConstants = {
+    // DEBUG FLAGS
+    DEBUG_DISABLE_PIGMENTS: false, // Forces all cells to gray [200,200,200] to test rendering
+
     // ===== EXECUTION MODE =====
     // DEVELOPMENT: Accelerated simulation (2x speed), debug monitor visible, logs enabled
     // PRODUCTION: Normal speed, clean UI, no debug logs
@@ -15,9 +19,9 @@ const GameConstants = {
         LOG_UV_DAMAGE: true,          // Log UV damage events
         LOG_MUTATIONS: true,          // Log mutation events
         LOG_DEATHS: true,             // Log death events
-        LOG_REPRODUCTIONS: false,     // Too frequent, disable by default
+        LOG_REPRODUCTIONS: true,      // Log reproduction (vital for lineage tracing)
         LOG_METABOLIC_DIVERGENCE: true, // Log LUCA → Fermentation/Chemosynthesis
-        REPRODUCTION_CHANCE_MULTIPLIER: 5.0 // 5x faster reproduction in Dev Mode
+        REPRODUCTION_CHANCE_MULTIPLIER: 2.0 // 2x faster reproduction (reduced from 5x to prevent explosion)
     },
 
     PRODUCTION: {
@@ -58,6 +62,11 @@ const GameConstants = {
     // DEVELOPMENT MODE: High variability for fast testing
     LUCA_VARIABILITY_LEVEL: 'HIGH', // Options: 'NONE', 'MEDIUM', 'HIGH'
 
+    // NEW: Independent control for initial color (Cosmetic vs Genetic)
+    // MEDIUM = Gray/Realistic (Recommended)
+    // HIGH = Cyan/Green (Development)
+    LUCA_INITIAL_COLOR_LEVEL: 'MEDIUM', // Options: 'NONE', 'MEDIUM', 'HIGH'
+
     // Variability ranges per level
     // SCIENTIFICALLY CALIBRATED based on LUCA_mutationRate.md research
     // LUCA (4.0 Ga) had mutation rate ~10^-5 to 10^-4 per base per generation
@@ -75,14 +84,14 @@ const GameConstants = {
             metabolicEfficiency: [0.9, 1.1],      // ±10% variation
             storageCapacity: [120, 140],          // ±7.7% variation
             size: [10, 13],                       // ±13% variation
-            color: [[190, 190, 210], [210, 210, 230]]  // Subtle gray variation
+            color: [[100, 100, 120], [140, 140, 160]]  // Solid Gray-Slate (Darker for visibility)
         },
         HIGH: {
             mutationRate: [0.10, 0.30],           // Maximum variability for testing
             metabolicEfficiency: [0.7, 1.3],      // ±30% variation (full original range)
             storageCapacity: [100, 150],          // ±20% variation (full original range)
             size: [8, 15],                        // ±30% variation (full original range)
-            color: [[100, 200, 200], [200, 255, 255]]  // Wide color variation
+            color: [[100, 100, 120], [140, 140, 160]]  // FORCE GRAY (Override Cyan/Green to prevent glitches)
         }
     },
 
@@ -176,9 +185,13 @@ const GameConstants = {
     // Reproduction
     // SCIENTIFIC BASIS: LUCA had primitive metabolism, needed lower threshold
     // Weiss et al. (2016) - LUCA reproduced rapidly to compensate high mortality
-    REPRODUCTION_THRESHOLD: 0.60,           // Reduced from 0.75 - more accessible for primitive cells
-    REPRODUCTION_PHOSPHORUS_THRESHOLD: 0.5, // Reduced from 0.6 to 0.5 to facilitate division
+    REPRODUCTION_THRESHOLD: 0.40,           // Reduced from 0.60 to 0.40 - Survival Mode
+    REPRODUCTION_PHOSPHORUS_THRESHOLD: 0.40, // Reduced from 0.5 to 0.40
     REPRODUCTION_CHANCE: 0.01,              // Increased from 0.005 - faster reproduction (~20-30 min cycle)
+    // Cooldown in frames (Cell Cycle Time)
+    // Prevents "popcorn" explosions even with infinite resources.
+    // 300 frames @ 60fps = 5 seconds minimum between divisions.
+    REPRODUCTION_COOLDOWN: 300,
     LUCA_NITROGEN_THRESHOLD: 0.3,
 
     // Mutation
@@ -205,11 +218,24 @@ const GameConstants = {
 
     // NEW: Continuous Evolution Thresholds
     // Efficiency required to express the phenotype (build the organelle)
-    // 0.15 = 15% efficiency needed. Below this, the gene is "latent" (present but disabled)
-    ORGANELLE_EFFICIENCY_THRESHOLD: 0.15,
+    // 0.20 = 20% efficiency needed (Minimal Viable Pathway - Realistic Enzyme Kinetics)
+    ORGANELLE_EFFICIENCY_THRESHOLD: 0.20,
 
     // Range of efficiency drift per mutation event (Continuous Evolution)
-    METABOLIC_DRIFT_RANGE: 0.02,
+    // Decreased from 0.02 to 0.005 to simulate geological timescales
+    METABOLIC_DRIFT_RANGE: 0.005,
+
+
+    // ===== EVOLUTIONARY PATHWAYS (DEBUG) =====
+    // Set to FALSE to disable specific evolutionary branches
+    ENABLE_CHEMOSYNTHESIS: true,   // If false, cells cannot evolve Chemosynthesis
+    ENABLE_PHOTOSYNTHESIS: true,   // If false, cells cannot evolve Photosynthesis (Anox/Ox)
+    ENABLE_FERMENTATION: true,     // If false, cells cannot evolve Fermentation
+
+    // ===== VISUAL DEBUGGING =====
+    ENABLE_DNA_COLOR_TINT: true,    // If false, removes the random DNA color variation (30% mix)
+    ENABLE_METABOLIC_COLOR: true,   // If false, ignores metabolism color and uses pure Gray
+    ENABLE_VISUAL_MODIFIERS: true,   // If false, disables Health/Efficiency brightness scaling
 
 
     // ===== ENVIRONMENTAL STABILITY SYSTEM =====
@@ -262,11 +288,18 @@ const GameConstants = {
     // H₂ Grid Range (vents hidrotermales - LUCA metabolism)
     // SCIENTIFIC BASIS: Martin & Russell 2007 - Alkaline hydrothermal vents
     // H₂ is the primary electron donor for LUCA's Wood-Ljungdahl pathway
-    // PURIST UPDATE: Increased flux to match "Lost City" massive energy output
-    H2_GRID_MIN: 10,              // Minimum H₂ in water column
-    H2_GRID_MAX: 200,             // Maximum H₂ in vents (Increased from 100)
-    H2_VENT_PRODUCTION: 5.0,      // Continuous H₂ production (Increased from 0.5 - 10x flux)
+    // SCIENTIFIC BASIS: Lost City Hydrothermal Field (Martin et al. 2008)
+    // - H₂ flux is massive: 1-15 mmol/kg fluid.
+    // - Supports dense biofilms (billions of cells/cm²).
+    // - 5.0 was too low (starvation). 20.0 allows a small, realistic biofilm colony (~15 cells).
+    H2_VENT_PRODUCTION: 20.0,      // Continuous H₂ production (Increased to support colony > 4)
     H2_MAX_ACCUMULATION: 250,     // Cap for H₂ accumulation (Increased from 120)
+
+    // N Grid Range (Nitrógeno)
+    // SCIENTIFIC BASIS: Ammonia (NH4+) in vents
+    VENT_NITROGEN_FLUX: 0.5,       // Continuous Flux
+    OCEANIC_NITROGEN: 50,          // Baseline
+    NITROGEN_GRID_MAX: 200,        // Max
 
     // Fe²⁺ Grid Range (hierro ferroso - océano Arcaico)
     // SCIENTIFIC BASIS: Holland 2006, Lyons et al. 2014
@@ -334,8 +367,13 @@ const GameConstants = {
     // Vent Flux Enhancement (Sediment zone)
     // Simulates continuous hydrothermal activity
     VENT_FE2_FLUX: 2.0,               // Fe²⁺ production rate (ferrous iron)
-    // SCIENTIFIC BASIS: Apatite dissolution in heated vent fluids (10-100x seawater)
-    VENT_PHOSPHORUS_FLUX: 1.5,        // Increased from 0.5 to match local abundance theory
+
+    // P Grid Range (Fósforo)
+    // SCIENTIFIC BASIS: Planavsky et al. 2010
+    // Phosphate was limited but locally available in vents
+    VENT_PHOSPHORUS_FLUX: 0.5,     // Continuous reduced P flux (Was 0.006 - bottleneck fixed)
+    OCEANIC_PHOSPHORUS: 50,        // Baseline (Was 30 - allow starting cells to live)
+    PHOSPHORUS_GRID_MAX: 200,      // Max accumulation (Was 80)
 
     // ===== DIFFUSION SYSTEM CONFIGURATION =====
     // Controls how resources spread across the grid
@@ -369,6 +407,15 @@ const GameConstants = {
         log_env_stats: true,          // Log environment stats (diffusion)
         frame_stats_interval: 10,     // Log stats every N frames
         env_stats_interval: 60,       // Log environment stats every 60 frames (1 sec)
+    },
+
+    // ===== RESOURCE GOVERNANCE SYSTEM =====
+    // Prevents simulation collapse due to population explosions or lag
+    GOVERNANCE: {
+        DEV_POPULATION_CAP: 500,      // Hard limit for development (safety brake)
+        PROD_POPULATION_CAP: 2000,    // Higher limit for production
+        MIN_FPS_THRESHOLD: 30,        // Stop reproduction if FPS drops below this
+        FPS_CHECK_INTERVAL: 60        // Check average FPS every 60 frames
     },
 
     // Legacy localStorage-based logging system removed
