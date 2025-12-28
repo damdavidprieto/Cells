@@ -15,10 +15,15 @@ class StatsPanel {
         const html = `
 <div id="ui-layer">
     <div id="stats">
+        <div style="margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+            <span style="font-size: 1.2em; color: #4dc; font-family: monospace;">⏳ <span id="time-display">4.000 Ga</span></span>
+            <div style="font-size: 0.8em; color: #888;">Frame: <span id="frame-count">0</span></div>
+        </div>
+
         <p><strong>Población</strong></p>
         <p>Células Totales: <span id="entity-count">0</span></p>
         <p>Especies: <span id="species-count">0</span></p>
-
+        
         <p style="margin-top: 15px;"><strong>Tipos Celulares</strong></p>
         <p>LUCA: <span id="luca-count">0</span></p>
         <p>Fermentación: <span id="fermentation-count">0</span></p>
@@ -28,7 +33,6 @@ class StatsPanel {
         <p>Oxígeno: <span id="oxygen-count">0</span></p>
         <p>Nitrógeno: <span id="nitrogen-count">0</span></p>
         <p>Fósforo: <span id="phosphorus-count">0</span></p>
-
     </div>
 </div>`;
 
@@ -53,6 +57,17 @@ class StatsPanel {
      */
     update(stats) {
         if (!this.container || this.container.style.display === 'none') return;
+
+        // TIEMPO GEOLÓGICO
+        // Inicio: 4.0 Ga (4,000 Millones de años)
+        // Velocidad: 1,000 años por frame
+        const startYear = 4000000000;
+        const yearsPassed = frameCount * 1000;
+        const currentYear = startYear - yearsPassed;
+        const gaDisplay = (currentYear / 1000000000).toFixed(3) + " Ga";
+
+        this.setSafeText('time-display', gaDisplay);
+        this.setSafeText('frame-count', frameCount);
 
         this.setSafeText('entity-count', stats.entityCount);
         this.setSafeText('species-count', stats.speciesCount);

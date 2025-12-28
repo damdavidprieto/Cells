@@ -58,6 +58,24 @@ class ReproductionSystem {
             oxygenCheck = entity.oxygen > reproductionThreshold;
         }
 
+        // STRUCTURAL INTEGRITY CHECK (CHECKPOINT G2/M)
+        // ============================================
+        // SCIENTIFIC BASIS:
+        // 1. G2 Checkpoint (Eukaryotes) / SOS Response (Bacteria):
+        //    Cells possess mechanisms to inhibit division if DNA is damaged.
+        //    Proceeding with mitosis while damaged causes genomic instability (lethal).
+        //    Ref: "Cell Cycle Checkpoints", Hartwell & Weinert (1989).
+        // 
+        // 2. SulA Protein (E. coli):
+        //    In bacteria, the SOS response induces SulA, which inhibits FtsZ ring formation,
+        //    physically preventing division until repair is complete.
+        //
+        // IMPLEMENTATION:
+        // Block reproduction if Structural Damage > 20% (Simulating active Checkpoint).
+        if (entity.structuralDamage > 20) {
+            return false;
+        }
+
         // Use mode-specific reproduction chance if defined, otherwise global
         let mode = GameConstants.getCurrentMode();
         let chance = mode.REPRODUCTION_CHANCE_MULTIPLIER

@@ -29,93 +29,75 @@ function draw() {
     const env = game.environment;
     const ents = window.entities;
 
-    // 0. Gobernanza (Control de Rendimiento)
+    // 0. Gobernanza y Configuración de Velocidad
     if (game.governor) {
         game.governor.update();
     }
 
-    // 1. Renderizar Entorno (Fondo y Grids)
-    deathCountThisFrame = 0;
-    env.update();
-    env.show();
+    // HYPER-SPEED LOOP
+    // Run physics multiple times per frame based on configuration
+    const steps = GameConstants[GameConstants.EXECUTION_MODE].PHYSICS_STEPS || 1;
 
-    // 2. Calcular Estabilidad Ambiental (cada N frames)
-    if (frameCount % GameConstants.STABILITY_CALCULATION_INTERVAL === 0) {
-        env.currentStability = env.calculateEnvironmentalStability(ents, deathCountThisFrame);
+    for (let s = 0; s < steps; s++) {
+        // 1. Física del Entorno
+        deathCountThisFrame = 0;
+        env.update();
+
+        // 2. Estabilidad Ambiental (cada N frames lógicos)
+        if ((frameCount * steps + s) % GameConstants.STABILITY_CALCULATION_INTERVAL === 0) {
+            env.currentStability = env.calculateEnvironmentalStability(ents, deathCountThisFrame);
+        }
+
+        // 3. Procesar Entidades (FÍSICA SOLAMENTE)
+        for (let i = ents.length - 1; i >= 0; i--) {
+            let e = ents[i];
+
+            // Comportamientos Físicos
+            e.eat(env);
+            e.update(env); // Movimiento, Metabolismo
+
+            // Colisiones
+            for (let j = 0; j < ents.length; j++) {
+                if (i !== j) e.checkCollision(ents[j]);
+            }
+
+            // Reproducción
+            let child = null;
+            if (!game.governor || game.governor.canReproduce()) {
+                child = e.reproduce(env.currentStability);
+            }
+
+            if (child != null) {
+                child.id = ents.length;
+                child.reproductionCount = 0;
+                e.reproductionCount = (e.reproductionCount || 0) + 1;
+                ents.push(child);
+
+                // Logging (Only log if strictly needed, heavy for hyper-speed)
+                if (game.databaseLogger) handleLogging(game, e, child, frameCount);
+            }
+
+            // Muerte
+            if (e.isDead) {
+                let cause = getDeathCause(e);
+                if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
+                    game.databaseLogger.logCellEvent(frameCount, 'death', e.id, {
+                        cause: cause,
+                        final_state: { sod: e.sodEfficiency, ox: e.oxygen } // Minimal data
+                    });
+                }
+                PhosphorusRegeneration.reciclarFosforo(env, e.pos.x, e.pos.y, e.phosphorus);
+                ents.splice(i, 1);
+                deathCountThisFrame++;
+            }
+        }
     }
 
-    // 3. Procesar Entidades (Células)
-    for (let i = ents.length - 1; i >= 0; i--) {
-        let e = ents[i];
+    // 4. Renderizado (UNA VEZ POR FRAME)
+    env.show(); // Dibujar Entorno
 
-        // Comportamientos
-        // Comportamientos
-        // e.applyForce(p5.Vector.random2D().mult(0.1)); // REMOVED: Moved to Entity.applyNaturalBehavior (Chemotaxis)
-        e.eat(env);
-        e.update(env);
-        e.show();
-
-        // Colisiones
-        for (let j = 0; j < ents.length; j++) {
-            if (i !== j) e.checkCollision(ents[j]);
-        }
-
-        // Reproducción (Controlled by Governor)
-        let child = null;
-        if (game.governor && game.governor.canReproduce()) {
-            child = e.reproduce(env.currentStability);
-        } else if (!game.governor) {
-            // Fallback if governor missing
-            child = e.reproduce(env.currentStability);
-        }
-
-        if (child != null) {
-            child.id = ents.length;
-            child.reproductionCount = 0;
-            e.reproductionCount = (e.reproductionCount || 0) + 1;
-
-            // DatabaseLogger
-            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_mutations) {
-                game.databaseLogger.logMutation(frameCount, e.id, child.id, {
-                    parent_dna: e.dna,
-                    child_dna: child.dna
-                });
-            }
-            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
-                game.databaseLogger.logCellEvent(frameCount, 'birth', child.id, {
-                    position: { x: child.pos.x, y: child.pos.y },
-                    dna: child.dna,
-                    parent_id: e.id
-                });
-            }
-
-            ents.push(child);
-        }
-
-        // Muerte
-        if (e.isDead) {
-            let cause = getDeathCause(e);
-
-            // DatabaseLogger
-            if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
-                game.databaseLogger.logCellEvent(frameCount, 'death', e.id, {
-                    cause: cause,
-                    position: { x: e.pos.x, y: e.pos.y },
-                    final_state: {
-                        energy: e.energy,
-                        oxygen: e.oxygen,
-                        phosphorus: e.phosphorus,
-                        nitrogen: e.nitrogen
-                    }
-                });
-            }
-
-            // Reciclaje de Fósforo
-            PhosphorusRegeneration.reciclarFosforo(env, e.pos.x, e.pos.y, e.phosphorus);
-
-            ents.splice(i, 1);
-            deathCountThisFrame++;
-        }
+    for (let e of ents) {
+        e.show(); // Dibujar Células
     }
 
     // 5. Actualizar Trackers y UI
@@ -233,5 +215,22 @@ function windowResized() {
     if (window.gameInstance) {
         window.environment = new Environment(); // Re-init grid
         window.gameInstance.environment = window.environment;
+    }
+}
+
+function handleLogging(game, e, child, frameCount) {
+    if (GameConstants.DATABASE_LOGGING.log_mutations) {
+        game.databaseLogger.logMutation(frameCount, e.id, child.id, {
+            parent_dna: e.dna,
+            child_dna: child.dna
+        });
+    }
+    if (GameConstants.DATABASE_LOGGING.log_cell_events) {
+        game.databaseLogger.logCellEvent(frameCount, 'birth', child.id, {
+            position: { x: child.pos.x, y: child.pos.y },
+            dna: child.dna,
+            parent_id: e.id,
+            sod: child.sodProtein // Log vital stat
+        });
     }
 }

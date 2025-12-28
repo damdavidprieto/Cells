@@ -237,20 +237,14 @@ class OxygenRegeneration {
                     // Resultado: O₂ se mantiene en trazas naturalmente
                     environment.oxygenGrid[i][j] += photolysisRate;
 
-                    // 5. CAP EN MÁXIMO (TRAZAS) - PARCHE TEMPORAL
-                    // ¿Qué hace?: Limita O₂ a máximo 20 unidades
-                    // ¿Por qué?: Evita acumulación irreal sin Fe²⁺ sink
-                    // Efecto en juego: O₂ nunca supera 20 (trazas)
-                    // 
-                    // ✅ CORRECTO PARA LUCA: Mantiene O₂ en niveles Arcaicos (<10⁻⁵ PAL)
-                    // 
-                    // ⚠️ NOTA IMPORTANTE:
-                    // Este cap es un "parche" para compensar falta de Fe²⁺ sink
-                    // Idealmente: Oxidación de Fe²⁺ limitaría O₂ naturalmente
-                    // Sin cap: O₂ se acumularía irrealmente en áreas despobladas
+                    // 5. CAP EN MÁXIMO
+                    // REMOVED HARD CAP of 20 for GOE scenarios
+                    // If we are in a Great Oxidation Event, we want O2 to rise unchecked!
+                    let maxO2 = GameConstants.SCENARIO === 'PRESSURE_OXYGEN' ? 100 : GameConstants.OXYGEN_GRID_MAX;
+
                     environment.oxygenGrid[i][j] = min(
                         environment.oxygenGrid[i][j],
-                        GameConstants.OXYGEN_GRID_MAX  // 20
+                        maxO2
                     );
                 }
             }
