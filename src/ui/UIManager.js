@@ -7,6 +7,7 @@ class UIManager {
         this.configScreen = new ConfigScreen();
         this.statsPanel = new StatsPanel();
         this.legend = new Legend();
+        // this.cellInspector = new CellInspector(); // NEW: Visual Debugger - DISABLED
 
         // Montar componentes en el DOM (Asíncrono)
         this.mountComponents();
@@ -19,6 +20,7 @@ class UIManager {
         // 2. Paneles de Juego (Stats y Leyenda)
         await this.statsPanel.mount('ui-root');
         await this.legend.mount('ui-root');
+        // CellInspector is canvas-only, no mount needed
     }
 
     /**
@@ -35,5 +37,12 @@ class UIManager {
      */
     update(stats) {
         this.statsPanel.update(stats);
+    }
+
+    /**
+     * Dibujar componentes sobre el canvas (p5.js)
+     */
+    render() {
+        // if (this.cellInspector) this.cellInspector.draw();
     }
 }

@@ -35,6 +35,10 @@ class DNAFactory {
         const level = GameConstants.LUCA_VARIABILITY_LEVEL;
         const config = GameConstants.LUCA_VARIABILITY[level];
 
+        // Get color-specific configuration
+        const colorLevel = GameConstants.LUCA_INITIAL_COLOR_LEVEL || 'MEDIUM';
+        const colorConfig = GameConstants.LUCA_VARIABILITY[colorLevel];
+
         return {
             // Locomotion - EVOLUTIONARY TRAIT
             flagellaLevel: 0,  // All LUCA start without flagella (pure concept)
@@ -43,9 +47,9 @@ class DNAFactory {
             // Visual traits - with configurable variability
             size: random(config.size[0], config.size[1]),
             color: [
-                random(config.color[0][0], config.color[1][0]),
-                random(config.color[0][1], config.color[1][1]),
-                random(config.color[0][2], config.color[1][2])
+                random(colorConfig.color[0][0], colorConfig.color[1][0]),
+                random(colorConfig.color[0][1], colorConfig.color[1][1]),
+                random(colorConfig.color[0][2], colorConfig.color[1][2])
             ],
 
             // EVOLUTIONARY TRAITS (functional) - with configurable variability

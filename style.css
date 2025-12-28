@@ -263,12 +263,17 @@ span {
     z-index: 100;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    /* Changed from center to prevent top cut-off on overflow */
     backdrop-filter: blur(10px);
     overflow-y: auto;
+    padding: 20px 0;
+    /* buffer for scroll */
 }
 
 .config-content {
+    margin: auto;
+    /* Safe vertical centering */
     max-width: 1000px;
     width: 90%;
     padding: 40px;
@@ -458,6 +463,7 @@ span {
     border-color: #FF9800;
     box-shadow: 0 0 20px rgba(255, 152, 0, 0.3);
 }
+
 /* Disabled button states */
 .config-actions button:disabled {
     opacity: 0.5 !important;

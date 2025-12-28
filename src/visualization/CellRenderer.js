@@ -18,21 +18,37 @@ class CellRenderer {
         this.drawOrganelles(entity);
     }
 
-    static drawCellBody(entity, pulse, healthFactor) {
+    static drawCellBody(entity, pulse, healthFactor, overrideAlpha = null) {
         // Get final color with variation (metabolism base + DNA variation)
         let finalColor = ColorSystem.applyColorVariation(
             entity.dna.metabolismType,
             entity.dna.color
         );
 
-        // Color intensity based on metabolic efficiency
-        let efficiencyHue = map(entity.dna.metabolicEfficiency, 0.5, 1.5, 0.6, 1.4);
+        // DEBUG: Force Gray to isolate pigment issues
+        if (GameConstants.DEBUG_DISABLE_PIGMENTS) {
+            finalColor = [200, 200, 200];
+        }
+
+        // Color intensity modifiers
+        let efficiencyHue = 1.0;
+        let healthMultiplier = 1.0;
+
+        if (GameConstants.ENABLE_VISUAL_MODIFIERS) {
+            efficiencyHue = map(entity.dna.metabolicEfficiency, 0.5, 1.5, 0.6, 1.4, true); // Constrain
+            // healthMultiplier = constrain(healthFactor, 0.3, 1.2); // DISABLED: Caused abrupt jumps at mitosis
+            healthMultiplier = 1.0; // Stability preferred by user
+        }
+
+        // Alpha: Use override if provided, otherwise default to 255 (100% opaque)
+        // Previous transparent values caused background bleeding artifacts (green ghost effect).
+        let alpha = overrideAlpha !== null ? overrideAlpha : 255;
 
         fill(
-            finalColor[0] * healthFactor * efficiencyHue,
-            finalColor[1] * healthFactor,
-            finalColor[2] * healthFactor,
-            150
+            finalColor[0] * healthMultiplier * efficiencyHue,
+            finalColor[1] * healthMultiplier * efficiencyHue,
+            finalColor[2] * healthMultiplier * efficiencyHue,
+            alpha
         );
         circle(entity.pos.x, entity.pos.y, entity.dna.size + pulse);
     }
@@ -64,7 +80,10 @@ class CellRenderer {
     }
 
     static drawRibosomes(entity, organelleSize) {
-        fill(255, 255, 255, 180);
+        // DEBUG: Force Gray
+        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(220, 220, 220, 180);
+        else fill(255, 255, 255, 180);
+
         for (let i = 0; i < 3; i++) {
             let angle = (TWO_PI / 3) * i + frameCount * 0.01;
             let radius = entity.dna.size * 0.2;
@@ -75,7 +94,10 @@ class CellRenderer {
     }
 
     static drawHydrogenosomes(entity, organelleSize) {
-        fill(180, 80, 200, 200);
+        // DEBUG: Force Gray
+        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(150, 150, 150, 200);
+        else fill(180, 80, 200, 200);
+
         for (let i = 0; i < 2; i++) {
             let angle = (TWO_PI / 2) * i + frameCount * 0.015;
             let radius = entity.dna.size * 0.25;
@@ -86,7 +108,10 @@ class CellRenderer {
     }
 
     static drawChemosyntheticEnzymes(entity, organelleSize) {
-        fill(200, 220, 100, 200);
+        // DEBUG: Force Gray
+        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(180, 180, 180, 200);
+        else fill(255, 215, 0, 200); // GOLD (Distinct from H2 Green Background)
+
         for (let i = 0; i < 2; i++) {
             let angle = (TWO_PI / 2) * i + PI / 2 + frameCount * 0.015;
             let radius = entity.dna.size * 0.25;

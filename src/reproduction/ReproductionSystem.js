@@ -39,6 +39,9 @@
  */
 class ReproductionSystem {
     static canReproduce(entity) {
+        // 0. Cooldown Check (Cell Cycle)
+        if (entity.reproductionCooldown > 0) return false;
+
         let reproductionThreshold = entity.maxResources * GameConstants.REPRODUCTION_THRESHOLD;
 
         // LUCA needs less nitrogen to reproduce (doesn't use it efficiently)
@@ -114,6 +117,12 @@ class ReproductionSystem {
 
         // Apply construction costs for flagella
         this.applyConstructionCosts(parent, child);
+
+        // SET REPRODUCTION COOLDOWN (Gestation Period)
+        // Both parent and child must wait before dividing again
+        let cooldown = GameConstants.REPRODUCTION_COOLDOWN;
+        parent.reproductionCooldown = cooldown;
+        child.reproductionCooldown = cooldown;
 
         // LOG REPRODUCTION (DatabaseLogger)
         if (window.databaseLogger) {

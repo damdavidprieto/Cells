@@ -63,7 +63,10 @@ class ResourceGrids {
                 // High at bottom, exponentially decreases upward
                 let nitrogenIntensity = 100 * exp(-4 * (1 - depthRatio)); // Inverse of light
                 let nitrogenVariation = noise(i * 0.12 + 2000, j * 0.12 + 2000) * 0.3;
-                grid[i][j] = nitrogenIntensity * (1 + nitrogenVariation);
+
+                // FORCE BASELINE: Ensure minimum oceanic level for survival
+                let finalVal = nitrogenIntensity * (1 + nitrogenVariation);
+                grid[i][j] = Math.max(finalVal, GameConstants.OCEANIC_NITROGEN || 50);
             }
         }
         return grid;
@@ -84,7 +87,10 @@ class ResourceGrids {
                 // Critical for DNA/RNA, extremely limited resource
                 let phosphorusIntensity = 80 * exp(-6 * (1 - depthRatio)); // Steeper gradient than nitrogen
                 let phosphorusVariation = noise(i * 0.08 + 3000, j * 0.08 + 3000) * 0.4;
-                grid[i][j] = phosphorusIntensity * (1 + phosphorusVariation);
+
+                // FORCE BASELINE: Ensure minimum oceanic level for survival
+                let finalVal = phosphorusIntensity * (1 + phosphorusVariation);
+                grid[i][j] = Math.max(finalVal, GameConstants.OCEANIC_PHOSPHORUS || 50);
             }
         }
         return grid;

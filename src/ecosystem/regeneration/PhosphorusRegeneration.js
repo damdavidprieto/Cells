@@ -221,40 +221,15 @@ class PhosphorusRegeneration {
                     let depthRatio = j / environment.rows;
                     let maxPhosphorus = 80 * exp(-6 * (1 - depthRatio));
 
-                    // 3. VERIFICAR SI NECESITA REGENERACIÓN
-                    // ¿Qué hace?: Solo regenera si P está por debajo del máximo
-                    // ¿Por qué?: Evita acumulación infinita
-                    // Efecto en juego: P se regenera hasta alcanzar equilibrio
-                    if (environment.phosphorusGrid[i][j] < maxPhosphorus) {
+                    // 3. CONTINUOUS HYDROTHERMAL FLUX (VENTS)
+                    // Replaced stochastic weathering (too slow) with constant flux
+                    // Uses GameConstants.VENT_PHOSPHORUS_FLUX (0.5/frame)
+                    // Cap at PHOSPHORUS_GRID_MAX (200)
+                    environment.phosphorusGrid[i][j] += GameConstants.VENT_PHOSPHORUS_FLUX;
+                    environment.phosphorusGrid[i][j] = min(environment.phosphorusGrid[i][j], GameConstants.PHOSPHORUS_GRID_MAX);
 
-                        // 4. PROBABILIDAD DE METEORIZACIÓN (1%)
-                        // ¿Qué hace?: Solo regenera 1% de las veces
-                        // ¿Por qué?: Meteorización es MUY lenta (escala geológica)
-                        // Tasa efectiva: 0.15 × 0.01 = 0.0015 P/frame
-                        // 
-                        // NOTA CIENTÍFICA:
-                        // Meteorización real: millones de años
-                        // Simulación: comprimida a frames
-                        // 1% probabilidad simula proceso muy lento
-                        // 
-                        // ⚠️ PROBLEMA:
-                        // Tasa demasiado baja sin reciclaje biológico
-                        // Consumo (0.3/frame) >> Producción (0.0015/frame)
-                        // Ratio: 200:1 (insostenible)
-                        // BALANCE FIX: Increased from 1% to 2% and amount from 0.15 to 0.3
-                        // Tasa efectiva: 0.3 × 0.02 = 0.006 P/frame (4x original 0.0015)
-                        if (random(1) < 0.02) {  // 2% (was 1%)
-
-                            // BALANCE FIX: Doubled amount for viable LUCA environment
-                            environment.phosphorusGrid[i][j] += 0.3;  // 2x (was 0.15)
-
-                            // EFECTO EN JUEGO:
-                            // - P aumenta MUY lentamente en sedimento
-                            // - Insuficiente para sostener población sin reciclaje
-                            // - Células deben competir intensamente por P
-                            // - Presión evolutiva para eficiencia en uso de P
-                        }
-                    }
+                    // REMOVED: Probabilistic Weathering (was 2% chance of 0.3)
+                    // The old method yielding 0.006 P/frame effectively sterilized the colony.
                 }
             }
         }

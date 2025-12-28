@@ -92,19 +92,7 @@ class Environment {
         this.temperatureGrid = PhysicalGrids.initializeTemperature(this.cols, this.rows, this.resolution);
     }
 
-    // Force ideal conditions at a specific location (for Single Cell Analysis)
-    forceIdealConditions(x, y) {
-        let col = floor(x / this.resolution);
-        let row = floor(y / this.resolution);
 
-        if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
-            // Apply based on SCENARIO if defined
-            this.applyScenario(col, row);
-
-            // Log for verification
-            console.log(`[Environment] Conditions forced at ${col},${row} for scenario: ${GameConstants.SCENARIO}`);
-        }
-    }
 
     applyScenario(col, row) {
         const scenario = GameConstants.SCENARIO || 'STANDARD';
@@ -118,18 +106,24 @@ class Environment {
 
         switch (scenario) {
             case 'PRESSURE_OXYGEN':
-                // High Oxygen everywhere to force SOD evolution
-                // Surround the cell with toxic O2
+                // THE GREAT OXIDATION EVENT (Simulated)
+                // Start: O2 = 5 (Safe/Anaerobic-friendly) everywhere
+                // End: O2 = 35 (Highly Toxic) everywhere
+                // Rate: Rise over ~10 minutes (36,000 frames @ 60fps) to allow evolution
+
+                // 1. Initialize Safe Baseline
                 for (let i = 0; i < this.cols; i++) {
                     for (let j = 0; j < this.rows; j++) {
-                        this.oxygenGrid[i][j] = GameConstants.OXYGEN_TOXIC_THRESHOLD * 1.5;
+                        this.oxygenGrid[i][j] = 5.0;
                     }
                 }
-                // Leave a tiny safe bubble? No, pressure must be immediate but survivable?
-                // Actually LUCA starts with some O2 tolerance (10), Toxic is 20.
-                // Let's set it to 15 (Stressful) - 25 (Lethal).
-                this.oxygenGrid[col][row] = 12; // Mild stress locally
-                console.log("⚠️ Applied PRESSURE_OXYGEN: Global O2 toxicity spike.");
+
+                // 2. Enable Progressive Rise Flag
+                this.progressiveOxygenEnabled = true;
+                this.oxygenRiseRate = 0.0005; // +1.0 O2 every ~2000 frames (33 secs)
+                this.maxOxygenEvent = 40.0;   // Cap at extreme toxicity
+
+                console.log("⚠️ Applied PRESSURE_OXYGEN: Starting Great Oxidation Event (Progressive Rise).");
                 break;
 
             case 'PRESSURE_LIGHT':
@@ -174,6 +168,12 @@ class Environment {
     update() {
         // Regenerate resources using modular classes
         // This replaces 60+ lines of regeneration code with clean module calls
+        // 1. Regenerate Resources
+        // Apply Progressive Oxygen Event (if enabled)
+        if (this.progressiveOxygenEnabled) {
+            this.applyProgressiveOxygenRise();
+        }
+
         GridRegeneration.regenerateLight(this);
         GridRegeneration.regenerateNitrogen(this);
         GridRegeneration.regeneratePhosphorus(this);
@@ -198,14 +198,8 @@ class Environment {
         }
 
         // FORCE IDEAL CONDITIONS (Single Cell Mode only)
-        // Keeps resources maxed out around the single cell to separate
-        // metabolic analysis from resource depletion mechanics
-        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' &&
-            GameConstants.SINGLE_CELL_MODE.FORCE_IDEAL_CONDITIONS &&
-            window.entities && window.entities.length > 0) {
-            let cell = window.entities[0];
-            this.forceIdealConditions(cell.pos.x, cell.pos.y);
-        }
+        // DISABLED: User requested to match Development mode behavior (no artificial survival)
+        // (Logic removed)
 
         // LOGGING: Environmental Stats (Diffusion verification)
         if (typeof frameCount !== 'undefined' &&
@@ -244,9 +238,10 @@ class Environment {
                 // 2. Resource Overlay (Additive Blending)
 
                 // H2 (Vents) - Green Glow
+                // Tuned down to avoid artifacting/saturation in Single Cell Mode
                 let h2Val = this.h2Grid[x][y];
                 if (h2Val > 10) {
-                    let intensity = map(h2Val, 10, 200, 0, 150);
+                    let intensity = map(h2Val, 10, 250, 0, 120, true);
                     r += 0; g += intensity; b += 0;
                 }
 
@@ -552,6 +547,26 @@ class Environment {
             max: max,
             min: min
         };
+    }
+
+    applyProgressiveOxygenRise() {
+        // Increment ALL grid cells by the rise rate
+        // This simulates atmospheric accumulation
+        let maxReached = true;
+
+        for (let i = 0; i < this.cols; i++) {
+            for (let j = 0; j < this.rows; j++) {
+                if (this.oxygenGrid[i][j] < this.maxOxygenEvent) {
+                    this.oxygenGrid[i][j] += this.oxygenRiseRate;
+                    maxReached = false;
+                }
+            }
+        }
+
+        // Periodic Log (every ~10 seconds)
+        if (frameCount % 600 === 0 && !maxReached) {
+            console.log(`[GOE] Global Oxygen Rising: ${this.oxygenGrid[10][10].toFixed(2)} (Target: ${this.maxOxygenEvent})`);
+        }
     }
 
     getAverageAtRow(grid, rowIdx) {

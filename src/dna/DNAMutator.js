@@ -285,6 +285,11 @@ class DNAMutator {
         let mr = dna.mutationRate;
 
         for (let [name, data] of Object.entries(dna.metabolisms)) {
+            // CHECK FLAGS: Skip mutation if evolution is disabled
+            if (name === 'chemosynthesis' && !GameConstants.ENABLE_CHEMOSYNTHESIS) continue;
+            if (name === 'fermentation' && !GameConstants.ENABLE_FERMENTATION) continue;
+            if (name === 'anoxigenicPhotosynthesis' && !GameConstants.ENABLE_PHOTOSYNTHESIS) continue;
+            if (name === 'oxigenicPhotosynthesis' && !GameConstants.ENABLE_PHOTOSYNTHESIS) continue;
             // Apply drift: +/- small amount (e.g. 0.02)
             // Evolution can push improved efficiency OR degradation (atrophy)
             let drift = random(-GameConstants.METABOLIC_DRIFT_RANGE * mr, GameConstants.METABOLIC_DRIFT_RANGE * mr);

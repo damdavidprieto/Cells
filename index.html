@@ -33,7 +33,7 @@
             console.error('Unhandled Rejection:', event.reason);
         });
     </script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
     <!-- Librería Gráfica (p5.js) -->
@@ -53,64 +53,78 @@
     <!-- ========================================== -->
 
     <!-- 1. Configuración Global -->
-    <script src="src/utils/Constants.js"></script>
+    <!-- 1. Configuración Global -->
+    <script>
+        document.write('<script src="src/utils/Constants.js?v=' + Date.now() + '"><\/script>');
+    </script>
 
     <!-- 2. Utilidades y Logs -->
-    <script src="src/logging/CircuitFilter.js"></script>
-    <script src="src/logging/ReproductionIndexCalculator.js"></script>
-    <script src="src/logging/DatabaseLogger.js"></script> <!-- NEW: IndexedDB logging system -->
+    <!-- 2. Dynamic Script Loader (Cache Buster) -->
+    <script>
+        const scripts = [
+            // Utils & Logging
+            'src/logging/CircuitFilter.js',
+            'src/logging/ReproductionIndexCalculator.js',
+            'src/logging/DatabaseLogger.js',
 
-    <!-- 3. Núcleo Genético y Celular -->
-    <script src="src/dna/DNAFactory.js"></script>
-    <script src="src/dna/DNAMutator.js"></script>
-    <script src="src/dna/GeneticDistance.js"></script>
+            // DNA & Genetics
+            'src/dna/DNAFactory.js',
+            'src/dna/DNAMutator.js',
+            'src/dna/GeneticDistance.js',
 
-    <!-- Organelles (Modular System) -->
-    <script src="src/organelles/Organelle.js"></script>
-    <script src="src/organelles/Ribosome.js"></script>
-    <script src="src/organelles/Flagellum.js"></script>
-    <script src="src/organelles/Hydrogenosome.js"></script>
-    <script src="src/organelles/ChemosyntheticEnzymes.js"></script>
+            // Organelles
+            'src/organelles/Organelle.js',
+            'src/organelles/Ribosome.js',
+            'src/organelles/Flagellum.js',
+            'src/organelles/Hydrogenosome.js',
+            'src/organelles/ChemosyntheticEnzymes.js',
 
-    <!-- Sistemas Celulares -->
-    <script src="src/cellular_systems/FlagellaCosts.js"></script>
-    <script src="src/cellular_systems/MetabolicCosts.js"></script>
-    <script src="src/cellular_systems/ResourceConsumption.js"></script>
-    <script src="src/cellular_systems/MembraneSystem.js"></script>
-    <script src="src/cellular_systems/ColorSystem.js"></script>
-    <script src="src/cellular_systems/OxygenTolerance.js"></script>
-    <script src="src/cellular_systems/ThermalStress.js"></script>
-    <!-- Reproducción -->
-    <script src="src/reproduction/ReproductionSystem.js"></script>
+            // Cellular Systems
+            'src/cellular_systems/FlagellaCosts.js',
+            'src/cellular_systems/MetabolicCosts.js',
+            'src/cellular_systems/ResourceConsumption.js',
+            'src/cellular_systems/MembraneSystem.js',
+            'src/cellular_systems/ColorSystem.js',
+            'src/cellular_systems/OxygenTolerance.js',
+            'src/cellular_systems/ThermalStress.js',
+            'src/reproduction/ReproductionSystem.js',
 
-    <!-- 4. Ecosistema y Visualización -->
-    <script src="src/visualization/CellRenderer.js"></script>
+            // Visualization
+            'src/visualization/CellRenderer.js',
+            'src/visualization/SpeciesNotifier.js',
 
-    <script src="src/visualization/SpeciesNotifier.js"></script>
-    <!-- <script src="src/visualization/DevelopmentMonitor.js"></script> REMOVED: File does not exist -->
-    <!-- Grids y Regeneración -->
-    <script src="src/ecosystem/utils/GridUtils.js"></script>
-    <script src="src/ecosystem/grids/ResourceGrids.js"></script>
-    <script src="src/ecosystem/grids/ChemicalGrids.js"></script>
-    <script src="src/ecosystem/grids/PhysicalGrids.js"></script>
-    <script src="src/ecosystem/regeneration/GridRegeneration.js"></script>
-    <script src="src/ecosystem/regeneration/OxygenRegeneration.js"></script>
-    <script src="src/ecosystem/regeneration/PhosphorusRegeneration.js"></script>
-    <!-- Reservoir System (Infinite Pools) -->
-    <script src="src/ecosystem/reservoirs/ReservoirSystem.js"></script>
-    <script src="src/ecosystem/DiffusionSystem.js"></script> <!-- NEW: Diffusion Mechanics -->
-    <script src="src/ecosystem/Environment.js"></script>
-    <script src="src/core/Entity.js"></script>
+            // Ecosystem
+            'src/ecosystem/utils/GridUtils.js',
+            'src/ecosystem/grids/ResourceGrids.js',
+            'src/ecosystem/grids/ChemicalGrids.js',
+            'src/ecosystem/grids/PhysicalGrids.js',
+            'src/ecosystem/regeneration/GridRegeneration.js',
+            'src/ecosystem/regeneration/OxygenRegeneration.js',
+            'src/ecosystem/regeneration/PhosphorusRegeneration.js',
+            'src/ecosystem/reservoirs/ReservoirSystem.js',
+            'src/ecosystem/DiffusionSystem.js',
+            'src/ecosystem/Environment.js',
+            'src/core/Entity.js',
 
-    <!-- 5. Interfaz de Usuario (Componentes) -->
-    <script src="src/ui/components/ConfigScreen.js"></script>
-    <script src="src/ui/components/StatsPanel.js"></script>
-    <script src="src/ui/components/Legend.js"></script>
-    <script src="src/ui/UIManager.js"></script>
+            // UI Components
+            'src/ui/components/ConfigScreen.js',
+            'src/ui/components/StatsPanel.js',
+            'src/ui/components/CellInspector.js',
+            'src/ui/components/Legend.js',
+            'src/ui/UIManager.js',
 
-    <!-- 6. Control del Juego -->
-    <script src="src/core/GameController.js"></script>
-    <script src="src/core/Sketch.js"></script>
+            // Core Game Loop
+            'src/core/GameGovernor.js',
+            'src/core/GameController.js',
+            'src/core/Sketch.js'
+        ];
+
+        // Load all scripts with unique timestamp
+        const v = Date.now();
+        scripts.forEach(src => {
+            document.write('<script src="' + src + '?v=' + v + '"><\/script>');
+        });
+    </script>
 </body>
 
 </html>
