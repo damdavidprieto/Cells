@@ -110,7 +110,14 @@ class ReservoirSystem {
 
             // ===== OXYGEN DIFFUSION =====
             // Atmosphere → Water surface
-            let atmosphereO2 = GameConstants.ATMOSPHERIC_O2;  // Infinite (constant)
+            let atmosphereO2 = GameConstants.ATMOSPHERIC_O2;  // Default: Infinite (constant) trace
+
+            // SCENARIO OVERRIDE: Great Oxidation Event
+            // Atmosphere also becomes oxygenated, preventing it from acting as a sink (vacuum)
+            if (GameConstants.SCENARIO === 'PRESSURE_OXYGEN') {
+                atmosphereO2 = environment.maxOxygenEvent || 40.0;
+            }
+
             let waterO2 = environment.oxygenGrid[i][waterSurfaceRow];
             let o2Gradient = atmosphereO2 - waterO2;
             let o2Flux = GameConstants.ATMOSPHERE_O2_DIFFUSION * o2Gradient;

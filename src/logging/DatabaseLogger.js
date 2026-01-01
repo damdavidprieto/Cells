@@ -45,7 +45,7 @@ class DatabaseLogger {
         }
 
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open('CellsDevLogs', 1);
+            const request = indexedDB.open('CellsDevLogs', 2); // Bump version to force schema update
 
             request.onerror = () => {
                 console.error('[DatabaseLogger] Error opening database:', request.error);
@@ -57,8 +57,8 @@ class DatabaseLogger {
                 this.initialized = true;
                 console.log('[DatabaseLogger] Database initialized successfully');
 
-                // Registrar el inicio de esta ejecución
-                this.startRun();
+                this.initialized = true;
+                console.log('[DatabaseLogger] Database initialized successfully');
                 resolve();
             };
 
@@ -212,6 +212,22 @@ class DatabaseLogger {
             births: stats.births || 0,
             avg_energy: stats.avg_energy || 0,
             species_count: stats.species_count || 0,
+
+            // New Evolutionary Metrics
+            avg_sod: stats.avg_sod || 0,
+            avg_repair: stats.avg_repair || 0,
+            avg_damage: stats.avg_structural_damage || 0, // Legacy support (mapped to structural)
+
+            // Detailed Damage Breakdown
+            avg_structural_damage: stats.avg_structural_damage || 0,
+            avg_oxidative_damage: stats.avg_oxidative_damage || 0,
+            avg_uv_damage: stats.avg_uv_damage || 0,
+
+            // FORENSIC METRICS (Critical for Debugging)
+            env_max_oxygen: stats.env_max_oxygen || 0,
+            victims_oxidative: stats.victims_oxidative || 0,
+            victims_uv: stats.victims_uv || 0,
+
             timestamp: new Date().toISOString()
         };
 

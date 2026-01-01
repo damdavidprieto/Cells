@@ -136,11 +136,24 @@ function draw() {
             const avgEnergy = activePopulation > 0 ? (totalEnergy / activePopulation) : 0;
 
             game.databaseLogger.logFrameStats(frameCount, {
-                population: activePopulation, // Log active population
+                population: activePopulation,
                 deaths: deathCountThisFrame,
                 births: 0,
                 avg_energy: avgEnergy,
-                species_count: stats.speciesCount
+                species_count: stats.speciesCount,
+                // Pass evolutionary metrics calculated above
+                avg_sod: stats.avg_sod,
+                avg_repair: stats.avg_repair,
+                avg_damage: stats.avg_structural_damage,
+                // Pass detailed damage breakdown
+                // Pass detailed damage breakdown
+                avg_structural_damage: stats.avg_structural_damage,
+                avg_oxidative_damage: stats.avg_oxidative_damage,
+                avg_uv_damage: stats.avg_uv_damage,
+                // FORENSIC METRICS
+                env_max_oxygen: stats.maxOxygen,
+                victims_oxidative: stats.oxidative_victims,
+                victims_uv: stats.uv_victims
             });
         }
     }
@@ -170,23 +183,59 @@ function getDeathCause(e) {
 function calculateStats(env, ents) {
     let totalLight = 0, totalOx = 0, totalNi = 0, totalPh = 0;
 
-    // Sumar recursos (optimizable, pero ok para esta escala)
-    for (let i = 0; i < env.cols; i++) {
-        for (let j = 0; j < env.rows; j++) {
-            totalLight += env.lightGrid[i][j];
-            totalOx += env.oxygenGrid[i][j];
-            totalNi += env.nitrogenGrid[i][j];
-            totalPh += env.phosphorusGrid[i][j];
+    // Calculate Environment Totals (Grid Iteration)
+    let maxOx = 0;
+    for (let x = 0; x < env.cols; x++) {
+        for (let y = 0; y < env.rows; y++) {
+            totalLight += env.lightGrid[x][y];
+            totalOx += env.oxygenGrid[x][y];
+            if (env.oxygenGrid[x][y] > maxOx) maxOx = env.oxygenGrid[x][y];
+            totalNi += env.nitrogenGrid[x][y];
+            totalPh += env.phosphorusGrid[x][y];
         }
     }
+
+    // Calculate Averages for UI readability
+    let totalCells = env.cols * env.rows;
+    let avgLight = totalLight / totalCells;
+    let avgOx = totalOx / totalCells;
+    let avgNi = totalNi / totalCells;
+    let avgPh = totalPh / totalCells;
+
+
 
     let metaCounts = { luca: 0, fermentation: 0, chemosynthesis: 0 };
     let speciesSet = new Set();
 
+    // Evolutionary Health Metrics
+    let totalSOD = 0;
+    let totalRepair = 0;
+    let totalStructuralDamage = 0;
+    let totalOxidativeDamage = 0;
+    let totalUVDamage = 0;
+
+    // Forensic Counts (Victims per frame)
+    let oxidativeVictims = 0;
+    let uvVictims = 0;
+
     for (let e of ents) {
         metaCounts[e.dna.metabolismType]++;
         speciesSet.add(e.dna.metabolismType);
+
+        totalSOD += e.dna.sodEfficiency || 0;
+        totalRepair += e.dna.dnaRepairEfficiency || 0;
+        totalStructuralDamage += e.structuralDamage || 0;
+
+        let oxDmg = e.oxidativeDamage || 0;
+        totalOxidativeDamage += oxDmg;
+        if (oxDmg > 0) oxidativeVictims++;
+
+        let uvDmg = e.uvDamageFrame || 0;
+        totalUVDamage += uvDmg;
+        if (uvDmg > 0) uvVictims++;
     }
+
+    let popSize = ents.length > 0 ? ents.length : 1; // Avoid division by zero
 
     return {
         entityCount: ents.length,
@@ -194,9 +243,20 @@ function calculateStats(env, ents) {
         lucaCount: metaCounts.luca,
         fermentationCount: metaCounts.fermentation,
         chemosynthesisCount: metaCounts.chemosynthesis,
-        totalOxygen: totalOx,
-        totalNitrogen: totalNi,
-        totalPhosphorus: totalPh
+        totalOxygen: avgOx,  // Returning AVERAGE for UI display (0-100 scale)
+        maxOxygen: maxOx,    // FORENSIC: Peak O2 level
+        totalNitrogen: avgNi,
+        totalPhosphorus: avgPh,
+
+        // New Evolutionary Metrics
+        avg_sod: totalSOD / popSize,
+        avg_repair: totalRepair / popSize,
+        avg_structural_damage: totalStructuralDamage / popSize, // Total health lost
+        avg_oxidative_damage: totalOxidativeDamage / popSize,   // Damage from Oxygen (per frame)
+        avg_uv_damage: totalUVDamage / popSize,                  // Damage from UV (per frame)
+        // FORENSIC COUNTS
+        oxidative_victims: oxidativeVictims,
+        uv_victims: uvVictims
     };
 }
 
@@ -230,7 +290,22 @@ function handleLogging(game, e, child, frameCount) {
             position: { x: child.pos.x, y: child.pos.y },
             dna: child.dna,
             parent_id: e.id,
-            sod: child.sodProtein // Log vital stat
+            sod: child.sodProtein, // Log vital stat
+            // FORENSIC DATA:
+            energy: child.energy,
+            oxygen: child.oxygen,
+            maxResources: child.maxResources
         });
     }
+}
+
+/**
+ * Helper to safely extract death cause
+ */
+function getDeathCause(e) {
+    if (e.deathCause) return e.deathCause;
+    // Fallback if not set (should not happen with new checkDeath)
+    if (e.energy <= 0) return 'energy_depletion_unknown';
+    if (e.structuralDamage >= 100) return 'structural_failure_unknown';
+    return 'unknown_cause';
 }

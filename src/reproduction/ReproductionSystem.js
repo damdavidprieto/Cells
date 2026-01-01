@@ -42,6 +42,11 @@ class ReproductionSystem {
         // 0. Cooldown Check (Cell Cycle)
         if (entity.reproductionCooldown > 0) return false;
 
+        // 1. ABSOLUTE SURVIVAL BUFFER (Suicide Prevention)
+        // Prevent rich cells (spawned with 500 energy) from splitting immediately.
+        // Must reserve 300 energy for exploration/survival.
+        if (entity.energy < 300) return false;
+
         let reproductionThreshold = entity.maxResources * GameConstants.REPRODUCTION_THRESHOLD;
 
         // LUCA needs less nitrogen to reproduce (doesn't use it efficiently)

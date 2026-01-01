@@ -37,6 +37,7 @@ class Entity {
         // SOD (Superoxide Dismutase) - Oxygen tolerance system
         this.sodProtein = 0.5;  // Current SOD level (0.0 - 1.0)
         this.oxidativeDamage = 0;  // accumulated damage in this frame
+        this.uvDamageFrame = 0;    // accumulated UV damage in this frame
         this.structuralDamage = 0; // NEW: Cumulative Structural Integrity (0-100)
 
         // ORGANELL SYSTEM INTEGRATION
@@ -79,6 +80,10 @@ class Entity {
     }
 
     update(environment) {
+        // Reset per-frame stats
+        this.uvDamageFrame = 0;
+        this.oxidativeDamage = 0;
+
         // Apply natural movement behavior (Chemotaxis + Random Walk)
         this.applyNaturalBehavior(environment);
 
@@ -111,6 +116,9 @@ class Entity {
         if (GameConstants.UV_RADIATION_ENABLED) {
             this.applyUVDamage(environment);
         }
+
+        // Apply Oxygen Toxicity (Oxidative Stress)
+        this.applyOxygenDamage(environment);
 
         // Check death
         this.checkDeath();
@@ -204,8 +212,14 @@ class Entity {
     applyRepair() {
         if (this.structuralDamage <= 0) return;
 
-        // Repair Capacity depends on DNA trait (Repair Efficiency)
-        // Reduced by thermal stress (proteins denature)
+        // SCIENTIFIC BASIS: Maintenance Energy (Pirt, 1965)
+        // ------------------------------------------------
+        // Cells dedicate a portion of energy "m" to maintenance functions (turnover, repair, gradients).
+        // This cost is prioritized over growth and reproduction.
+        // Under stress (oxidative damage), "m" increases, potentially consuming all energy uptake.
+
+        // Repair Capacity (Michaelis-Menten Kinetics)
+        // Limited by enzyme concentration (RecA, UvrABCD)
         let repairEfficiency = this.dna.dnaRepairEfficiency || 0.5;
         let baseSpeed = GameConstants.BASE_REPAIR_SPEED || 0.1;
 
@@ -214,9 +228,7 @@ class Entity {
         // Cap repair at current damage (can't repair what's not broken)
         let damageToFix = Math.min(this.structuralDamage, repairCapacity);
 
-        // Calculate Energy Cost
-        // More efficient repair systems might cost less energy per point? 
-        // For now, fixed cost per point of damage
+        // Calculate Energy Cost (High thermodynamic cost of re-synthesis)
         let energyCost = damageToFix * GameConstants.REPAIR_ENERGY_COST;
 
         if (this.energy >= energyCost) {
@@ -239,14 +251,24 @@ class Entity {
         // Death if ANY critical resource runs out
         if (this.energy <= 0) {
             this.isDead = true;
-            this.deathCause = 'energy_depletion';
+            // FORENSIC DIAGNOSIS: Why did energy run out?
+            // If we are taking oxidative damage, we likely went bankrupt paying for repair.
+            if (this.oxidativeDamage > 0) {
+                this.deathCause = 'energy_depletion_repair_bankruptcy';
+            } else {
+                this.deathCause = 'energy_depletion_starvation';
+            }
             return;
         }
 
         if (this.oxygen <= 0) {
-            this.isDead = true;
-            this.deathCause = 'oxygen_depletion';
-            return;
+            // Anaerobic cells (LUCA) do NOT need internal oxygen stores to survive
+            // Only Aerobic cells (respiration) die if they run out of O2
+            if (this.dna.metabolismType !== 'luca' && this.dna.metabolismType !== 'fermentation') {
+                this.isDead = true;
+                this.deathCause = 'oxygen_depletion';
+                return;
+            }
         }
 
         if (this.nitrogen <= 0) {
@@ -264,7 +286,14 @@ class Entity {
         // NEW: Structural Failure (Lysis)
         if (this.structuralDamage >= GameConstants.MAX_STRUCTURAL_DAMAGE) {
             this.isDead = true;
-            this.deathCause = 'structural_failure'; // Lysis due to oxidative stress/UV
+            // FORENSIC DIAGNOSIS: What broke the cell?
+            if (this.oxidativeDamage > this.uvDamageFrame) {
+                this.deathCause = 'structural_failure_oxidative';
+            } else if (this.uvDamageFrame > 0) {
+                this.deathCause = 'structural_failure_uv';
+            } else {
+                this.deathCause = 'structural_failure_accumulation'; // General decay
+            }
         }
     }
 
@@ -382,40 +411,65 @@ class Entity {
     }
 
     applyUVDamageEffect(effectiveUV) {
-        // 1. ENERGY COST for cellular repair
-        let baseCost = map(
+        // 1. Calculate Damage Amount
+        // Mapping UV intensity to structural damage points
+        let baseDamage = map(
             effectiveUV,
             0, GameConstants.UV_SURFACE_INTENSITY,
-            0, GameConstants.UV_REPAIR_COST_MAX
+            0, 5.0 // Max 5 damage points per hit
         );
 
-        // DNA repair efficiency reduces cost
-        // High efficiency = cheaper repair
-        let repairCost = baseCost / this.dna.dnaRepairEfficiency;
-        this.energy -= repairCost;
+        // 2. DNA Repair Efficiency mitigates INITIAL damage impact
+        // (Resistance before it even becomes structural damage)
+        let resistFactor = this.dna.dnaRepairEfficiency || 0.5;
+        let actualDamage = baseDamage * (1.0 - (resistFactor * 0.5)); // Max 50% mitigation
 
-        // LOG UV DAMAGE (development mode)
-        if (typeof developmentMonitor !== 'undefined' && GameConstants.getCurrentMode().LOG_UV_DAMAGE) {
-            // REMOVED (DevelopmentMonitor deprecated)
-        }
+        // 3. Add to Structural Integrity System
+        // Instead of just costing energy, it now threatens Lysis
+        this.structuralDamage += actualDamage;
+        this.uvDamageFrame = actualDamage; // Track for statistics
 
-        // 2. IMPERFECT REPAIR may cause mutations
-        // Low repair efficiency = more likely to cause mutations
+        // 4. Mutation Risk (Kept separate)
         if (random(1) > this.dna.dnaRepairEfficiency) {
             this.uvMutationPending = true;
-
-            // LOG UV MUTATION
-            // REMOVED (DevelopmentMonitor deprecated)
         }
 
-        // 3. LETHAL DAMAGE (rare but possible)
-        if (effectiveUV > GameConstants.UV_LETHAL_THRESHOLD &&
-            random(1) < GameConstants.UV_LETHAL_CHANCE) {
-            this.isDead = true;
-            this.deathCause = 'UV_RADIATION';
+        // Removed: Direct Energy Cost (Now handled by applyRepair() in main loop)
+        // Removed: Instant UV Death (Now handled by checkDeath via structural_failure)
+    }
 
-            // LOG UV DEATH
-            // REMOVED (DevelopmentMonitor deprecated)
+    // OXYGEN TOXICITY SYSTEM
+    // Simulates oxidative stress from O2 radicals
+    applyOxygenDamage(environment) {
+        // Calculate damage based on O2 level and SOD efficiency
+        let damage = OxygenTolerance.calculateOxidativeDamage(this, environment);
+
+        if (damage > 0) {
+            this.structuralDamage += damage;
+
+            // FORENSIC TRACE: Log mechanism details for Sentinel Cell 0
+            if (this.id === 0 && GameConstants.DEBUG_OXYGEN_DAMAGE && window.databaseLogger) {
+                // Get local chemicals 
+                let o2 = environment.getOxygenLevel(this.pos.x, this.pos.y);
+                window.databaseLogger.logCellEvent(frameCount, 'damage_trace', this.id, {
+                    o2_level: o2,
+                    threshold: GameConstants.OXYGEN_SAFE_THRESHOLD,
+                    excess: o2 - GameConstants.OXYGEN_SAFE_THRESHOLD,
+                    sod: this.dna.sodEfficiency,
+                    damage_amount: damage,
+                    structural_total: this.structuralDamage,
+                    energy: this.energy // To see if repair can pay for it
+                });
+            }
+
+            // High oxidative stress can also cause mutations (DNA damage)
+            // Mutation chance proportional to damage magnitude
+            if (random(1) < damage * 0.1) {
+                this.uvMutationPending = true; // Use same flag as UV for DNA damage
+            }
         }
+
+        // Update SOD levels to adapt to current pressure
+        OxygenTolerance.updateSODLevels(this);
     }
 }

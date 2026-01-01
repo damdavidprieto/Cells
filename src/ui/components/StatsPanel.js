@@ -33,6 +33,9 @@ class StatsPanel {
         <p>Oxígeno: <span id="oxygen-count">0</span></p>
         <p>Nitrógeno: <span id="nitrogen-count">0</span></p>
         <p>Fósforo: <span id="phosphorus-count">0</span></p>
+        
+        <p style="margin-top: 15px;"><strong>Evolución</strong></p>
+        <p>SOD Medio: <span id="sod-count">0</span></p>
     </div>
 </div>`;
 
@@ -74,13 +77,46 @@ class StatsPanel {
         this.setSafeText('luca-count', stats.lucaCount);
         this.setSafeText('fermentation-count', stats.fermentationCount);
         this.setSafeText('chemosynthesis-count', stats.chemosynthesisCount);
-        this.setSafeText('oxygen-count', Math.floor(stats.totalOxygen));
-        this.setSafeText('nitrogen-count', Math.floor(stats.totalNitrogen));
-        this.setSafeText('phosphorus-count', Math.floor(stats.totalPhosphorus));
+        // Resources are now passed as AVERAGES (floats), so we need decimals
+        let o2Val = typeof stats.totalOxygen === 'number' ? stats.totalOxygen : 0;
+
+        // SEMÁFORO DE LETALIDAD (O2)
+        // SEMÁFORO DE LETALIDAD (O2)
+        let semaphor = '🟢'; // Safe (<10)
+        let title = 'Tolerable (Safe Zone)';
+
+        if (o2Val >= 20) {
+            semaphor = '<span style="color: #ff3333; text-shadow: 0 0 5px red;">🔴 LETHAL</span>';
+            title = 'STERILIZATION ZONE';
+        } else if (o2Val >= 10) {
+            semaphor = '<span style="color: #ffaa00; text-shadow: 0 0 5px orange;">🟠 WARNING</span>';
+            title = 'Adaptation Required';
+        } else {
+            semaphor = '<span style="color: #33ff33; text-shadow: 0 0 5px green;">🟢 SAFE</span>';
+        }
+
+        this.setSafeTextHTML('oxygen-count', `${o2Val.toFixed(2)} ${semaphor}`);
+
+        // Optional: Update tooltip or title if possible, but innerText is simple
+        const o2El = document.getElementById('oxygen-count');
+        if (o2El) o2El.title = title;
+
+        this.setSafeText('nitrogen-count', typeof stats.totalNitrogen === 'number' ? stats.totalNitrogen.toFixed(2) : '0.00');
+        this.setSafeText('phosphorus-count', typeof stats.totalPhosphorus === 'number' ? stats.totalPhosphorus.toFixed(2) : '0.00');
+
+        // New: Average SOD
+        // New: Average SOD
+        let sodVal = typeof stats.avg_sod === 'number' ? stats.avg_sod : 0;
+        this.setSafeText('sod-count', (sodVal * 100).toFixed(1) + '%');
     }
 
     setSafeText(id, value) {
         const el = document.getElementById(id);
         if (el) el.innerText = value;
+    }
+
+    setSafeTextHTML(id, html) {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
     }
 }

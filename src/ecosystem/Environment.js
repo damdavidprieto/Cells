@@ -95,23 +95,18 @@ class Environment {
 
 
     applyScenario(col, row) {
-        const scenario = GameConstants.SCENARIO || 'STANDARD';
+        // Apply per-cell overrides if needed (mostly legacy or specific injections)
+        // Currently, most scenarios are global.
+    }
 
-        // Base Ideal Conditions (STANDARD)
-        // High H2 for LUCA, decent resources
-        this.h2Grid[col][row] = GameConstants.H2_GRID_MAX; // Max Energy
-        this.co2Grid[col][row] = GameConstants.CO2_MAX_ACCUMULATION; // Max Carbon
-        this.phosphorusGrid[col][row] = 100; // Abundant
-        this.nitrogenGrid[col][row] = 100; // Abundant
+    initializeScenario() {
+        const scenario = GameConstants.SCENARIO || 'STANDARD';
+        console.log(`[Environment] Initializing Scenario: ${scenario}`);
 
         switch (scenario) {
             case 'PRESSURE_OXYGEN':
                 // THE GREAT OXIDATION EVENT (Simulated)
-                // Start: O2 = 5 (Safe/Anaerobic-friendly) everywhere
-                // End: O2 = 35 (Highly Toxic) everywhere
-                // Rate: Rise over ~10 minutes (36,000 frames @ 60fps) to allow evolution
-
-                // 1. Initialize Safe Baseline
+                // 1. Initialize Safe Baseline (Global)
                 for (let i = 0; i < this.cols; i++) {
                     for (let j = 0; j < this.rows; j++) {
                         this.oxygenGrid[i][j] = 5.0;
@@ -120,29 +115,23 @@ class Environment {
 
                 // 2. Enable Progressive Rise Flag
                 this.progressiveOxygenEnabled = true;
-                this.oxygenRiseRate = 0.0005; // +1.0 O2 every ~2000 frames (33 secs)
-                this.maxOxygenEvent = 40.0;   // Cap at extreme toxicity
-
-                console.log("⚠️ Applied PRESSURE_OXYGEN: Starting Great Oxidation Event (Progressive Rise).");
+                this.maxOxygenEvent = 40.0;
+                this.maxOxygenEvent = 40.0;
+                this.oxygenRiseRate = 0.001; // Tuned: 0.001 * 5 * 120 = 0.6 O2/sec. ~1 min to max.
+                console.log('[Environment] Scenario: PRESSURE_OXYGEN (The Great Oxidation Event) Initialized to 5.0, Rising to 40.0');
                 break;
 
             case 'PRESSURE_LIGHT':
-                // High UV/Light, move cell to surface?
-                // The cell is spawned in deep sediment. We must bring Light TO the sediment or simulate a transparent ocean.
-                // Let's make the whole ocean transparent for this test.
+                // Global high visibility
                 for (let i = 0; i < this.cols; i++) {
                     for (let j = 0; j < this.rows; j++) {
-                        this.lightGrid[i][j] = 100; // Full blast
-                        this.uvRadiationGrid[i][j] = 80; // High UV
+                        this.lightGrid[i][j] = 100;
+                        this.uvRadiationGrid[i][j] = 80;
                     }
                 }
-                console.log("⚠️ Applied PRESSURE_LIGHT: Global high visibility and UV.");
                 break;
 
             case 'PRESSURE_SCARCITY':
-                // Reduce all resources to bare minimum
-                this.h2Grid[col][row] = 20; // Barely enough (Cost is ~0.05/frame)
-                this.phosphorusGrid[col][row] = 50; // Just below threshold? No, just scarce
                 // Global reduction
                 for (let i = 0; i < this.cols; i++) {
                     for (let j = 0; j < this.rows; j++) {
@@ -150,17 +139,15 @@ class Environment {
                         this.phosphorusGrid[i][j] *= 0.1;
                     }
                 }
-                console.log("⚠️ Applied PRESSURE_SCARCITY: Famine conditions.");
                 break;
 
             case 'PRESSURE_THERMAL':
-                // High Temp
+                // Global heating
                 for (let i = 0; i < this.cols; i++) {
                     for (let j = 0; j < this.rows; j++) {
-                        this.temperatureGrid[i][j] = 90; // Hot!
+                        this.temperatureGrid[i][j] = 90;
                     }
                 }
-                console.log("⚠️ Applied PRESSURE_THERMAL: Global warming.");
                 break;
         }
     }
@@ -407,6 +394,18 @@ class Environment {
             return 0.7; // 30% slower in sediment
         }
         return 1.0;
+    }
+
+    // HELPER: Get Oxygen Level at specific coordinates
+    getOxygenLevel(x, y) {
+        let col = floor(x / this.resolution);
+        let row = floor(y / this.resolution);
+
+        // Safety bounds check
+        if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
+            return this.oxygenGrid[col][row];
+        }
+        return 0;
     }
 
     // Legacy compatibility - keep consumeEnergy as alias
