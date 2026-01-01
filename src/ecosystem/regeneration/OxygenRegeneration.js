@@ -238,9 +238,11 @@ class OxygenRegeneration {
                     environment.oxygenGrid[i][j] += photolysisRate;
 
                     // 5. CAP EN MÁXIMO
-                    // REMOVED HARD CAP of 20 for GOE scenarios
-                    // If we are in a Great Oxidation Event, we want O2 to rise unchecked!
-                    let maxO2 = GameConstants.SCENARIO === 'PRESSURE_OXYGEN' ? 100 : GameConstants.OXYGEN_GRID_MAX;
+                    // Prioritize Environment's dynamic event cap over static constant
+                    let maxO2 = environment.maxOxygenEvent || GameConstants.OXYGEN_GRID_MAX;
+
+                    // Allow higher cap for GOE scenario safety
+                    if (GameConstants.SCENARIO === 'PRESSURE_OXYGEN') maxO2 = Math.max(maxO2, 100.0);
 
                     environment.oxygenGrid[i][j] = min(
                         environment.oxygenGrid[i][j],

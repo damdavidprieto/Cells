@@ -23,6 +23,19 @@ class GameController {
                 this.databaseLogger.endRun();
             }
         });
+
+        // CRITICAL: Catch runtime errors (like getDeathCause missing) and log them
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
+            console.error('[Global Error]', msg, error);
+            if (this.databaseLogger) {
+                this.databaseLogger.logCellEvent(0, 'system_error', -1, {
+                    message: msg,
+                    line: lineNo,
+                    stack: error ? error.stack : 'no stack'
+                });
+            }
+            return false; // Let default handler run too
+        };
     }
 
     /**
@@ -54,10 +67,13 @@ class GameController {
     /**
      * Configura todos los sistemas del juego (Entorno, Entidades, logs).
      */
-    initialize() {
+    async initialize() {
         // Inicializar sistemas core
         window.environment = new Environment();
         this.environment = window.environment; // Referencia local
+
+        // Initialize Global Scenario (O2 Rise, Scarcity, etc.)
+        this.environment.initializeScenario();
 
 
         this.speciesNotifier = new SpeciesNotifier();
@@ -65,15 +81,15 @@ class GameController {
         // DatabaseLogger (IndexedDB - no network)
         if (GameConstants.DATABASE_LOGGING.enabled && (GameConstants.EXECUTION_MODE === 'DEVELOPMENT' || GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE')) {
             this.databaseLogger = new DatabaseLogger();
-            this.databaseLogger.init().then(() => {
+            try {
+                await this.databaseLogger.init();
                 console.log('[GameController] DatabaseLogger initialized');
-            }).catch(err => {
-                console.error('[GameController] DatabaseLogger init failed:', err);
-            });
-            window.databaseLogger = this.databaseLogger; // Acceso global para consola
+                window.databaseLogger = this.databaseLogger; // Acceso global para consola
 
-            // Start auto-download timer
-            this.startAutoDownloadTimer();
+                this.databaseLogger.startRun();
+            } catch (err) {
+                console.error('[GameController] DatabaseLogger init failed:', err);
+            }
         }
 
         // Resetear y Crear Entidades Iniciales (LUCA)
@@ -101,6 +117,18 @@ class GameController {
             window.lucaBaseDNA = entity.dna;
             window.entities.push(entity);
 
+            if (this.databaseLogger) {
+                this.databaseLogger.logCellEvent(0, 'birth', entity.id, {
+                    position: { x: entity.pos.x, y: entity.pos.y },
+                    dna: entity.dna,
+                    sod: entity.sodProtein,
+                    energy: entity.energy,
+                    oxygen: entity.oxygen,
+                    maxResources: entity.maxResources,
+                    parent_id: null
+                });
+            }
+
             // Force environment to be perfect around this cell immediately
             // Force environment to be perfect around this cell immediately
             // DISABLED: User requested to match Development mode behavior
@@ -124,30 +152,22 @@ class GameController {
                     window.lucaBaseDNA = entity.dna; // Referencia para distancias genéticas
                 }
                 window.entities.push(entity);
+
+                if (this.databaseLogger) {
+                    this.databaseLogger.logCellEvent(0, 'birth', entity.id, {
+                        position: { x: entity.pos.x, y: entity.pos.y },
+                        dna: entity.dna,
+                        sod: entity.sodProtein,
+                        energy: entity.energy,
+                        oxygen: entity.oxygen,
+                        maxResources: entity.maxResources,
+                        parent_id: null
+                    });
+                }
             }
         }
 
         this.isRunning = true;
         console.log("[GameController] Simulación inicializada correctamente.");
-    }
-
-    startAutoDownloadTimer() {
-        // Only for dev/analysis modes
-        if (GameConstants.EXECUTION_MODE !== 'DEVELOPMENT' && GameConstants.EXECUTION_MODE !== 'SINGLE_CELL_MODE') return;
-
-        // Use mode-specific delay if available, otherwise default to 30s
-        let modeParams = GameConstants.getCurrentMode();
-        const DELAY_MS = modeParams.LOG_DOWNLOAD_DELAY || 30000;
-
-        console.log(`[GameController] Auto-download timer started (${DELAY_MS / 1000}s)...`);
-
-        if (this.autoDownloadTimer) clearTimeout(this.autoDownloadTimer);
-
-        this.autoDownloadTimer = setTimeout(() => {
-            if (this.databaseLogger) {
-                console.log('[GameController] Triggering auto-export of logs...');
-                this.databaseLogger.exportToJSON();
-            }
-        }, DELAY_MS);
     }
 }

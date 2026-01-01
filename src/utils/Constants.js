@@ -40,8 +40,6 @@ const GameConstants = {
         INITIAL_POPULATION: 1, // Start with exactly 1 cell
         REPRODUCTION_ENABLED: true, // User requested mitosis enabled
         FORCE_IDEAL_CONDITIONS: false, // User requested "normal vents" (full environment)
-        AUTO_DOWNLOAD_LOGS: false,    // Disabled: User prefers diagnose-database.html
-        LOG_DOWNLOAD_DELAY: 60000,
         LOG_DEATHS: true,
         LOG_REPRODUCTIONS: true,
         LOG_METABOLIC_DIVERGENCE: true,
@@ -205,11 +203,11 @@ const GameConstants = {
     MUTATION_RATE_MIN: 0.01,
     MUTATION_RATE_MAX: 0.3,
     EFFICIENCY_MIN: 0.5,
-    EFFICIENCY_MAX: 1.5,
-    STORAGE_MIN: 100,
-    STORAGE_MAX: 300,
-    SIZE_MIN: 5,
-    SIZE_MAX: 40,
+    // --- Resources ---
+    INITIAL_ENERGY: 500,     // Increased from 100 (gave 1.5s) to 500 (gives 8s) to survive spawn journey
+    INITIAL_OXYGEN: 100,
+    INITIAL_NITROGEN: 50,
+    INITIAL_PHOSPHORUS: 50,
 
     // Divergence & Progressive Evolution
     LUCA_DIVERGENCE_CHANCE: 0.01,
@@ -218,8 +216,15 @@ const GameConstants = {
 
     // NEW: Continuous Evolution Thresholds
     // Efficiency required to express the phenotype (build the organelle)
-    // 0.20 = 20% efficiency needed (Minimal Viable Pathway - Realistic Enzyme Kinetics)
-    ORGANELLE_EFFICIENCY_THRESHOLD: 0.20,
+    // 0.20 = 20% efficiency needed (Minimal Viable Pathway - Realistic
+    // --- Organelles ---
+    ORGANELLE_EFFICIENCY_THRESHOLD: 1.0,
+
+    // Flagella (Movement)
+    FLAGELLA_MOVEMENT_COST: 0.1,        // Cost per unit of distance moved
+    FLAGELLA_MAINTENANCE_COST: 0.05,    // Passive cost per frame per level
+    FLAGELLA_CONSTRUCTION_COST_ENERGY: 30,
+    FLAGELLA_CONSTRUCTION_COST_PHOSPHORUS: 5,
 
     // Range of efficiency drift per mutation event (Continuous Evolution)
     // Decreased from 0.02 to 0.005 to simulate geological timescales
@@ -270,11 +275,9 @@ const GameConstants = {
     // ===== INITIAL RESOURCES (LUCA ERA: 4.0-3.5 Ga) =====
     // Scientifically calibrated for pre-photosynthesis primordial ocean
     // Reduced to force a "foraging phase" before first mitosis (delayed reproduction)
-    INITIAL_ENERGY: 80,           // Threshold ~88. Needs to eat/photosynthesize first.
-    INITIAL_OXYGEN: 10,           // Reduced - LUCA lived in nearly anoxic conditions
-    INITIAL_NITROGEN: 40,         // Threshold ~44. Needs to scavenge nitrogen.
-    INITIAL_PHOSPHORUS: 45,       // Reverted to 45: Forces foraging phase (must absorb from vents).
-    INITIAL_CO2: 90,              // High CO₂ in primordial atmosphere
+    // INITIAL_OXYGEN: 10,           // LEAVE COMMENTED - Using value from Resources section (100)
+
+    // O₂ Grid Range (trazas por fotólisis UV)
 
     // O₂ Grid Range (trazas por fotólisis UV)
     OXYGEN_GRID_MIN: 5,           // Minimum O₂ (traces from UV photolysis)
@@ -317,13 +320,21 @@ const GameConstants = {
     // 2O₂⁻ + 2H⁺ → H₂O₂ + O₂ (converts toxic superoxide to less toxic peroxide)
     // OXYGEN & OXIDATIVE STRESS
     OXYGEN_SAFE_THRESHOLD: 10,    // Levels below this are safe (microaerophilic)
-    OXIDATIVE_DAMAGE_RATE: 0.15,  // TRIPLED (was 0.05): Damage per frame per excess O2 unit
+    OXIDATIVE_DAMAGE_RATE: 0.01,  // Reduced from 0.05 to 0.01 (Survival Mode)
     SOD_MAINTENANCE_COST: 0.1,    // Energy per frame per SOD unit (protein turnover)
+    DEBUG_OXYGEN_DAMAGE: true,    // Enable detailed logging of O2 damage mechanics (Sentinel Cell 0)
 
     // REPAIR & REGENERATION SYSTEM
+    // SCIENTIFIC BASIS:
+    // 1. Maintenance Energy Model (Pirt, 1965):
+    //    Cells must spend energy ('m') to maintain integrity before growth.
+    //    Under stress (Antibiotics/ROS), 'm' increases exponentially.
+    //    Ref: "The maintenance energy of bacteria in growing cultures" (Proc. R. Soc. B)
+    // 2. Enzymatic Rate Limits (Michaelis-Menten):
+    //    Repair enzymes (RecA, UvrABCD) are finite. Repair cannot be instant.
     MAX_STRUCTURAL_DAMAGE: 100,      // Death at >100% damage (Lysis)
-    REPAIR_ENERGY_COST: 0.5,         // Energy cost to repair 1.0 Structural Damage
-    BASE_REPAIR_SPEED: 0.1,          // Base damage points repaired per frame (multiplied by repairEfficiency)
+    REPAIR_ENERGY_COST: 0.5,         // Reduced from 2.0 (Bankruptcy) to 0.5 (Affordable maintenance)
+    BASE_REPAIR_SPEED: 0.2,          // Increased from 0.05 to 0.2 (Robust Repair)
 
     // UV RADIATION
     UV_RADIATION_ENABLED: true,   // Enable UV mechanics

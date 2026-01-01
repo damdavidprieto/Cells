@@ -87,16 +87,68 @@ class ChemotaxisSystem {
             }
         }
 
-        // 3. RETURN BIAS VECTOR
+        // 3. RETURN BIAS VECTOR (Nutrient Attraction)
+        let totalForce = createVector(0, 0);
+
         if (pBest != null) {
-            // Found a better spot!
-            // Normalize and scale by Chemotaxis Strength
             pBest.normalize();
             pBest.mult(GameConstants.CHEMOTAXIS_STRENGTH);
-            return pBest;
-        } else {
-            // No better spot found (peak or plateau) -> No bias, purely random
-            return createVector(0, 0);
+            totalForce.add(pBest);
         }
+
+        // 4. NEGATIVE CHEMOTAXIS (OXYGEN AVOIDANCE)
+        // If cell is anaerobic (LUCA) and detects O2, flee!
+        if (entity.dna.metabolismType === 'luca' && entity.oxygenTolerance < 10) {
+            let repulsion = ChemotaxisSystem.calculateRepulsion(entity, environment, environment.oxygenGrid);
+            totalForce.add(repulsion);
+        }
+
+        return totalForce;
     }
+
+    /**
+     * Calculates vector AWAY from high concentrations
+     */
+    static calculateRepulsion(entity, environment, grid) {
+        let gridX = floor(entity.pos.x / environment.resolution);
+        let gridY = floor(entity.pos.y / environment.resolution);
+        let currentAmt = 0;
+
+        if (gridX >= 0 && gridX < environment.cols && gridY >= 0 && gridY < environment.rows) {
+            currentAmt = grid[gridX][gridY];
+        }
+
+        // If current spot is safe, no panic
+        if (currentAmt < 0.1) return createVector(0, 0);
+
+        let worstDiff = -1;
+        let pEscape = createVector(0, 0);
+
+        // Scan neighbors for the WORST spot to avoid
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+
+                let nx = gridX + dx;
+                let ny = gridY + dy;
+
+                if (nx >= 0 && nx < environment.cols && ny >= 0 && ny < environment.rows) {
+                    let val = grid[nx][ny];
+                    // If neighbor has MORE poison than me, flee AWAY from it (Reverse vector)
+                    if (val > currentAmt) {
+                        let diff = val - currentAmt;
+                        // Accumulate escape vectors away from all high sources
+                        let esc = createVector(-dx, -dy);
+                        esc.mult(diff); // Stronger repulsion from higher gradients
+                        pEscape.add(esc);
+                    }
+                }
+            }
+        }
+
+        pEscape.normalize();
+        pEscape.mult(GameConstants.CHEMOTAXIS_STRENGTH * 2.0); // Fear is stronger than hunger
+        return pEscape;
+    }
+}
 }
