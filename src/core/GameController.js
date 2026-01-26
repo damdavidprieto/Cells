@@ -76,41 +76,54 @@ class GameController {
     }
 
     /**
+     * Called by ScenarioManager to inject specific environment config.
+     */
+    prepareEnvironment(envConfig) {
+        console.log("%% [GameController] Preparing Environment from Scenario Config...");
+        window.environment = new Environment(envConfig);
+        this.environment = window.environment;
+    }
+
+    setSpawnRules(rules) {
+        this.spawnRules = rules;
+    }
+
+    /**
      * Configura todos los sistemas del juego (Entorno, Entidades, logs).
      */
     async initialize() {
         // Inicializar sistemas core
 
-        // DYNAMIC CONFIGURATION LOADER
-        let config = WorldPresets.DEFAULT;
+        // 1. Environment Initialization
+        // If ScenarioManager already prepared the environment, use it.
+        // Otherwise, fallback to defaults (Legacy support or direct run).
+        if (!this.environment) {
+            console.log("%% [GameController] No Environment injected. Using Default.");
 
-        if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
-            config = WorldPresets.SINGLE_VENT;
+            // DYNAMIC CONFIGURATION LOADER (Legacy/Direct Mode)
+            let config = WorldPresets.DEFAULT;
 
-            // DYNAMIC DIMENSIONS: Ensure grid fills the screen
-            // This aligns "Grid Center" with "Screen Center"
-            config.cols = Math.ceil(width / config.resolution);
-
-            // Apply Param Overrides
-            if (GameConstants.VENT_PARAMS && config.vents.length > 0) {
-                config.vents[0].width = GameConstants.VENT_PARAMS.width;
-                config.vents[0].intensity = GameConstants.VENT_PARAMS.flux;
-
-                // Override Rows if present
-                if (GameConstants.VENT_PARAMS.height) {
-                    config.rows = GameConstants.VENT_PARAMS.height;
+            if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
+                config = WorldPresets.SINGLE_VENT;
+                config.cols = Math.ceil(width / config.resolution);
+                if (GameConstants.VENT_PARAMS && config.vents.length > 0) {
+                    config.vents[0].width = GameConstants.VENT_PARAMS.width;
+                    config.vents[0].intensity = GameConstants.VENT_PARAMS.flux;
+                    if (GameConstants.VENT_PARAMS.height) config.rows = GameConstants.VENT_PARAMS.height;
                 }
-
-                console.log(`[GameController] Initializing Single Vent with Params: W=${config.vents[0].width}, H=${config.rows}, F=${config.vents[0].intensity}`);
             }
+
+            window.environment = new Environment(config);
+            this.environment = window.environment;
         }
 
-        window.environment = new Environment(config);
-        this.environment = window.environment; // Referencia local
-
         // Initialize Global Scenario (O2 Rise, Scarcity, etc.)
-        this.environment.initializeScenario();
-
+        // This is the old "Scenario" system (Environment variables), not the new "ScenarioManager"
+        // We might want to deprecate this or merge it. 
+        // For now, only run if environment supports it.
+        if (this.environment.initializeScenario) {
+            this.environment.initializeScenario();
+        }
 
         this.speciesNotifier = new SpeciesNotifier();
 

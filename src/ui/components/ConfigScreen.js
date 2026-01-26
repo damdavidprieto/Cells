@@ -402,11 +402,16 @@ class ConfigScreen {
                     }
                 };
 
-                // 2. Delegar al ScenarioManager
+                // 2. Asegurar que el Motor existe antes de configurarlo
+                if (!window.gameInstance) {
+                    window.gameInstance = new GameController();
+                }
+
+                // 3. Delegar al ScenarioManager
                 // Usa el preset LAB_SINGLE_VENT como base
                 ScenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT, overrides);
 
-                // 3. Iniciar el Loop del Juego
+                // 4. Iniciar el Loop del Juego
                 setTimeout(() => {
                     this.startGame('SCENARIO_LOADED');
                 }, 100);

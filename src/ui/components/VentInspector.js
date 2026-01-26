@@ -9,11 +9,20 @@ class VentInspector {
         this.width = 200;
         this.height = 160;
         this.margin = 20;
+        this.active = false; // Controlado por ScenarioManager
+    }
+
+    enable() {
+        this.active = true;
+    }
+
+    disable() {
+        this.active = false;
     }
 
     draw() {
-        // Only active in SINGLE_VENT_MODE or Restricted mode
-        if (GameConstants.EXECUTION_MODE !== 'SINGLE_VENT_MODE' && !window.environment.config.restrictToVents) return;
+        // Mostrar si está activado explícitamente (ScenarioManager) o si es el modo legado SINGLE_VENT
+        if (!this.active && GameConstants.EXECUTION_MODE !== 'SINGLE_VENT_MODE') return;
 
         let env = window.environment;
 
