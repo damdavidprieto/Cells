@@ -45,7 +45,7 @@ class DatabaseLogger {
         }
 
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open('CellsDevLogs', 2); // Bump version to force schema update
+            const request = indexedDB.open('CellsDevLogs', 3); // Update to v3 for Anomalies
 
             request.onerror = () => {
                 console.error('[DatabaseLogger] Error opening database:', request.error);
@@ -54,9 +54,6 @@ class DatabaseLogger {
 
             request.onsuccess = () => {
                 this.db = request.result;
-                this.initialized = true;
-                console.log('[DatabaseLogger] Database initialized successfully');
-
                 this.initialized = true;
                 console.log('[DatabaseLogger] Database initialized successfully');
                 resolve();
@@ -104,6 +101,15 @@ class DatabaseLogger {
                     envStore.createIndex('run_id', 'run_id', { unique: false });
                     envStore.createIndex('frame', 'frame_number', { unique: false });
                     console.log('[DatabaseLogger] Created store: environment_stats');
+                }
+
+                // NEW (v3): Anomalies (Sanitizer Logs)
+                if (!db.objectStoreNames.contains('anomalies')) {
+                    const anomalyStore = db.createObjectStore('anomalies', { autoIncrement: true });
+                    anomalyStore.createIndex('run_id', 'run_id', { unique: false });
+                    anomalyStore.createIndex('frame', 'frame_number', { unique: false });
+                    anomalyStore.createIndex('severity', 'severity', { unique: false });
+                    console.log('[DatabaseLogger] Created store: anomalies');
                 }
             };
         });
@@ -254,6 +260,28 @@ class DatabaseLogger {
     }
 
     /**
+     * Registra una anomalía detectada por el sanitizador
+     */
+    async logAnomaly(frame, type, severity, targetId, details) {
+        if (!this.enabled || !this.db) return;
+
+        const transaction = this.db.transaction(['anomalies'], 'readwrite');
+        const store = transaction.objectStore('anomalies');
+
+        const anomalyData = {
+            run_id: this.runId,
+            frame_number: frame,
+            type: type,         // 'PHYSICS', 'BIOLOGY', 'DATA_CORRUPTION'
+            severity: severity, // 'CRITICAL', 'WARNING', 'INFO'
+            target_id: targetId,
+            details: details,   // Object with debugging info
+            timestamp: new Date().toISOString()
+        };
+
+        store.add(anomalyData);
+    }
+
+    /**
      * Registra análisis detallado de una única célula
      * (Solo para SINGLE_CELL_MODE)
      */
@@ -270,18 +298,47 @@ class DatabaseLogger {
             event_type: 'single_cell_analysis',
             cell_id: cell.id,
             data: {
+                // CORE VITALITY
                 energy: cell.energy,
+                health: 100 - cell.structuralDamage, // Inverted for "Health"
+                age: cell.age,
+                generation: cell.dna.generation,
+
+                // RESOURCES
                 oxygen: cell.oxygen,
                 nitrogen: cell.nitrogen,
                 phosphorus: cell.phosphorus,
-                pos: { x: cell.pos.x, y: cell.pos.y },
-                vel: { x: cell.vel.x, y: cell.vel.y },
-                // Add more internal state if needed
-                age: cell.age,
-                sod: cell.sodProtein,
-                oxidativeDamage: cell.oxidativeDamage,
-                color: cell.dna.color,
-                metabolicEfficiency: cell.dna.metabolicEfficiency // Useful for tracking brightness/hue shifts
+                max_storage: cell.maxResources,
+
+                // GENETICS & IDENTITY
+                dna_color: cell.dna.color,
+                metabolism_type: cell.dna.metabolismType,
+                species_id: cell.getSpeciesId ? cell.getSpeciesId() : 'unknown',
+
+                // INTERNAL MACHINERY (Organelles)
+                flagella_level: cell.dna.flagellaLevel,
+                organelles_count: cell.organelles ? cell.organelles.length : 0,
+
+                // STRESS METRICS (Critical for Survival Analysis)
+                stress_oxidative: cell.oxidativeDamage,
+                stress_uv: cell.uvDamageFrame,
+                stress_structural: cell.structuralDamage,
+
+                // DEFENSE MECHANISMS
+                defense_sod: cell.sodProtein || 0,
+                defense_repair_efficiency: cell.dna.dnaRepairEfficiency || 0,
+
+                // PHYSICS
+                pos: { x: cell.pos.x.toFixed(2), y: cell.pos.y.toFixed(2) },
+                vel: { x: cell.vel.x.toFixed(3), y: cell.vel.y.toFixed(3) },
+
+                // DNA GENES (Deep Dive)
+                genes: {
+                    size: cell.dna.size,
+                    metabolic_efficiency: cell.dna.metabolicEfficiency,
+                    storage_capacity: cell.dna.storageCapacity,
+                    mutation_rate: cell.dna.mutationRate
+                }
             },
             timestamp: new Date().toISOString()
         };
@@ -360,6 +417,24 @@ class DatabaseLogger {
     /**
      * Exporta todos los datos de esta ejecución a JSON
      */
+    /**
+     * Obtiene todas las anomalías de esta ejecución
+     */
+    async getAllAnomalies() {
+        if (!this.db) return [];
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction(['anomalies'], 'readonly');
+            const store = transaction.objectStore('anomalies');
+            const index = store.index('run_id');
+            request = index.getAll(this.runId);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * Exporta todos los datos de esta ejecución a JSON
+     */
     async exportToJSON() {
         if (!this.db) {
             console.warn('[DatabaseLogger] Cannot export: database not initialized');
@@ -368,11 +443,12 @@ class DatabaseLogger {
 
         console.log('[DatabaseLogger] Exporting data to JSON...');
 
-        const [events, mutations, stats, envStats] = await Promise.all([
+        const [events, mutations, stats, envStats, anomalies] = await Promise.all([
             this.getAllEvents(),
             this.getAllMutations(),
             this.getAllStats(),
-            this.getAllEnvironmentStats()
+            this.getAllEnvironmentStats(),
+            this.getAllAnomalies()
         ]);
 
         const exportData = {
@@ -381,12 +457,14 @@ class DatabaseLogger {
             summary: {
                 total_events: events.length,
                 total_mutations: mutations.length,
-                total_frames: stats.length
+                total_frames: stats.length,
+                total_anomalies: anomalies.length
             },
             events: events,
             mutations: mutations,
             frame_stats: stats,
-            environment_stats: envStats
+            environment_stats: envStats,
+            anomalies: anomalies
         };
 
         // Crear y descargar archivo JSON

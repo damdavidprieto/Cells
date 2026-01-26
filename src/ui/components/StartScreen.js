@@ -31,6 +31,17 @@ class StartScreen {
                 <span class="text">Modo Desarrollo</span>
                 <span class="desc">2x Velocidad, Monitor Debug, Logs</span>
             </button>
+            <button id="btn-dev" class="btn-dev">
+                <span class="icon">🛠️</span>
+                <span class="text">Modo Desarrollo</span>
+                <span class="desc">2x Velocidad, Monitor Debug, Logs</span>
+            </button>
+
+            <button id="btn-vent" class="btn-play" style="background: linear-gradient(135deg, #2c3e50, #4ca1af); border-left: 4px solid #4ca1af;">
+                <span class="icon">🌋</span>
+                <span class="text">Modo Vent Único</span>
+                <span class="desc">Control Manual, Mitisis Fantasma</span>
+            </button>
         </div>
 
         <div style="text-align: center; margin-bottom: 20px;">
@@ -56,6 +67,10 @@ class StartScreen {
 
         if (btnPlay) btnPlay.addEventListener('click', () => this.onStart('PRODUCTION'));
         if (btnDev) btnDev.addEventListener('click', () => this.onStart('DEVELOPMENT'));
+
+        const btnVent = document.getElementById('btn-vent');
+        if (btnVent) btnVent.addEventListener('click', () => this.onStart('SINGLE_VENT_MODE'));
+
         if (btnConfig) btnConfig.addEventListener('click', () => this.showConfig());
     }
 

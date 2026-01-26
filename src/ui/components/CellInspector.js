@@ -8,21 +8,19 @@
 class CellInspector {
     constructor() {
         this.width = 200;
-        this.height = 160;
+        this.height = 220; // Increased to fit all data
         this.margin = 20;
     }
 
     draw() {
-        // Only active in SINGLE_CELL_MODE and if entities exist
-        if (GameConstants.EXECUTION_MODE !== 'SINGLE_CELL_MODE' || !window.entities || window.entities.length === 0) return;
+        // Only active in SINGLE_CELL_MODE or SINGLE_VENT_MODE and if entities exist
+        if ((GameConstants.EXECUTION_MODE !== 'SINGLE_CELL_MODE' && GameConstants.EXECUTION_MODE !== 'SINGLE_VENT_MODE') || !window.entities || window.entities.length === 0) return;
 
-        // Position: Bottom-Left Corner (Safe from Stats(TL) and Legend(BR))
-        const x = this.margin;
-        const y = height - this.height - this.margin;
+        let subject = window.entities[0]; // Always inspect first cell
 
-        // 1. Draw Panel Background
         push();
-        translate(x, y);
+        // Position on bottom-left of screen
+        translate(20, height - this.height - 20);
 
         // Shadow
         fill(0, 0, 0, 100);
@@ -41,78 +39,47 @@ class CellInspector {
         textAlign(CENTER, TOP);
         textSize(14);
         textStyle(BOLD);
-        text("CELL INSPECTOR", this.width / 2, 10);
+        text("CELL DATA MONITOR", this.width / 2, 10);
         textSize(10);
         textStyle(NORMAL);
         fill(100);
-        text("(Live Feed - Bottom Left)", this.width / 2, 28);
+        text(`ID: #${subject.id}`, this.width / 2, 28);
 
-        // 2. Render Cells (Grid Layout)
-        // Show up to 4 cells
-        let cellsToShow = window.entities.slice(0, 4);
-        let cellCount = cellsToShow.length;
+        // DATA LIST
+        textAlign(LEFT, TOP);
+        textSize(11);
+        fill(0);
 
-        let startX = this.width / 2;
-        let startY = this.height / 2 + 10;
-        let spacing = 60;
+        let startY = 45;
+        let lineHeight = 14;
+        let col2X = 110;
 
-        if (cellCount > 1) {
-            startX = this.width / 2 - ((cellCount - 1) * spacing) / 2;
-        }
+        // Column 1
+        text(`Pos: [${subject.pos.x.toFixed(0)}, ${subject.pos.y.toFixed(0)}]`, 10, startY);
+        text(`Age: ${subject.age}`, 10, startY + lineHeight);
 
-        cellsToShow.forEach((subject, index) => {
-            let posX = startX + index * spacing;
-            let posY = startY;
+        fill(subject.energy < 20 ? 200 : 0, 0, 0); // Red if low
+        text(`Energy: ${subject.energy.toFixed(1)}`, 10, startY + lineHeight * 2);
+        fill(0);
 
-            // Draw individual cell
-            push();
-            translate(posX, posY);
+        text(`Health: ${(subject.health || 100).toFixed(0)}%`, 10, startY + lineHeight * 3);
+        text(`Struct: ${(100 - subject.structuralDamage).toFixed(1)}%`, 10, startY + lineHeight * 4);
 
-            // Mock Entity for centering
-            let pulse = map(sin(frameCount * 0.1 + subject.noiseOffset), -1, 1, -2, 2);
-            let mockEntity = {
-                pos: createVector(0, 0),
-                dna: subject.dna,
-                vel: createVector(0, 0),
-                organelles: subject.organelles || [],
-                energy: subject.energy, // Live energy
-                health: 100, // Show full health for color clarity
-                age: subject.age,
-                id: subject.id,
-                noiseOffset: subject.noiseOffset,
-                maxResources: subject.maxResources,
-                oxygen: subject.oxygen,
-                nitrogen: subject.nitrogen,
-                phosphorus: subject.phosphorus,
-                metabolicEfficiency: subject.dna.metabolicEfficiency
-            };
+        // Column 2
+        text(`DNA Size: ${subject.dna.size.toFixed(1)}`, col2X, startY);
+        text(`Metab: ${subject.dna.metabolismType}`, col2X, startY + lineHeight);
+        text(`Eff: ${subject.dna.metabolicEfficiency.toFixed(2)}`, col2X, startY + lineHeight * 2);
 
-            scale(1.5); // Slightly smaller scale to fit potential multiple cells via loop
+        // Resources
+        let resY = startY + lineHeight * 6;
+        textSize(10);
+        textStyle(BOLD);
+        text("INTERNAL RESOURCES:", 10, resY);
+        textStyle(NORMAL);
 
-            // Using standard renderer with pulse
-            // healthFactor 1.0 ensures we see the color clearly
-            // overrideAlpha 255 ensures FULL OPACITY for color verification
-            CellRenderer.drawCellBody(mockEntity, pulse, 1.0, 255);
-            CellRenderer.drawNucleus(mockEntity, 1.0);
-            CellRenderer.drawOrganelles(mockEntity);
-
-            pop();
-
-            // Label ID
-            fill(0);
-            textAlign(CENTER, BOTTOM);
-            textSize(9);
-            text(`#${subject.id}`, posX, posY + 40);
-        });
-
-        // Footer Stats (First Cell)
-        if (window.entities[0]) {
-            let first = window.entities[0];
-            fill(0);
-            textAlign(LEFT, BOTTOM);
-            textSize(9);
-            text(`RGB: [${first.dna.color[0].toFixed(0)}, ${first.dna.color[1].toFixed(0)}, ${first.dna.color[2].toFixed(0)}]`, 10, this.height - 5);
-        }
+        text(`O₂: ${subject.oxygen.toFixed(1)} / ${subject.maxResources}`, 10, resY + lineHeight);
+        text(`N : ${subject.nitrogen.toFixed(1)} / ${subject.maxResources}`, 10, resY + lineHeight * 2);
+        text(`P : ${subject.phosphorus.toFixed(1)} / ${subject.maxResources}`, 10, resY + lineHeight * 3);
 
         pop();
     }

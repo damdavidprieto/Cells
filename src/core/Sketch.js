@@ -34,6 +34,23 @@ function draw() {
         game.governor.update();
     }
 
+    // 0.1 Guion de Escenario (Eventos Scriptados)
+    ScenarioManager.update();
+
+    // 0.2 Sanitizador de Anomalías (Cada 60 frames ~ 1 seg)
+    if (frameCount % 60 === 0 && window.gameInstance && window.gameInstance.databaseLogger) {
+        // Asegurar que AnomalyDetector existe (cargado en index)
+        if (typeof AnomalyDetector !== 'undefined') {
+            const anomalies = AnomalyDetector.scan(ents, env);
+            if (anomalies.length > 0) {
+                console.warn(`[Sanitizer] Eliminando ${anomalies.length} anomalías.`);
+                for (let a of anomalies) {
+                    window.gameInstance.databaseLogger.logAnomaly(frameCount, a.type, a.severity, a.targetId, a.details);
+                }
+            }
+        }
+    }
+
     // HYPER-SPEED LOOP
     // Run physics multiple times per frame based on configuration
     const steps = GameConstants[GameConstants.EXECUTION_MODE].PHYSICS_STEPS || 1;
@@ -68,13 +85,29 @@ function draw() {
             }
 
             if (child != null) {
-                child.id = ents.length;
-                child.reproductionCount = 0;
-                e.reproductionCount = (e.reproductionCount || 0) + 1;
-                ents.push(child);
+                // PHANTOM MITOSIS (Single Vent Mode)
+                if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE' && GameConstants.SINGLE_VENT_MODE.PHANTOM_MITOSIS) {
+                    // Log the "virtual" birth
+                    if (game.databaseLogger) {
+                        game.databaseLogger.logCellEvent(frameCount, 'phantom_birth', 'phantom_' + frameCount, {
+                            parent_id: e.id,
+                            dna: child.dna,
+                            generation: child.dna.generation
+                        });
+                        console.log(`[Phantom Mitosis] Offspring discarded. Parent Energy: ${e.energy.toFixed(1)}`);
+                    }
+                    // Discard child (do not add to ents)
+                }
+                // NORMAL MITOSIS
+                else {
+                    child.id = ents.length;
+                    child.reproductionCount = 0;
+                    e.reproductionCount = (e.reproductionCount || 0) + 1;
+                    ents.push(child);
 
-                // Logging (Only log if strictly needed, heavy for hyper-speed)
-                if (game.databaseLogger) handleLogging(game, e, child, frameCount);
+                    // Logging (Only log if strictly needed, heavy for hyper-speed)
+                    if (game.databaseLogger) handleLogging(game, e, child, frameCount);
+                }
             }
 
             // Muerte
@@ -94,11 +127,26 @@ function draw() {
     }
 
     // 4. Renderizado (UNA VEZ POR FRAME)
+    background(0); // Fondo Negro (Void)
+
+    push(); // Start Global View Transform
+
+    // VERTICAL CENTERING (Single Vent Mode / Small Grids)
+    if (env.rows && env.resolution) {
+        let worldHeight = env.rows * env.resolution;
+        if (worldHeight < height) {
+            let offsetY = (height - worldHeight) / 2;
+            translate(0, offsetY);
+        }
+    }
+
     env.show(); // Dibujar Entorno
 
     for (let e of ents) {
         e.show(); // Dibujar Células
     }
+
+    pop(); // End Global View Transform
 
     // 5. Actualizar Trackers y UI
 
@@ -160,8 +208,8 @@ function draw() {
 
     // SINGLE CELL ANALYSIS LOGGING
     // Logs detailed internal state of the specific cell every frame
-    if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' && game.databaseLogger && ents.length > 0) {
-        if (GameConstants.SINGLE_CELL_MODE.LOG_EVERY_FRAME) {
+    if ((GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') && game.databaseLogger && ents.length > 0) {
+        if (GameConstants.SINGLE_CELL_MODE.LOG_EVERY_FRAME || (GameConstants.SINGLE_VENT_MODE && GameConstants.SINGLE_VENT_MODE.LOG_EVERY_FRAME)) {
             game.databaseLogger.logSingleCellAnalysis(frameCount, ents[0]);
         }
     }
@@ -273,7 +321,27 @@ function renderOverlays(game) {
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
     if (window.gameInstance) {
-        window.environment = new Environment(); // Re-init grid
+        // Reload environment with correct config
+        let config = (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE')
+            ? WorldPresets.SINGLE_VENT
+            : WorldPresets.DEFAULT;
+
+        // DYNAMIC DIMENSIONS: Ensure grid fills the screen
+        config.cols = Math.ceil(width / config.resolution);
+
+        // APPLY DYNAMIC VENT OVERRIDES
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE' && GameConstants.VENT_PARAMS && config.vents.length > 0) {
+            config.vents[0].width = GameConstants.VENT_PARAMS.width;
+            config.vents[0].intensity = GameConstants.VENT_PARAMS.flux;
+
+            if (GameConstants.VENT_PARAMS.height) {
+                config.rows = GameConstants.VENT_PARAMS.height;
+            }
+
+            console.log(`[Sketch] Applied Vent Params: W=${config.vents[0].width}, F=${config.vents[0].intensity}`);
+        }
+
+        window.environment = new Environment(config);
         window.gameInstance.environment = window.environment;
     }
 }

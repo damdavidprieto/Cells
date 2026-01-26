@@ -37,26 +37,32 @@
  * - Koonin, E. V. & Martin, W. (2005). On the origin of genomes and cells. Trends Genet.
  */
 class Environment {
-    constructor() {
-        this.resolution = 60; // Larger cells for better visibility
-        this.cols = ceil(width / this.resolution);
-        this.rows = ceil(height / this.resolution);
+    constructor(config = null) {
+        // Load Configuration (Default to Standard Ocean if not provided)
+        this.config = config || WorldPresets.DEFAULT;
+
+        // Apply Config Parameters
+        this.resolution = this.config.resolution;
+        this.cols = this.config.cols > 0 ? this.config.cols : ceil(width / this.resolution);
+        this.rows = this.config.rows > 0 ? this.config.rows : ceil(height / this.resolution);
 
         // Resource grids
-        this.lightGrid = []; // Renamed from energyGrid
+        this.lightGrid = [];
         this.oxygenGrid = [];
-        this.nitrogenGrid = []; // Nitrogen in sediment
-        this.phosphorusGrid = []; // Phosphorus - essential for reproduction
-        this.uvRadiationGrid = []; // UV radiation (no ozone layer)
-        this.co2Grid = []; // CO₂ - primordial atmosphere (high concentration)
-        this.h2Grid = []; // H₂ - hydrogen from hydrothermal vents (LUCA metabolism)
-        this.fe2Grid = []; // Fe²⁺ - ferrous iron (Archean ocean, O₂ sink)
-        this.temperatureGrid = []; // Temperature - thermal gradients (50-80°C)
+        this.nitrogenGrid = [];
+        this.phosphorusGrid = [];
+        this.uvRadiationGrid = [];
+        this.co2Grid = [];
+        this.h2Grid = [];
+        this.fe2Grid = [];
+        this.temperatureGrid = [];
 
-        // Physical zones (3-layer system)
-        // ATMOSPHERE (top 10%): Gas phase, cells cannot live here
-        this.atmosphereDepth = 0.10;
-        this.atmosphereRow = floor(this.rows * this.atmosphereDepth);
+        console.log(`[Environment] Initialized with Config: ${this.cols}x${this.rows} (Res: ${this.resolution})`);
+
+        // Vertical Stratification (From Config)
+        this.atmosphereDepth = this.config.atmosphereDepth;
+        this.atmosphereRow = Math.floor(this.rows * this.atmosphereDepth);
+        this.waterStartRow = this.atmosphereRow;
 
         // WATER COLUMN (middle 80%): Habitable zone for cells
         this.waterStartRow = this.atmosphereRow;
@@ -64,6 +70,40 @@ class Environment {
         // SEDIMENT (bottom 10%): Hydrothermal vents, cells cannot spawn here
         this.sedimentDepth = 0.10;
         this.sedimentRow = floor(this.rows * (1 - this.sedimentDepth));
+
+        // VERTICAL BOUNDARIES (Columns)
+        // Default: Full width
+        this.waterStartCol = 0;
+        this.waterEndCol = this.cols;
+
+        if (this.config.restrictToVents) {
+            // REDUCE VENT HEIGHT TO 1 (User Request for Single Vent)
+            // Force the sediment (Source) to be only the absolute bottom row.
+            this.sedimentRow = this.rows - 1;
+
+            // Re-calculate derived values
+            this.waterEndRow = this.sedimentRow;
+
+            // CALCULATE BOUNDS based on Vents
+            // If we have vents, union their bounds? 
+            // Or if strict single vent mode, take the first one.
+            if (this.config.vents.length > 0) {
+                // Determine bounds of the first/central vent
+                let vWidth = this.config.vents[0].width || 1;
+                let center = Math.floor(this.cols / 2); // Default center
+
+                // If vent has specific position, use it
+                // But WorldPresets says 'CENTER' type.
+                // Constraint: We want to restrict the WATER COLUMN to this vent.
+
+                let radius = Math.floor(vWidth / 2);
+                this.waterStartCol = center - radius;
+                this.waterEndCol = center + radius + 1; // Exclusive
+
+                console.log(`[Environment] Restricted Mode: Confining from ${this.waterStartCol} to ${this.waterEndCol} (Bottom Row: ${this.sedimentRow})`);
+            }
+        }
+
         this.waterEndRow = this.sedimentRow;
 
         // ENVIRONMENTAL STABILITY SYSTEM
@@ -73,7 +113,30 @@ class Environment {
         this.stabilityUpdateCounter = 0;
         this.lastDeathCount = 0;
 
+        this.stabilityUpdateCounter = 0;
+        this.lastDeathCount = 0;
+
+        // DYNAMIC VENT CONTROL
+        this.fluxMultipliers = {
+            h2: 1.0,
+            co2: 1.0,
+            nitrogen: 1.0,
+            phosphorus: 1.0,
+            light: 1.0,
+            temperature: 1.0,
+            oxygen: 1.0 // Added dedicated O2 control
+        };
+        // Backwards compatibility getter/setter for h2FluxMultiplier
+        Object.defineProperty(this, 'h2FluxMultiplier', {
+            get: function () { return this.fluxMultipliers.h2; },
+            set: function (val) { this.fluxMultipliers.h2 = val; }
+        });
+
         this.initGrids();
+
+        // NEW: VENT SYSTEM INTEGRATION
+        this.ventSystem = new VentSystem();
+        this.ventSystem.initialize(this.config);
     }
 
     initGrids() {
@@ -90,6 +153,30 @@ class Environment {
 
         this.uvRadiationGrid = PhysicalGrids.initializeUV(this.cols, this.rows, this.resolution);
         this.temperatureGrid = PhysicalGrids.initializeTemperature(this.cols, this.rows, this.resolution);
+
+        // CLEANUP FOR RESTRICTED VENTS
+        if (this.config.restrictToVents) {
+            // Ensure boundaries are set (might be redundant if constructor order is preserved, but safe)
+            const centerCol = Math.floor(this.cols / 2);
+            // We can use the props calculated in constructor if initGrids is called after.
+            // It's called at the end of constructor, so:
+
+            for (let i = 0; i < this.cols; i++) {
+                for (let j = 0; j < this.rows; j++) {
+                    // Check if outside valid column range
+                    if (i < this.waterStartCol || i >= this.waterEndCol) {
+                        this.lightGrid[i][j] = 0;
+                        this.oxygenGrid[i][j] = 0;
+                        this.nitrogenGrid[i][j] = 0;
+                        this.phosphorusGrid[i][j] = 0;
+                        this.co2Grid[i][j] = 0;
+                        this.h2Grid[i][j] = 0;
+                        this.fe2Grid[i][j] = 0;
+                    }
+                }
+            }
+            console.log("[Environment] Restricted Mode: Initial Grids Sanitized.");
+        }
     }
 
 
@@ -153,9 +240,10 @@ class Environment {
     }
 
     update() {
-        // Regenerate resources using modular classes
-        // This replaces 60+ lines of regeneration code with clean module calls
-        // 1. Regenerate Resources
+        // 1. Modular Vent System Update (Injects Chemicals/Heat)
+        this.ventSystem.update(this);
+
+        // 2. Diffuse & Regenerate (Standard Grids)
         // Apply Progressive Oxygen Event (if enabled)
         if (this.progressiveOxygenEnabled) {
             this.applyProgressiveOxygenRise();
@@ -164,7 +252,7 @@ class Environment {
         GridRegeneration.regenerateLight(this);
         GridRegeneration.regenerateNitrogen(this);
         GridRegeneration.regeneratePhosphorus(this);
-        GridRegeneration.regenerateH2(this);
+        // GridRegeneration.regenerateH2(this); // REMOVED: Handled by VentSystem
         GridRegeneration.regenerateOxygen(this);  // Photolysis UV
 
         // Skip Iron Sink during Great Oxidation Event to allow buildup
@@ -202,11 +290,14 @@ class Environment {
         }
     }
 
+
     show() {
         noStroke();
 
         // Render Grid Cells
-        for (let x = 0; x < this.cols; x++) {
+        // OPTIMIZATION: Only loop through the active water column range.
+        // In Default mode, this is 0 to cols. In Single Vent mode, it's just the vent width.
+        for (let x = this.waterStartCol; x < this.waterEndCol; x++) {
             for (let y = 0; y < this.rows; y++) {
                 let px = x * this.resolution;
                 let py = y * this.resolution;
@@ -214,32 +305,57 @@ class Environment {
                 let r, g, b;
 
                 // 1. Base Color by Zone (Atmosphere, Water, Sediment)
+                // (No need to check horizontal bounds here anymore, loop handles it)
+
                 if (y < this.atmosphereRow) {
                     // ATMOSPHERE: Pale Blue / White
                     r = 200; g = 230; b = 255;
-                } else if (y >= this.sedimentRow) {
+                } else if (y >= this.sedimentRow && !this.config.restrictToVents) {
                     // SEDIMENT: Dark Red/Brown (Volcanic)
+                    // HIDE SEDIMENT IN SINGLE VENT MODE (User Request: "Use Ocean")
                     r = 50; g = 20; b = 10;
                 } else {
                     // WATER: Deep Blue Gradient
                     let depth = (y - this.atmosphereRow) / (this.sedimentRow - this.atmosphereRow);
+                    // Handle division by zero for 1-row worlds
+                    if (!isFinite(depth)) depth = 1.0;
+
                     r = 10; g = 20 + depth * 20; b = 60 + depth * 40;
                 }
 
                 // 2. Resource Overlay (Additive Blending)
+                // ... (Logic continues for the active column only) ...
 
                 // H2 (Vents) - Green Glow
-                // Tuned down to avoid artifacting/saturation in Single Cell Mode
                 let h2Val = this.h2Grid[x][y];
                 if (h2Val > 10) {
                     let intensity = map(h2Val, 10, 250, 0, 120, true);
+
+                    if (this.config.restrictToVents) {
+                        // VISUAL FIX: Only show "Vent" (Green) at the very bottom (Source)
+                        // The user wants "1 vent of height". Visualizing the plume upwards makes it look tall.
+                        if (Math.floor(y / this.resolution) < this.sedimentRow) {
+                            intensity = 0;
+                        }
+                    }
+
                     r += 0; g += intensity; b += 0;
                 }
 
                 // CO2 - Purple Haze
+                // FIX: In Single Vent Mode, restrict bright purple glow to bottom to look like a single source
                 let co2Val = this.co2Grid[x][y];
                 if (co2Val > 50) {
                     let intensity = map(co2Val, 50, 200, 0, 80);
+
+                    if (this.config.restrictToVents) {
+                        // Fade out CO2 visual as it goes up
+                        let distFromBottom = (this.rows - 1) - y;
+                        if (distFromBottom > 2) {
+                            intensity = 0; // Hide CO2 glow above the source
+                        }
+                    }
+
                     r += intensity; g += 0; b += intensity;
                 }
 
@@ -247,6 +363,9 @@ class Environment {
                 let o2Val = this.oxygenGrid[x][y];
                 if (o2Val > 5) {
                     let intensity = map(o2Val, 5, 50, 0, 100);
+                    if (this.config.restrictToVents) {
+                        intensity = 0; // Hide O2 glow completely (it's likely background noise)
+                    }
                     r += 0; g += intensity; b += intensity;
                 }
 
@@ -256,15 +375,19 @@ class Environment {
         }
 
         // Draw Zone Boundaries
+        // Respect vertical boundaries
+        let startX = this.waterStartCol * this.resolution;
+        let endX = this.waterEndCol * this.resolution;
+
         let atmosphereY = this.atmosphereRow * this.resolution;
         stroke(255, 255, 255, 100);
         strokeWeight(2);
-        line(0, atmosphereY, width, atmosphereY);
+        line(startX, atmosphereY, endX, atmosphereY);
 
         let sedimentY = this.sedimentRow * this.resolution;
         stroke(200, 50, 50, 150);
         strokeWeight(2);
-        line(0, sedimentY, width, sedimentY);
+        line(startX, sedimentY, endX, sedimentY);
 
         noStroke();
     }

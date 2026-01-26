@@ -13,12 +13,17 @@ class StatsPanel {
 
         // HTML inline (sin necesidad de fetch)
         const html = `
-<div id="ui-layer">
-    <div id="stats">
-        <div style="margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
-            <span style="font-size: 1.2em; color: #4dc; font-family: monospace;">⏳ <span id="time-display">4.000 Ga</span></span>
-            <div style="font-size: 0.8em; color: #888;">Frame: <span id="frame-count">0</span></div>
-        </div>
+<div id="stats-panel" class="panel stats-panel">
+    <!-- EXIT BUTTON (Top Right) -->
+    <button id="exit-btn" class="btn-danger" style="position: fixed; top: 15px; right: 20px; z-index: 10000; padding: 8px 15px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+        🚪 SALIR
+    </button>
+
+    <div class="stats-header">
+        <span class="icon">⏳</span> <span id="time-display">4.000 Ga</span>
+    </div>
+        
+        <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">Frame: <span id="frame-count">0</span></div>
 
         <p><strong>Población</strong></p>
         <p>Células Totales: <span id="entity-count">0</span></p>
@@ -40,18 +45,35 @@ class StatsPanel {
 </div>`;
 
         parent.insertAdjacentHTML('beforeend', html);
-        this.container = document.getElementById('ui-layer');
+        this.container = document.getElementById('stats-panel');
 
         // Inicialmente oculto
         if (this.container) this.container.style.display = 'none';
+
+        // Hide Exit Button initially (Only for in-game)
+        const btnExit = document.getElementById('exit-btn');
+        if (btnExit) btnExit.style.display = 'none';
+
+        if (btnExit) {
+            btnExit.addEventListener('click', () => {
+                // Return to Main Menu
+                if (confirm('¿Volver al menú principal? (Se perderá el progreso actual)')) {
+                    location.reload();
+                }
+            });
+        }
     }
 
     show() {
         if (this.container) this.container.style.display = 'block';
+        const btnExit = document.getElementById('exit-btn');
+        if (btnExit) btnExit.style.display = 'block';
     }
 
     hide() {
         if (this.container) this.container.style.display = 'none';
+        const btnExit = document.getElementById('exit-btn');
+        if (btnExit) btnExit.style.display = 'none';
     }
 
     /**

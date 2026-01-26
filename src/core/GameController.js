@@ -43,7 +43,7 @@ class GameController {
      * @param {string} mode - 'PRODUCTION' o 'DEVELOPMENT'
      */
     static startGame(mode) {
-        if (['PRODUCTION', 'DEVELOPMENT', 'SINGLE_CELL_MODE'].includes(mode)) {
+        if (['PRODUCTION', 'DEVELOPMENT', 'SINGLE_CELL_MODE', 'SINGLE_VENT_MODE'].includes(mode)) {
             GameConstants.EXECUTION_MODE = mode;
             console.log(`[GameController] Iniciando juego en modo: ${mode}`);
         }
@@ -64,12 +64,48 @@ class GameController {
         loop();
     }
 
+    static stopGame() {
+        noLoop(); // p5.js stop
+        if (window.gameInstance) {
+            window.gameInstance.isRunning = false;
+        }
+        if (window.uiManager) {
+            window.uiManager.resetUI();
+        }
+        console.log("[GameController] Juego detenido.");
+    }
+
     /**
      * Configura todos los sistemas del juego (Entorno, Entidades, logs).
      */
     async initialize() {
         // Inicializar sistemas core
-        window.environment = new Environment();
+
+        // DYNAMIC CONFIGURATION LOADER
+        let config = WorldPresets.DEFAULT;
+
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
+            config = WorldPresets.SINGLE_VENT;
+
+            // DYNAMIC DIMENSIONS: Ensure grid fills the screen
+            // This aligns "Grid Center" with "Screen Center"
+            config.cols = Math.ceil(width / config.resolution);
+
+            // Apply Param Overrides
+            if (GameConstants.VENT_PARAMS && config.vents.length > 0) {
+                config.vents[0].width = GameConstants.VENT_PARAMS.width;
+                config.vents[0].intensity = GameConstants.VENT_PARAMS.flux;
+
+                // Override Rows if present
+                if (GameConstants.VENT_PARAMS.height) {
+                    config.rows = GameConstants.VENT_PARAMS.height;
+                }
+
+                console.log(`[GameController] Initializing Single Vent with Params: W=${config.vents[0].width}, H=${config.rows}, F=${config.vents[0].intensity}`);
+            }
+        }
+
+        window.environment = new Environment(config);
         this.environment = window.environment; // Referencia local
 
         // Initialize Global Scenario (O2 Rise, Scarcity, etc.)
@@ -79,7 +115,7 @@ class GameController {
         this.speciesNotifier = new SpeciesNotifier();
 
         // DatabaseLogger (IndexedDB - no network)
-        if (GameConstants.DATABASE_LOGGING.enabled && (GameConstants.EXECUTION_MODE === 'DEVELOPMENT' || GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE')) {
+        if (GameConstants.DATABASE_LOGGING.enabled && (GameConstants.EXECUTION_MODE === 'DEVELOPMENT' || GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE')) {
             this.databaseLogger = new DatabaseLogger();
             try {
                 await this.databaseLogger.init();
@@ -104,13 +140,29 @@ class GameController {
         let spawnZoneStart = waterEndY - (height * 0.2); // Last 20% of water column
         let spawnZoneEnd = waterEndY - 10; // Just above sediment
 
-        // SINGLE CELL ANALYSIS MODE
-        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE') {
-            console.log('[GameController] Initializing SINGLE_CELL_MODE (Analysis)');
+        // SINGLE CELL ANALYSIS MODE & SINGLE VENT MODE
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
+            console.log(`[GameController] SUCCESS! Initializing ${GameConstants.EXECUTION_MODE} (Analysis)`);
 
             // Spawn in deep sediment (IDEAL VENT)
-            let idealX = width / 2;
-            let idealY = height - 20; // Deep in sediment
+            // Spawn in deep sediment (IDEAL VENT)
+            // ALIGNMENT FIX: Use grid coordinates to center perfectly in the vent column
+            let centerCol = Math.floor(this.environment.cols / 2);
+            if (this.environment.waterStartCol !== undefined) {
+                // If restricted, use the center of the restricted area
+                centerCol = (this.environment.waterStartCol + this.environment.waterEndCol) / 2;
+            }
+            let idealX = centerCol * this.environment.resolution + (this.environment.resolution / 2);
+            // Note: resolution is centered at top-left of cell. +resolution/2 for center? 
+            // Entity usually draws centered. Let's add half res.
+            // But if width is 1 (start=10, end=11), center is 10.5. 10.5 * 60 = pixel center. Perfect.
+
+            let spawnRow = this.environment.sedimentRow;
+            // Ensure we are inside the valid row (if single row, row is 0)
+            if (this.environment.rows === 1) spawnRow = 0;
+
+            // CENTER EXACTLY IN THE CELL (Pixel perfect)
+            let idealY = spawnRow * this.environment.resolution + (this.environment.resolution / 2);
 
             let entity = new Entity(idealX, idealY);
             entity.id = 0;
@@ -140,6 +192,7 @@ class GameController {
         }
         // STANDARD MODES
         else {
+            console.warn(`[GameController] Launching STANDARD MODE because mode is: ${GameConstants.EXECUTION_MODE}`);
             for (let i = 0; i < 20; i++) {
                 // Spawn near vents (rich energy source)
                 let entity = new Entity(
