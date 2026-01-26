@@ -165,14 +165,29 @@ class Entity {
             if (this.pos.y < waterStartY) {
                 this.pos.y = waterStartY + 1;
                 this.vel.y = abs(this.vel.y); // Bounce downward
-                console.log(`[Boundary] Cell ${this.id} pushed out of atmosphere`);
+                // console.log(`[Boundary] Cell ${this.id} pushed out of atmosphere`);
             }
 
             // If cell moved into sediment, push back to water
             if (this.pos.y >= waterEndY) {
                 this.pos.y = waterEndY - 1;
                 this.vel.y = -abs(this.vel.y); // Bounce upward
-                console.log(`[Boundary] Cell ${this.id} pushed out of sediment`);
+                // console.log(`[Boundary] Cell ${this.id} pushed out of sediment`);
+            }
+        }
+
+        // HORIZONTAL BOUNDARY (Walls) - New for Single Vent Mode
+        if (typeof environment.waterStartCol !== 'undefined' && typeof environment.waterEndCol !== 'undefined') {
+            const waterStartX = environment.waterStartCol * environment.resolution;
+            const waterEndX = environment.waterEndCol * environment.resolution;
+
+            if (this.pos.x < waterStartX) {
+                this.pos.x = waterStartX + 1;
+                this.vel.x = abs(this.vel.x); // Bounce right
+            }
+            if (this.pos.x >= waterEndX) {
+                this.pos.x = waterEndX - 1;
+                this.vel.x = -abs(this.vel.x); // Bounce left
             }
         }
 

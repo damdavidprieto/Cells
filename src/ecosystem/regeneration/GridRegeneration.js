@@ -60,28 +60,61 @@ class GridRegeneration {
      * ═══════════════════════════════════════════════════════════════════
      */
     static regenerateLight(environment) {
-        for (let i = 0; i < environment.cols; i++) {
+        // OPTIMIZATION: Respect Restricted Vents (Single Vent Mode)
+        let startCol = 0;
+        let endCol = environment.cols;
+
+        if (environment.config && environment.config.restrictToVents) {
+            startCol = environment.waterStartCol;
+            endCol = environment.waterEndCol;
+        }
+
+        for (let i = startCol; i < endCol; i++) {
             for (let j = 0; j < environment.rows; j++) {
-                // 1. CALCULAR PROFUNDIDAD NORMALIZADA (0.0 = superficie, 1.0 = fondo)
-                // ¿Qué hace?: Convierte índice de fila (j) a ratio de profundidad
-                // ¿Por qué?: Permite aplicar fórmula exponencial independiente de resolución
+                // 1. CALCULAR PROFUNDIDAD NORMALIZADA
                 let depthRatio = j / environment.rows;
 
-                // 2. CALCULAR LUZ MÁXIMA EN ESTA PROFUNDIDAD (Beer-Lambert Law)
-                // ¿Qué hace?: I(z) = 100 × e^(-4 × depthRatio)
-                // ¿Por qué?: Luz decae exponencialmente con profundidad (física real)
-                // Efecto en juego: Superficie = 100, Media profundidad = 13.5, Fondo = 1.8
-                //                  → Presión evolutiva para vivir en superficie (más luz)
-                let maxLight = 100 * exp(-4 * depthRatio);
+                // 2. APPLY FLUX MULTIPLIER (Global Intensity)
+                let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.light : 1.0;
 
-                // 3. REGENERAR LUZ SI ESTÁ POR DEBAJO DEL MÁXIMO
-                // ¿Qué hace?: Añade 0.5 unidades de luz si está por debajo del máximo
-                // ¿Por qué?: Simula entrada constante de luz solar (no se agota)
-                // Efecto en juego: Luz se regenera continuamente (recurso renovable)
-                //                  Pero tasa (0.5) < consumo célula (1.5-2.0)
-                //                  → Competencia por luz en zonas pobladas
+                // CALCULAR LUZ MÁXIMA EN ESTA PROFUNDIDAD (Beer-Lambert Law)
+                let maxLight = (100 * fluxMult) * exp(-4 * depthRatio);
+
+                // 3. REGENERAR LUZ
                 if (environment.lightGrid[i][j] < maxLight) {
-                    environment.lightGrid[i][j] += 0.5;
+                    environment.lightGrid[i][j] += 0.5 * fluxMult;
+                }
+            }
+        }
+    }
+
+    // ... (Nitrogen already fixed) ...
+
+    static regenerateOxygen(environment) {
+        OxygenRegeneration.regenerate(environment);
+
+        let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.oxygen : 1.0;
+
+        // Manual Flux Boost for O2 (if slider > 100%)
+        if (fluxMult !== 1.0) {
+            // OPTIMIZATION: Respect Restricted Vents
+            let startCol = 0;
+            let endCol = environment.cols;
+
+            if (environment.config && environment.config.restrictToVents) {
+                startCol = environment.waterStartCol;
+                endCol = environment.waterEndCol;
+            }
+
+            for (let i = startCol; i < endCol; i++) {
+                for (let j = 0; j < environment.rows; j++) {
+                    // Approach: Add/Subtract based on deviation from 1.0
+                    // Base regen rate assumed approx 0.1 per frame globally?
+                    let extra = 0.05 * (fluxMult - 1.0);
+                    if (extra !== 0) {
+                        environment.oxygenGrid[i][j] += extra;
+                        environment.oxygenGrid[i][j] = Math.max(0, min(environment.oxygenGrid[i][j], 100));
+                    }
                 }
             }
         }
@@ -92,13 +125,23 @@ class GridRegeneration {
      * BALANCE FIX: Doubled regeneration rate for viable LUCA environment
      */
     static regenerateNitrogen(environment) {
+        let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.nitrogen : 1.0;
+
         for (let i = 0; i < environment.cols; i++) {
             for (let j = 0; j < environment.rows; j++) {
                 if (j >= environment.sedimentRow) {
+
+                    // NEW: Use Generic Config Restrictions
+                    if (environment.config && environment.config.restrictToVents) {
+                        // Use calculated boundaries from Environment
+                        if (i < environment.waterStartCol || i >= environment.waterEndCol) {
+                            environment.nitrogenGrid[i][j] = 0;
+                            continue;
+                        }
+                    }
+
                     // Only regenerate in sediment zone
-                    // SCIENTIFIC UPDATE: Nitrogen Fixation at Vents
-                    // Ammonia (NH4+) is produced continuously at alkaline vents
-                    environment.nitrogenGrid[i][j] += GameConstants.VENT_NITROGEN_FLUX;
+                    environment.nitrogenGrid[i][j] += GameConstants.VENT_NITROGEN_FLUX * fluxMult;
                     environment.nitrogenGrid[i][j] = min(environment.nitrogenGrid[i][j], GameConstants.NITROGEN_GRID_MAX);
                 }
             }
@@ -107,36 +150,107 @@ class GridRegeneration {
 
     /**
      * Regenerate phosphorus (delegates to PhosphorusRegeneration module)
-     * See PhosphorusRegeneration.js for detailed scientific documentation
      */
     static regeneratePhosphorus(environment) {
+        // Note: PhosphorusRegeneration module needs to be updated or we perform a manual hack here if it's external.
+        // Assuming PhosphorusRegeneration.regenerate handles it, but we should pass the multiplier if possible.
+        // Since PhosphorusRegeneration might be complex, let's look at how to inject it.
+        // For now, simpler to modify the grid directly AFTER standard regen if needed, OR modify the module.
+        // Let's modify the module call or assume we can inject context.
+        // Actually, let's just do a direct addition here if the module isn't loaded, or modify the module.
         PhosphorusRegeneration.regenerate(environment);
-    }
 
-    /**
-     * Regenerate H₂ (continuous production in vents)
-     * Hydrothermal activity produces H₂ continuously
-     * SCIENTIFIC FIX: H₂ diffuses upward from vents (Sleep et al. 2011)
-     * Not confined to sediment - creates vertical gradient
-     */
-    static regenerateH2(environment) {
-        for (let i = 0; i < environment.cols; i++) {
-            for (let j = 0; j < environment.rows; j++) {
-                if (j >= environment.sedimentRow) {
-                    // Sediment zone (vents): High production
-                    environment.h2Grid[i][j] += GameConstants.H2_VENT_PRODUCTION;
-                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j], GameConstants.H2_MAX_ACCUMULATION);
+        // Manual Flux Boost for Single Vent Mode (simplest integration)
+        let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.phosphorus : 1.0;
+        if (fluxMult !== 1.0) {
+            for (let i = 0; i < environment.cols; i++) {
+                for (let j = 0; j < environment.rows; j++) {
+                    if (j >= environment.sedimentRow) {
+                        // Add extra proportional to the multiplier exceeding 1.0 (or reduce)
+                        // But PhosphorusRegeneration already adds VENT_PHOSPHORUS_FLUX. 
+                        // We should scale that. As we can't easily edit the other file in same step, 
+                        // we will apply a correction here:
+                        // (fluxMult - 1) * VENT_PHOSPHORUS_FLUX
+                        let extra = GameConstants.VENT_PHOSPHORUS_FLUX * (fluxMult - 1.0);
+                        if (extra !== 0) {
+                            environment.phosphorusGrid[i][j] += extra;
+                            environment.phosphorusGrid[i][j] = Math.max(0, min(environment.phosphorusGrid[i][j], GameConstants.PHOSPHORUS_GRID_MAX));
+                        }
+                    }
                 }
-                // REMOVED: Fake random diffusion. Now handled by proper DiffusionSystem.
             }
         }
     }
 
     /**
-     * Regenerate O₂ (delegates to OxygenRegeneration module)
-     * See OxygenRegeneration.js for detailed scientific documentation
+     * Regenerate H₂ (continuous production in vents)
+     */
+    static regenerateH2(environment) {
+        let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.h2 : 1.0;
+        let isSingleVent = GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE';
+        let centerCol = Math.floor(environment.cols / 2);
+        let ventRadius = 0; // Width of the single vent (1 column)
+
+        for (let i = 0; i < environment.cols; i++) {
+            for (let j = 0; j < environment.rows; j++) {
+                if (j >= environment.sedimentRow) {
+                    // Restriction for Single Vent Mode
+                    if (isSingleVent && Math.abs(i - centerCol) > ventRadius) {
+                        // STRICT ISOLATION: Wipe data outside the vent
+                        environment.h2Grid[i][j] = 0;
+                        continue;
+                    }
+
+                    // Sediment zone (vents): High production
+                    environment.h2Grid[i][j] += GameConstants.H2_VENT_PRODUCTION * fluxMult;
+                    environment.h2Grid[i][j] = min(environment.h2Grid[i][j], GameConstants.H2_MAX_ACCUMULATION);
+                }
+            }
+        }
+    }
+
+    /**
+     * Regenerate O₂
      */
     static regenerateOxygen(environment) {
         OxygenRegeneration.regenerate(environment);
+
+        let fluxMult = environment.fluxMultipliers ? environment.fluxMultipliers.oxygen : 1.0;
+
+        // Manual Flux Boost for O2 (if slider > 100%)
+        // We assume standard regen is "100%". 
+        // If slider is 200%, we add significantly more O2.
+        // If slider is 0%, we might want to suppress it, but OxygenRegeneration is a bit complex.
+        // For simple control: ADD extra O2 based on multiplier.
+        if (fluxMult !== 1.0) {
+
+            let startCol = 0;
+            let endCol = environment.cols;
+
+            if (environment.config && environment.config.restrictToVents) {
+                startCol = environment.waterStartCol;
+                endCol = environment.waterEndCol;
+            }
+
+            for (let i = startCol; i < endCol; i++) {
+                for (let j = 0; j < environment.rows; j++) {
+                    // Add extra O2 everywhere (Atmosphere simulation) or just modify what's there?
+                    // Let's modify the grid proportionally:
+                    // 1. If increasing (>1): Add extra
+                    // 2. If decreasing (<1): Decay existing? Or just don't add?
+                    // Simplest robust way: Apply multiplier to the *result* of this frame's regen? 
+                    // No, that compounds. 
+                    // Let's just add a flat rate or scale the grid towards target.
+
+                    // Approach: Add/Subtract based on deviation from 1.0
+                    // Base regen rate assumed approx 0.1 per frame globally?
+                    let extra = 0.05 * (fluxMult - 1.0);
+                    if (extra !== 0) {
+                        environment.oxygenGrid[i][j] += extra;
+                        environment.oxygenGrid[i][j] = Math.max(0, min(environment.oxygenGrid[i][j], 100));
+                    }
+                }
+            }
+        }
     }
 }

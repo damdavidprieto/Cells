@@ -47,6 +47,73 @@ class ConfigScreen {
             (Last Universal Common Ancestor) hace 4.0-3.5 Ga, basado en evidencia geológica y bioquímica.
         </div>
 
+        <div class="config-actions">
+            <!-- NEW: Single Vent Mode (Prominent) -->
+            <div style="margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <button id="start-vent-btn" class="btn-play" style="width: 100%; background: linear-gradient(135deg, #2c3e50, #4ca1af); border-left: 4px solid #4ca1af; padding: 15px; font-size: 1.1em; margin-bottom: 15px;">
+                    <span class="icon">🌋</span>
+                    <span class="text">Iniciar Modo Vent Único</span>
+                </button>
+                
+                <div style="display: flex; gap: 20px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.8em; color: #aaa;">Ancho (Cols)</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="vent-width-slider" min="1" max="10" value="1" step="1" style="flex: 1;">
+                            <span id="vent-width-val" style="width: 20px; text-align: right; color: #4ca1af; font-weight: bold;">1</span>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.8em; color: #aaa;">Alto (Filas)</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <input type="range" id="vent-height-slider" min="1" max="100" value="1" step="1" style="flex: 1;">
+                            <span id="vent-height-val" style="width: 20px; text-align: right; color: #e67e22; font-weight: bold;">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCTION / STANDARD CONTROLS -->
+            <div class="production-controls" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="reset-btn" class="btn-secondary" style="flex: 1;">
+                    🔄 Restaurar LUCA
+                </button>
+                <button id="start-production-btn" class="btn-play" style="flex: 1;">
+                    ▶️ Iniciar Estándar
+                </button>
+            </div>
+
+            <!-- DEVELOPMENT CONTROLS (Hidden in Production) -->
+            <div id="dev-controls-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 0.8em; text-transform: uppercase; color: #666; margin-bottom: 10px; font-weight: bold;">
+                    🛠️ Zona de Ingeniería (Local/Dev)
+                </p>
+                
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <!-- General Dev Mode -->
+                    <button id="start-dev-btn" class="btn-dev" style="flex: 1; min-width: 150px;">
+                        🛠️ Modo Desarrollo
+                    </button>
+
+                    <!-- Single Cell Cluster (Grouped) -->
+                    <div class="single-cell-cluster" style="flex: 2; min-width: 300px; background: rgba(230, 126, 34, 0.1); border: 1px solid rgba(230, 126, 34, 0.3); padding: 10px; border-radius: 6px; display: flex; gap: 10px; align-items: center;">
+                        <div style="flex-grow: 1;">
+                            <select id="scenario-select" style="width: 100%; padding: 8px; background: #222; color: #ecf0f1; border: 1px solid #555; border-radius: 4px; font-size: 0.9em;">
+                                <option value="STANDARD">🔵 Estándar (Ideal)</option>
+                                <option value="PRESSURE_OXYGEN">💀 Toxicidad O₂</option>
+                                <option value="PRESSURE_LIGHT">☀️ Alta radiación UV</option>
+                                <option value="PRESSURE_SCARCITY">📉 Escasez Recursos</option>
+                                <option value="PRESSURE_THERMAL">🌋 Hipertermia</option>
+                            </select>
+                        </div>
+                        <button id="start-single-btn" class="btn-secondary" style="background: #e67e22; border-color: #d35400; color: white; white-space: nowrap; padding: 8px 15px;">
+                            🔬 Single Cell
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="parameters-grid">
             <!-- UV Radiation -->
             <div class="parameter-group">
@@ -148,48 +215,6 @@ class ConfigScreen {
                     <span>Tóxico</span>
                 </div>
                 <p class="param-desc">Daño oxidativo. LUCA: SOD primitivo, ambiente anóxico</p>
-            </div>
-        </div>
-
-        <div class="config-actions">
-            <!-- PRODUCTION / STANDARD CONTROLS -->
-            <div class="production-controls" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button id="reset-btn" class="btn-secondary" style="flex: 1;">
-                    🔄 Restaurar LUCA
-                </button>
-                <button id="start-production-btn" class="btn-play" style="flex: 1;">
-                    ▶️ Iniciar Simulación
-                </button>
-            </div>
-
-            <!-- DEVELOPMENT CONTROLS (Hidden in Production) -->
-            <div id="dev-controls-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
-                <p style="font-size: 0.8em; text-transform: uppercase; color: #666; margin-bottom: 10px; font-weight: bold;">
-                    🛠️ Zona de Ingeniería (Local/Dev)
-                </p>
-                
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <!-- General Dev Mode -->
-                    <button id="start-dev-btn" class="btn-dev" style="flex: 1; min-width: 150px;">
-                        🛠️ Modo Desarrollo
-                    </button>
-
-                    <!-- Single Cell Cluster (Grouped) -->
-                    <div class="single-cell-cluster" style="flex: 2; min-width: 300px; background: rgba(230, 126, 34, 0.1); border: 1px solid rgba(230, 126, 34, 0.3); padding: 10px; border-radius: 6px; display: flex; gap: 10px; align-items: center;">
-                        <div style="flex-grow: 1;">
-                            <select id="scenario-select" style="width: 100%; padding: 8px; background: #222; color: #ecf0f1; border: 1px solid #555; border-radius: 4px; font-size: 0.9em;">
-                                <option value="STANDARD">🔵 Estándar (Ideal)</option>
-                                <option value="PRESSURE_OXYGEN">💀 Toxicidad O₂</option>
-                                <option value="PRESSURE_LIGHT">☀️ Alta radiación UV</option>
-                                <option value="PRESSURE_SCARCITY">📉 Escasez Recursos</option>
-                                <option value="PRESSURE_THERMAL">🌋 Hipertermia</option>
-                            </select>
-                        </div>
-                        <button id="start-single-btn" class="btn-secondary" style="background: #e67e22; border-color: #d35400; color: white; white-space: nowrap; padding: 8px 15px;">
-                            🔬 Single Cell
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -333,10 +358,64 @@ class ConfigScreen {
                 }, 100);
             });
         }
+
+        const ventBtn = document.getElementById('start-vent-btn');
+        const ventWidthSlider = document.getElementById('vent-width-slider');
+        const ventWidthVal = document.getElementById('vent-width-val');
+        const ventHeightSlider = document.getElementById('vent-height-slider');
+        const ventHeightVal = document.getElementById('vent-height-val');
+
+        // Defaults (Flux 1.0 = Standard, user modifies via runtime controls)
+        this.ventParams = { width: 1, height: 1, flux: 1.0 };
+
+        if (ventWidthSlider && ventWidthVal) {
+            ventWidthSlider.addEventListener('input', (e) => {
+                this.ventParams.width = parseInt(e.target.value);
+                ventWidthVal.textContent = this.ventParams.width;
+            });
+        }
+
+        if (ventHeightSlider && ventHeightVal) {
+            ventHeightSlider.addEventListener('input', (e) => {
+                this.ventParams.height = parseInt(e.target.value);
+                ventHeightVal.textContent = this.ventParams.height;
+            });
+        }
+
+        if (ventBtn) {
+            ventBtn.addEventListener('click', () => {
+                this.disableButtons();
+                ventBtn.innerHTML = '⏳ Configurando Laboratorio...';
+
+                // 1. Preparar Overrides desde la UI
+                const overrides = {
+                    world: {
+                        rows: this.ventParams.height,
+                        // El ancho (cols) se calcula auto en ScenarioLibrary/Manager, 
+                        // pero los vents específicos sí los pasamos
+                        vents: [{
+                            width: this.ventParams.width,
+                            intensity: this.ventParams.flux || 1.0,
+                            type: 'CENTER', // Asegurar tipo
+                            subType: 'ALKALINE'
+                        }]
+                    }
+                };
+
+                // 2. Delegar al ScenarioManager
+                // Usa el preset LAB_SINGLE_VENT como base
+                ScenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT, overrides);
+
+                // 3. Iniciar el Loop del Juego
+                setTimeout(() => {
+                    this.startGame('SCENARIO_LOADED');
+                }, 100);
+            });
+        }
     }
 
     disableButtons() {
-        const buttons = ['reset-btn', 'start-production-btn', 'start-dev-btn', 'start-single-btn'];
+        const buttons = ['reset-btn', 'start-production-btn', 'start-dev-btn', 'start-single-btn', 'start-vent-btn'];
         buttons.forEach(id => {
             const btn = document.getElementById(id);
             if (btn) {
@@ -377,6 +456,7 @@ class ConfigScreen {
         let modeText = 'Producción';
         if (mode === 'DEVELOPMENT') modeText = 'Desarrollo';
         if (mode === 'SINGLE_CELL_MODE') modeText = `Single Cell (${scenario})`;
+        if (mode === 'SINGLE_VENT_MODE') modeText = 'Single Vent (Manual)';
 
         alert(`🎮 Iniciando simulación en modo ${modeText}...\n\n⚠️ El navegador puede tardar unos segundos en cargar.\n\nMira la consola (F12) para ver el progreso.`);
 

@@ -8,7 +8,8 @@ const GameConstants = {
     // DEVELOPMENT: Accelerated simulation (2x speed), debug monitor visible, logs enabled
     // PRODUCTION: Normal speed, clean UI, no debug logs
     // SINGLE_CELL_MODE: Analysis mode with 1 cell in ideal conditions
-    EXECUTION_MODE: 'SINGLE_CELL_MODE',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE'
+    // SINGLE_VENT_MODE: Manual control of a single vent with phantom mitosis
+    EXECUTION_MODE: 'SINGLE_VENT_MODE',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE', 'SINGLE_VENT_MODE'
     SCENARIO: 'PRESSURE_OXYGEN',         // Keep Oxygen Pressure scenario
 
     // Mode-specific settings
@@ -45,6 +46,19 @@ const GameConstants = {
         LOG_METABOLIC_DIVERGENCE: true,
         // Special flags
         LOG_EVERY_FRAME: true         // High frequency logging for deep analysis
+    },
+
+    SINGLE_VENT_MODE: {
+        FPS: 60,                      // Normal visual speed for monitoring
+        PHYSICS_STEPS: 1,             // Normal physics for accurate manual control
+        LOG_VERBOSITY: 2,
+        INITIAL_POPULATION: 1,        // Start with exactly 1 cell
+        FORCE_IDEAL_CONDITIONS: false,// Rely on dynamic vent control
+        PHANTOM_MITOSIS: true,        // Enable phantom mitosis (log & discard offspring)
+        LOG_DEATHS: true,
+        LOG_REPRODUCTIONS: true,
+        LOG_METABOLIC_DIVERGENCE: true,
+        LOG_EVERY_FRAME: true
     },
 
     // Helper method to get current mode settings
