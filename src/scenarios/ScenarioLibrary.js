@@ -47,7 +47,9 @@ class ScenarioLibrary {
                 enabled: false, // Por defecto off en producción
                 logEveryFrame: false,
                 detailLevel: 'SUMMARY'
-            }
+            },
+
+            events: []
         });
     }
 
@@ -95,38 +97,57 @@ class ScenarioLibrary {
                 zoomLevel: 1.0
             },
 
-            // ------------------------------------------------------------------------
-            // ESCENARIO 3: TEST DE ESTRÉS (Demostración de Eventos)
-            // ------------------------------------------------------------------------
-            static get STRESS_TEST() {
-                // Heredamos del Lab base para no repetir config
-                // Usamos una copia manual simple de las propiedades
-                // (En un sistema real usaríamos Object.assign o herencia de clases)
-                let base = ScenarioLibrary.LAB_SINGLE_VENT;
+            logging: {
+                enabled: true, // Análisis científico activado
+                logEveryFrame: true, // Alta resolución temporal
+                detailLevel: 'FULL'
+            },
 
-                return new ScenarioDefinition({
-                    ...base, // Spread syntax works if environment supports it, otherwise manual
-                    id: 'STRESS_TEST',
-                    name: 'QA: Test de Estrés Térmico',
-                    description: 'Ciclo automatizado de calor extremo y congelación para probar resiliencia.',
+            // Evento de Bienvenida (Prueba de Sistema)
+            events: [
+                { frame: 60, action: 'NOTIFY', payload: '🔬 Laboratorio Iniciado. Monitorización Activa.' }
+            ]
+        });
+    }
 
-                    // Sobreescribimos la línea de tiempo
-                    events: [
-                        { frame: 60, action: 'LOG', payload: '--- INICIANDO PROTOCOLO DE PRUEBAS ---' },
-                        { frame: 180, action: 'NOTIFY', payload: '⚠️ PREPARAR PARA IMPULSO TÉRMICO (3s)' },
+    // ------------------------------------------------------------------------
+    // ESCENARIO 3: TEST DE ESTRÉS (Demostración de Eventos)
+    // ------------------------------------------------------------------------
+    static get STRESS_TEST() {
+        // Heredamos del Lab base para no repetir config
+        // Usamos una copia manual simple de las propiedades
+        // (En un sistema real usaríamos Object.assign o herencia de clases)
+        let base = ScenarioLibrary.LAB_SINGLE_VENT;
 
-                        // FASE 1: CALOR EXTREMO (Frame 360 ~ 6 segs)
-                        { frame: 360, action: 'SET_VENT_PARAM', payload: { intensity: 5.0 } }, // 500% Flux
-                        { frame: 360, action: 'LOG', payload: '>> INTENSIDAD AL MÁXIMO (500%)' },
+        return new ScenarioDefinition({
+            ...base, // Spread syntax works if environment supports it, otherwise manual
+            id: 'STRESS_TEST',
+            name: 'QA: Test de Estrés Térmico',
+            description: 'Ciclo automatizado de calor extremo y congelación para probar resiliencia.',
 
-                        // FASE 2: APAGADO (Frame 720 ~ 12 segs)
-                        { frame: 720, action: 'SET_VENT_PARAM', payload: { intensity: 0.0 } }, // 0% Flux
-                        { frame: 720, action: 'LOG', payload: '>> APAGADO DE EMERGENCIA (0%)' },
+            world: base.world, // Reutilizar world config
+            spawn: base.spawn,
+            ui: base.ui,
+            render: base.render,
+            logging: base.logging,
 
-                        // FASE 3: RECUPERACIÓN (Frame 1080 ~ 18 segs)
-                        { frame: 1080, action: 'SET_VENT_PARAM', payload: { intensity: 1.0 } }, // 100% Flux
-                        { frame: 1080, action: 'NOTIFY', payload: '✅ Sistemas Normalizados' }
-                    ]
-                });
-            }
-        }
+            // Sobreescribimos la línea de tiempo
+            events: [
+                { frame: 60, action: 'LOG', payload: '--- INICIANDO PROTOCOLO DE PRUEBAS ---' },
+                { frame: 180, action: 'NOTIFY', payload: '⚠️ PREPARAR PARA IMPULSO TÉRMICO (3s)' },
+
+                // FASE 1: CALOR EXTREMO (Frame 360 ~ 6 segs)
+                { frame: 360, action: 'SET_VENT_PARAM', payload: { intensity: 5.0 } }, // 500% Flux
+                { frame: 360, action: 'LOG', payload: '>> INTENSIDAD AL MÁXIMO (500%)' },
+
+                // FASE 2: APAGADO (Frame 720 ~ 12 segs)
+                { frame: 720, action: 'SET_VENT_PARAM', payload: { intensity: 0.0 } }, // 0% Flux
+                { frame: 720, action: 'LOG', payload: '>> APAGADO DE EMERGENCIA (0%)' },
+
+                // FASE 3: RECUPERACIÓN (Frame 1080 ~ 18 segs)
+                { frame: 1080, action: 'SET_VENT_PARAM', payload: { intensity: 1.0 } }, // 100% Flux
+                { frame: 1080, action: 'NOTIFY', payload: '✅ Sistemas Normalizados' }
+            ]
+        });
+    }
+}
