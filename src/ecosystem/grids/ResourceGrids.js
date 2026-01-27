@@ -20,7 +20,8 @@ class ResourceGrids {
             for (let j = 0; j < rows; j++) {
                 // LIGHT = SUNLIGHT (exponential decay with depth)
                 let depthRatio = j / rows;
-                let lightIntensity = 100 * exp(-4 * depthRatio);
+                let lightIntensity = GameConstants.ECOSYSTEM_INIT.LIGHT_SURFACE_INTENSITY *
+                    exp(-GameConstants.ECOSYSTEM_INIT.LIGHT_DECAY_RATE * depthRatio);
                 let variation = noise(i * 0.1, j * 0.1) * 0.2;
                 grid[i][j] = lightIntensity * (1 + variation);
             }
@@ -85,7 +86,8 @@ class ResourceGrids {
 
                 // PHOSPHORUS = VERY concentrated in SEDIMENT (even more than nitrogen)
                 // Critical for DNA/RNA, extremely limited resource
-                let phosphorusIntensity = 80 * exp(-6 * (1 - depthRatio)); // Steeper gradient than nitrogen
+                let phosphorusIntensity = GameConstants.ECOSYSTEM_INIT.PHOSPHORUS_VENT_INTENSITY *
+                    exp(-GameConstants.ECOSYSTEM_INIT.PHOSPHORUS_DECAY_RATE * (1 - depthRatio));
                 let phosphorusVariation = noise(i * 0.08 + 3000, j * 0.08 + 3000) * 0.4;
 
                 // FORCE BASELINE: Ensure minimum oceanic level for survival

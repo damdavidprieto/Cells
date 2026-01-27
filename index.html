@@ -101,7 +101,9 @@
             'src/ecosystem/grids/PhysicalGrids.js',
             'src/ecosystem/WorldConfig.js',
             'src/ecosystem/WorldPresets.js',
-            'src/ecosystem/VentSystem.js',   // NEW
+            'src/ecosystem/vents/VentTypes.js',
+            'src/ecosystem/vents/VentFactory.js',
+            'src/ecosystem/vents/VentManager.js',
             'src/ecosystem/regeneration/GridRegeneration.js',
             'src/ecosystem/regeneration/OxygenRegeneration.js',
             'src/ecosystem/regeneration/PhosphorusRegeneration.js',
@@ -127,7 +129,13 @@
             // Core Game Loop
             'src/core/GameGovernor.js',
             'src/core/GameController.js',
-            'src/core/Sketch.js'
+            'src/core/Sketch.js',
+
+            // Testing Layer (Runtime)
+            'src/testing/TestManager.js',
+            'src/testing/suites/VentTests.js',
+            'src/testing/suites/ScenarioTests.js',
+            'src/testing/suites/PhysicsTests.js'
         ];
 
         // Load all scripts with unique timestamp

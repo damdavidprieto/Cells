@@ -66,8 +66,8 @@ class ConfigScreen {
                     <div style="flex: 1;">
                         <label style="font-size: 0.8em; color: #aaa;">Alto (Filas)</label>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="range" id="vent-height-slider" min="1" max="100" value="1" step="1" style="flex: 1;">
-                            <span id="vent-height-val" style="width: 20px; text-align: right; color: #e67e22; font-weight: bold;">1</span>
+                            <input type="range" id="vent-height-slider" min="0" max="100" value="0" step="1" style="flex: 1;">
+                            <span id="vent-height-val" style="width: 30px; text-align: right; color: #e67e22; font-weight: bold;">Auto</span>
                         </div>
                     </div>
                 </div>
@@ -304,8 +304,10 @@ class ConfigScreen {
                 // Feedback visual
                 productionBtn.innerHTML = '⏳ Cargando...';
 
-                // Iniciar juego
+                // Iniciar juego con ScenarioManager
                 setTimeout(() => {
+                    if (!window.gameInstance) window.gameInstance = new GameController();
+                    ScenarioManager.loadScenario(ScenarioLibrary.STANDARD);
                     this.startGame('PRODUCTION');
                 }, 100);
             });
@@ -330,8 +332,10 @@ class ConfigScreen {
                 // Feedback visual
                 devBtn.innerHTML = '⏳ Cargando...';
 
-                // Iniciar juego
+                // Iniciar juego con ScenarioManager (Development default = Lab)
                 setTimeout(() => {
+                    if (!window.gameInstance) window.gameInstance = new GameController();
+                    ScenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT);
                     this.startGame('DEVELOPMENT');
                 }, 100);
             });
@@ -354,7 +358,17 @@ class ConfigScreen {
 
                 // Iniciar juego
                 setTimeout(() => {
-                    this.startGame('SINGLE_CELL_MODE', scenario);
+                    // Load specific scenario via Manager
+                    let scenarioDef = ScenarioLibrary.STANDARD;
+                    if (ScenarioLibrary[scenario]) {
+                        scenarioDef = ScenarioLibrary[scenario];
+                    }
+
+                    if (!window.gameInstance) window.gameInstance = new GameController();
+                    ScenarioManager.loadScenario(scenarioDef);
+
+                    // Start loop (Manager handles setup)
+                    this.startGame('SINGLE_CELL_MODE');
                 }, 100);
             });
         }
@@ -366,7 +380,7 @@ class ConfigScreen {
         const ventHeightVal = document.getElementById('vent-height-val');
 
         // Defaults (Flux 1.0 = Standard, user modifies via runtime controls)
-        this.ventParams = { width: 1, height: 1, flux: 1.0 };
+        this.ventParams = { width: 1, height: 0, flux: 1.0 }; // height 0 = Auto
 
         if (ventWidthSlider && ventWidthVal) {
             ventWidthSlider.addEventListener('input', (e) => {
@@ -377,8 +391,9 @@ class ConfigScreen {
 
         if (ventHeightSlider && ventHeightVal) {
             ventHeightSlider.addEventListener('input', (e) => {
-                this.ventParams.height = parseInt(e.target.value);
-                ventHeightVal.textContent = this.ventParams.height;
+                const val = parseInt(e.target.value);
+                this.ventParams.height = val;
+                ventHeightVal.textContent = val === 0 ? "Auto" : val;
             });
         }
 
@@ -413,7 +428,7 @@ class ConfigScreen {
 
                 // 4. Iniciar el Loop del Juego
                 setTimeout(() => {
-                    this.startGame('SCENARIO_LOADED');
+                    this.startGame('SINGLE_VENT_MODE');
                 }, 100);
             });
         }

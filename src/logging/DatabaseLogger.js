@@ -14,7 +14,7 @@ class DatabaseLogger {
     constructor(runId) {
         this.runId = runId || this.generateRunId();
         this.db = null;
-        this.enabled = GameConstants.EXECUTION_MODE === 'DEVELOPMENT' || GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE';
+        this.enabled = true; // Controlled by instantiation in GameController
         this.initialized = false;
 
         console.log(`[DatabaseLogger] Initialized with runId: ${this.runId}`);
@@ -141,7 +141,7 @@ class DatabaseLogger {
             const request = store.add(runData);
 
             request.onsuccess = () => {
-                console.log('[DatabaseLogger] Run started successfully:', this.runId);
+                console.log('✅ [DatabaseLogger] EXECUTION REGISTERED: Run ID:', this.runId);
             };
 
             request.onerror = () => {
@@ -426,7 +426,7 @@ class DatabaseLogger {
             const transaction = this.db.transaction(['anomalies'], 'readonly');
             const store = transaction.objectStore('anomalies');
             const index = store.index('run_id');
-            request = index.getAll(this.runId);
+            const request = index.getAll(this.runId);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
@@ -515,7 +515,7 @@ class DatabaseLogger {
      */
     static async listAllRuns() {
         return new Promise((resolve, reject) => {
-            const request = indexedDB.open('CellsDevLogs', 1);
+            const request = indexedDB.open('CellsDevLogs', 3);
 
             request.onsuccess = () => {
                 const db = request.result;

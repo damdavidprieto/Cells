@@ -43,7 +43,8 @@ class ChemicalGrids {
                 // SCIENTIFIC BASIS: Martin & Russell 2007 - Alkaline vents produce H₂
                 // H₂ is primary electron donor for LUCA's Wood-Ljungdahl pathway
                 // Exponential gradient: low in water, very high in vents
-                let h2Intensity = 100 * exp(-4 * (1 - depthRatio)); // Inverse of light
+                let h2Intensity = GameConstants.ECOSYSTEM_INIT.H2_VENT_INTENSITY *
+                    exp(-GameConstants.ECOSYSTEM_INIT.H2_DECAY_RATE * (1 - depthRatio));
                 let h2Variation = noise(i * 0.1 + 5000, j * 0.1 + 5000) * 0.3;
                 grid[i][j] = h2Intensity * (1 + h2Variation);
             }
@@ -91,7 +92,8 @@ class ChemicalGrids {
                 // Fe²⁺ = HIGH in deep ocean (anoxic, reduced)
                 // Exponential gradient: low in surface, very high in depth
                 // Inverse of light (similar to H₂, N₂, P)
-                let fe2Intensity = 200 * exp(-3 * (1 - depthRatio)); // Gentler gradient than H₂
+                let fe2Intensity = GameConstants.ECOSYSTEM_INIT.FE2_VENT_INTENSITY *
+                    exp(-GameConstants.ECOSYSTEM_INIT.FE2_DECAY_RATE * (1 - depthRatio));
                 let fe2Variation = noise(i * 0.12 + 6000, j * 0.12 + 6000) * 0.4;
                 grid[i][j] = fe2Intensity * (1 + fe2Variation);
 

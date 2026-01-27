@@ -6,6 +6,18 @@ let deathCountThisFrame = 0;
  * SETUP: Configuración inicial de p5.js
  * Solo crea el canvas, instancia los gestores y pausa la ejecución.
  */
+// Global Hook for Testing
+window.runTests = () => {
+    if (window.TestManager) {
+        if (window.VentTests) TestManager.register(VentTests);
+        if (window.ScenarioTests) TestManager.register(ScenarioTests);
+        if (window.PhysicsTests) TestManager.register(PhysicsTests);
+        TestManager.runAll();
+    } else {
+        console.error("TestManager not loaded.");
+    }
+};
+
 function setup() {
     let canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvas-container');
@@ -127,91 +139,91 @@ function draw() {
     }
 
     // 4. Renderizado (UNA VEZ POR FRAME)
+    // 4. Renderizado (UNA VEZ POR FRAME)
     background(0); // Fondo Negro (Void)
 
     push(); // Start Global View Transform
 
-    // VERTICAL CENTERING (Single Vent Mode / Small Grids)
-    if (env.rows && env.resolution) {
-        let worldHeight = env.rows * env.resolution;
-        if (worldHeight < height) {
-            let offsetY = (height - worldHeight) / 2;
-            translate(0, offsetY);
+    try {
+        // VERTICAL CENTERING (Single Vent Mode / Small Grids)
+        if (env.rows && env.resolution) {
+            let worldHeight = env.rows * env.resolution;
+            if (worldHeight < height) {
+                let offsetY = (height - worldHeight) / 2;
+                translate(0, offsetY);
+            }
         }
-    }
 
-    env.show(); // Dibujar Entorno
+        env.show(); // Dibujar Entorno
 
-    for (let e of ents) {
-        e.show(); // Dibujar Células
+        for (let e of ents) {
+            e.show(); // Dibujar Células
+        }
+    } catch (renderErr) {
+        console.error("!! [Render Error]", renderErr);
+        fill(255, 0, 0);
+        textAlign(CENTER);
+        textSize(20);
+        text("RENDER ERROR Check Console", width / 2, height / 2);
     }
 
     pop(); // End Global View Transform
 
     // 5. Actualizar Trackers y UI
+    try {
+        game.speciesNotifier.checkForNewSpecies(ents);
+        game.speciesNotifier.update();
 
-    game.speciesNotifier.checkForNewSpecies(ents);
-    game.speciesNotifier.update();
+        // Calcular estadísticas para UI
+        const stats = calculateStats(env, ents);
+        uiManager.update(stats);
 
-    // Conservación (evitar extinción total en demo)
-    // DISABLED: Para análisis científico real. Si mueren, deben extinguirse.
-    /*
-    if (ents.length < 5 && random(1) < 0.05) {
-        // Safe spawn in lower water column (near food)
-        let waterBottom = game.environment.waterEndRow * game.environment.resolution;
-        let spawnY = random(waterBottom - 200, waterBottom - 20);
-        ents.push(new Entity(random(width), spawnY));
-    }
-    */
+        // NEW: Log frame stats to DatabaseLogger (every N frames)
+        if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_frame_stats) {
+            if (frameCount % GameConstants.DATABASE_LOGGING.frame_stats_interval === 0) {
+                let totalEnergy = 0;
+                let activePopulation = 0;
 
-    // Calcular estadísticas para UI
-    const stats = calculateStats(env, ents);
-    uiManager.update(stats);
-
-    // NEW: Log frame stats to DatabaseLogger (every N frames)
-    if (game.databaseLogger && GameConstants.DATABASE_LOGGING.log_frame_stats) {
-        if (frameCount % GameConstants.DATABASE_LOGGING.frame_stats_interval === 0) {
-            let totalEnergy = 0;
-            let activePopulation = 0;
-
-            for (let e of ents) {
-                if (!e.isDead) { // Only count living cells for realistic average
-                    totalEnergy += e.energy;
-                    activePopulation++;
+                for (let e of ents) {
+                    if (!e.isDead) { // Only count living cells for realistic average
+                        totalEnergy += e.energy;
+                        activePopulation++;
+                    }
                 }
+
+                const avgEnergy = activePopulation > 0 ? (totalEnergy / activePopulation) : 0;
+
+                game.databaseLogger.logFrameStats(frameCount, {
+                    population: activePopulation,
+                    deaths: deathCountThisFrame,
+                    births: 0,
+                    avg_energy: avgEnergy,
+                    species_count: stats.speciesCount,
+                    // Pass evolutionary metrics calculated above
+                    avg_sod: stats.avg_sod,
+                    avg_repair: stats.avg_repair,
+                    avg_damage: stats.avg_structural_damage,
+                    // Pass detailed damage breakdown
+                    avg_structural_damage: stats.avg_structural_damage,
+                    avg_oxidative_damage: stats.avg_oxidative_damage,
+                    avg_uv_damage: stats.avg_uv_damage,
+                    // FORENSIC METRICS
+                    env_max_oxygen: stats.maxOxygen,
+                    victims_oxidative: stats.oxidative_victims,
+                    victims_uv: stats.uv_victims
+                });
             }
-
-            const avgEnergy = activePopulation > 0 ? (totalEnergy / activePopulation) : 0;
-
-            game.databaseLogger.logFrameStats(frameCount, {
-                population: activePopulation,
-                deaths: deathCountThisFrame,
-                births: 0,
-                avg_energy: avgEnergy,
-                species_count: stats.speciesCount,
-                // Pass evolutionary metrics calculated above
-                avg_sod: stats.avg_sod,
-                avg_repair: stats.avg_repair,
-                avg_damage: stats.avg_structural_damage,
-                // Pass detailed damage breakdown
-                // Pass detailed damage breakdown
-                avg_structural_damage: stats.avg_structural_damage,
-                avg_oxidative_damage: stats.avg_oxidative_damage,
-                avg_uv_damage: stats.avg_uv_damage,
-                // FORENSIC METRICS
-                env_max_oxygen: stats.maxOxygen,
-                victims_oxidative: stats.oxidative_victims,
-                victims_uv: stats.uv_victims
-            });
         }
-    }
 
-    // SINGLE CELL ANALYSIS LOGGING
-    // Logs detailed internal state of the specific cell every frame
-    if ((GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') && game.databaseLogger && ents.length > 0) {
-        if (GameConstants.SINGLE_CELL_MODE.LOG_EVERY_FRAME || (GameConstants.SINGLE_VENT_MODE && GameConstants.SINGLE_VENT_MODE.LOG_EVERY_FRAME)) {
-            game.databaseLogger.logSingleCellAnalysis(frameCount, ents[0]);
+        // SINGLE CELL ANALYSIS LOGGING
+        // Logs detailed internal state of the specific cell every frame
+        if ((GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') && game.databaseLogger && ents.length > 0) {
+            if (GameConstants.SINGLE_CELL_MODE.LOG_EVERY_FRAME || (GameConstants.SINGLE_VENT_MODE && GameConstants.SINGLE_VENT_MODE.LOG_EVERY_FRAME)) {
+                game.databaseLogger.logSingleCellAnalysis(frameCount, ents[0]);
+            }
         }
+    } catch (uiErr) {
+        console.error("!! [UI Error]", uiErr);
     }
 
     // 6. Renderizar Overlays (Monitors, Notifications)
