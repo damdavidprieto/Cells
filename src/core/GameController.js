@@ -98,37 +98,18 @@ class GameController {
         // If ScenarioManager already prepared the environment, use it.
         // Otherwise, fallback to defaults (Legacy support or direct run).
         if (!this.environment) {
-            console.log("%% [GameController] No Environment injected. Using Default.");
-
-            // DYNAMIC CONFIGURATION LOADER (Legacy/Direct Mode)
-            let config = WorldPresets.DEFAULT;
-
-            if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
-                config = WorldPresets.SINGLE_VENT;
-                config.cols = Math.ceil(width / config.resolution);
-                if (GameConstants.VENT_PARAMS && config.vents.length > 0) {
-                    config.vents[0].width = GameConstants.VENT_PARAMS.width;
-                    config.vents[0].intensity = GameConstants.VENT_PARAMS.flux;
-                    if (GameConstants.VENT_PARAMS.height) config.rows = GameConstants.VENT_PARAMS.height;
-                }
-            }
-
-            window.environment = new Environment(config);
+            console.log("%% [GameController] No Environment injected. Loading STANDARD Scenario.");
+            ScenarioManager.loadScenario(ScenarioLibrary.STANDARD);
+            // Sync reference after manager creates it
             this.environment = window.environment;
         }
 
-        // Initialize Global Scenario (O2 Rise, Scarcity, etc.)
-        // This is the old "Scenario" system (Environment variables), not the new "ScenarioManager"
-        // We might want to deprecate this or merge it. 
-        // For now, only run if environment supports it.
-        if (this.environment.initializeScenario) {
-            this.environment.initializeScenario();
-        }
+        // Legacy Scenario Init Removed (Handled by ScenarioManager)
 
         this.speciesNotifier = new SpeciesNotifier();
 
         // DatabaseLogger (IndexedDB - no network)
-        if (GameConstants.DATABASE_LOGGING.enabled && (GameConstants.EXECUTION_MODE === 'DEVELOPMENT' || GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE')) {
+        if (GameConstants.DATABASE_LOGGING.enabled) {
             this.databaseLogger = new DatabaseLogger();
             try {
                 await this.databaseLogger.init();
@@ -142,46 +123,61 @@ class GameController {
         }
 
         // Resetear y Crear Entidades Iniciales (LUCA)
+        // Resetear y Crear Entidades Iniciales (LUCA)
         window.entities = [];
 
-        // Calculate water zone boundaries (only habitable area)
-        let waterStartY = this.environment.waterStartRow * this.environment.resolution;
-        let waterEndY = this.environment.waterEndRow * this.environment.resolution;
+        // 3. Spawning Entities
+        if (this.spawnRules) {
+            this._executeSpawnRules();
+        } else {
+            console.warn("[GameController] No spawn rules found. Using standard random fallback.");
+            this._spawnRandom(20);
+        }
 
-        // SCIENTIFIC ACCURACY: Origin of Life likely occurred at Hydrothermal Vents
-        // Spawn cells closer to the bottom (sediment) where H2 and nutrients are abundant
-        let spawnZoneStart = waterEndY - (height * 0.2); // Last 20% of water column
-        let spawnZoneEnd = waterEndY - 10; // Just above sediment
+        this.isRunning = true;
+        console.log("[GameController] Simulación inicializada correctamente.");
+    }
 
-        // SINGLE CELL ANALYSIS MODE & SINGLE VENT MODE
-        if (GameConstants.EXECUTION_MODE === 'SINGLE_CELL_MODE' || GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE') {
-            console.log(`[GameController] SUCCESS! Initializing ${GameConstants.EXECUTION_MODE} (Analysis)`);
+    /**
+     * Executes the spawn logic based on the active scenario rules.
+     */
+    _executeSpawnRules() {
+        const rules = this.spawnRules;
+        console.log(`[GameController] Executing Spawn Rules: ${rules.mode} (Count: ${rules.count})`);
 
-            // Spawn in deep sediment (IDEAL VENT)
-            // Spawn in deep sediment (IDEAL VENT)
-            // ALIGNMENT FIX: Use grid coordinates to center perfectly in the vent column
-            let centerCol = Math.floor(this.environment.cols / 2);
-            if (this.environment.waterStartCol !== undefined) {
-                // If restricted, use the center of the restricted area
-                centerCol = (this.environment.waterStartCol + this.environment.waterEndCol) / 2;
-            }
-            let idealX = centerCol * this.environment.resolution + (this.environment.resolution / 2);
-            // Note: resolution is centered at top-left of cell. +resolution/2 for center? 
-            // Entity usually draws centered. Let's add half res.
-            // But if width is 1 (start=10, end=11), center is 10.5. 10.5 * 60 = pixel center. Perfect.
+        switch (rules.mode) {
+            case 'CENTER_VENT':
+                this._spawnCenterVent(rules.count);
+                break;
+            case 'RANDOM':
+            default:
+                this._spawnRandom(rules.count);
+                break;
+        }
+    }
 
-            let spawnRow = this.environment.sedimentRow;
-            // Ensure we are inside the valid row (if single row, row is 0)
-            if (this.environment.rows === 1) spawnRow = 0;
+    _spawnCenterVent(count) {
+        // Find center column
+        let centerCol = Math.floor(this.environment.cols / 2);
+        if (this.environment.waterStartCol !== undefined) {
+            centerCol = Math.floor((this.environment.waterStartCol + this.environment.waterEndCol) / 2);
+        }
 
-            // CENTER EXACTLY IN THE CELL (Pixel perfect)
-            let idealY = spawnRow * this.environment.resolution + (this.environment.resolution / 2);
+        // Calculate pixel position
+        let idealX = centerCol * this.environment.resolution;
 
+        let spawnRow = this.environment.sedimentRow;
+        if (this.environment.rows === 1) spawnRow = 0; // Handle single row worlds
+
+        // Center vertically in the cell
+        let idealY = spawnRow * this.environment.resolution + (this.environment.resolution / 2);
+
+        // Spawn
+        for (let i = 0; i < count; i++) {
             let entity = new Entity(idealX, idealY);
-            entity.id = 0;
-            window.lucaBaseDNA = entity.dna;
-            window.entities.push(entity);
+            this._registerEntity(entity, i);
 
+            // Log specific single-cell start
             if (this.databaseLogger) {
                 this.databaseLogger.logCellEvent(0, 'birth', entity.id, {
                     position: { x: entity.pos.x, y: entity.pos.y },
@@ -189,51 +185,51 @@ class GameController {
                     sod: entity.sodProtein,
                     energy: entity.energy,
                     oxygen: entity.oxygen,
-                    maxResources: entity.maxResources,
-                    parent_id: null
+                    mode: 'CENTER_VENT'
                 });
             }
-
-            // Force environment to be perfect around this cell immediately
-            // Force environment to be perfect around this cell immediately
-            // DISABLED: User requested to match Development mode behavior
-            /*
-            if (GameConstants.SINGLE_CELL_MODE.FORCE_IDEAL_CONDITIONS) {
-                this.environment.forceIdealConditions(idealX, idealY);
-            }
-            */
         }
-        // STANDARD MODES
-        else {
-            console.warn(`[GameController] Launching STANDARD MODE because mode is: ${GameConstants.EXECUTION_MODE}`);
-            for (let i = 0; i < 20; i++) {
-                // Spawn near vents (rich energy source)
-                let entity = new Entity(
-                    random(width),
-                    random(spawnZoneStart, spawnZoneEnd)
-                );
-                entity.id = i;
-                entity.reproductionCount = 0;
-                if (i === 0) {
-                    window.lucaBaseDNA = entity.dna; // Referencia para distancias genéticas
-                }
-                window.entities.push(entity);
+    }
 
-                if (this.databaseLogger) {
-                    this.databaseLogger.logCellEvent(0, 'birth', entity.id, {
-                        position: { x: entity.pos.x, y: entity.pos.y },
-                        dna: entity.dna,
-                        sod: entity.sodProtein,
-                        energy: entity.energy,
-                        oxygen: entity.oxygen,
-                        maxResources: entity.maxResources,
-                        parent_id: null
-                    });
-                }
-            }
+    _spawnRandom(count) {
+        // Calculate water zone boundaries
+        let waterStartY = this.environment.waterStartRow * this.environment.resolution;
+        let waterEndY = this.environment.waterEndRow * this.environment.resolution;
+
+        // Spawn closer to bottom (scientific accuracy: origin at vents)
+        let spawnZoneStart = waterEndY - (height * 0.2);
+        let spawnZoneEnd = waterEndY - 10;
+
+        let minX = this.environment.waterStartCol * this.environment.resolution;
+        let maxX = this.environment.waterEndCol * this.environment.resolution;
+
+        for (let i = 0; i < count; i++) {
+            let entity = new Entity(
+                random(minX, maxX),
+                random(spawnZoneStart, spawnZoneEnd)
+            );
+            this._registerEntity(entity, i);
+        }
+    }
+
+    _registerEntity(entity, index) {
+        entity.id = index;
+        entity.reproductionCount = 0;
+
+        if (index === 0) {
+            window.lucaBaseDNA = entity.dna; // Global reference
         }
 
-        this.isRunning = true;
-        console.log("[GameController] Simulación inicializada correctamente.");
+        window.entities.push(entity);
+
+        // Standard Logging
+        if (this.databaseLogger && GameConstants.DATABASE_LOGGING.log_cell_events) {
+            this.databaseLogger.logCellEvent(0, 'birth', entity.id, {
+                position: { x: entity.pos.x, y: entity.pos.y },
+                dna: entity.dna,
+                sod: entity.sodProtein,
+                energy: entity.energy
+            });
+        }
     }
 }

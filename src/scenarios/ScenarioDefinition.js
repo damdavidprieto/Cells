@@ -66,5 +66,34 @@ class ScenarioDefinition {
         // Permite "dirigir" la simulación con acciones programadas.
         // Formato: { frame: 100, action: 'NOTIFY', payload: 'Mensaje' }
         this.events = config.events || [];
+
+        // 8. Configuración del Ecosistema (Overrides de Constantes)
+        // Permite "tunear" la generación procedural (temperatura, pH, químicos)
+        this.ecosystem = {
+            // Light
+            lightSurface: config.ecosystem?.lightSurface ?? null,
+            lightDecay: config.ecosystem?.lightDecay ?? null,
+
+            // Chemistry
+            h2Vent: config.ecosystem?.h2Vent ?? null,
+            fe2Vent: config.ecosystem?.fe2Vent ?? null,
+
+            // Physics
+            tempSurface: config.ecosystem?.tempSurface ?? null,
+            tempVent: config.ecosystem?.tempVent ?? null,
+            phSurface: config.ecosystem?.phSurface ?? null,
+            phVent: config.ecosystem?.phVent ?? null
+        };
+
+        // 9. Configuración Física (Gravedad, Viscosidad)
+        this.physics = {
+            gravity: config.physics?.gravity ?? null, // Global Gravity
+            viscosityWater: config.physics?.viscosityWater ?? null,
+            viscositySediment: config.physics?.viscositySediment ?? null,
+            brownianStrength: config.physics?.brownianStrength ?? null
+        };
+
+        // 10. Estado Inicial del Entorno (Legacy/Specific Grids)
+        this.initialEnvState = config.initialEnvState || null;
     }
 }

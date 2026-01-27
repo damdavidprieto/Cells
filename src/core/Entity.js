@@ -12,8 +12,8 @@ class Entity {
         this.dna = dna || DNAFactory.createLUCA();
 
         // Calculate maxSpeed from flagellaLevel AND size
-        // LUCA (0) = brownian motion (0.1), flagella (1-6) = active locomotion
-        let baseSpeed = this.dna.flagellaLevel === 0 ? GameConstants.BROWNIAN_SPEED : this.dna.flagellaLevel;
+        // LUCA (0) = brownian motion (PHISICS_BROWNIAN), flagella (1-6) = active locomotion
+        let baseSpeed = this.dna.flagellaLevel === 0 ? GameConstants.PHYSICS.BROWNIAN_STRENGTH : this.dna.flagellaLevel;
         let sizeModifier = MembraneSystem.calculateMovementPenalty(this.dna.size);
         this.maxSpeed = baseSpeed * sizeModifier * GameConstants.SPEED_MULTIPLIER;
 
@@ -134,7 +134,7 @@ class Entity {
     applyNaturalBehavior(environment) {
         // 1. Random Brownian Noise (Base movement - "Temperature")
         // This replaces the old external random force in Skecth.js
-        let randomForce = p5.Vector.random2D().mult(0.1);
+        let randomForce = p5.Vector.random2D().mult(GameConstants.PHYSICS.BROWNIAN_STRENGTH);
         this.applyForce(randomForce);
 
         // 2. Chemotaxis (Biased drift towards nutrients - "Smell")
@@ -370,7 +370,7 @@ class Entity {
 
         // Small energy cost for collision
         if (bounced) {
-            this.energy -= 0.5;
+            this.energy -= GameConstants.PHYSICS.COLLISION_ENERGY_COST;
         }
     }
 

@@ -286,10 +286,10 @@ const GameConstants = {
     DNA_REPAIR_MUTATION_RANGE: 0.05,          // Mutation range for repair efficiency
     DNA_REPAIR_COST_MULTIPLIER: 0.1,          // Metabolic cost per repair efficiency unit
 
-    // ===== INITIAL RESOURCES (LUCA ERA: 4.0-3.5 Ga) =====
+    // INITIAL RESOURCES (LUCA ERA: 4.0-3.5 Ga)
     // Scientifically calibrated for pre-photosynthesis primordial ocean
     // Reduced to force a "foraging phase" before first mitosis (delayed reproduction)
-    // INITIAL_OXYGEN: 10,           // LEAVE COMMENTED - Using value from Resources section (100)
+
 
     // O₂ Grid Range (trazas por fotólisis UV)
 
@@ -405,6 +405,61 @@ const GameConstants = {
     VENT_PHOSPHORUS_FLUX: 0.5,     // Continuous reduced P flux (Was 0.006 - bottleneck fixed)
     OCEANIC_PHOSPHORUS: 50,        // Baseline (Was 30 - allow starting cells to live)
     PHOSPHORUS_GRID_MAX: 200,      // Max accumulation (Was 80)
+
+    // ===== ECOSYSTEM INITIALIZATION CONFIGURATION =====
+    // Centralized control for grid generation (gradients, intensities)
+    ECOSYSTEM_INIT: {
+        // Light (Sunlight)
+        LIGHT_SURFACE_INTENSITY: 100,
+        LIGHT_DECAY_RATE: 4,
+
+        // Vents & Chemicals
+        H2_VENT_INTENSITY: 100,
+        H2_DECAY_RATE: 4,
+        PHOSPHORUS_VENT_INTENSITY: 80,
+        PHOSPHORUS_DECAY_RATE: 6,
+        FE2_VENT_INTENSITY: 200,
+        FE2_DECAY_RATE: 3,
+
+        // Temperature
+        TEMP_SURFACE: 50,
+        TEMP_VENT: 80, // Target max temp (Base + Range)
+        TEMP_GRADIENT_NOISE: 5,
+
+        // pH
+        PH_SURFACE: 6,
+        PH_VENT: 10,   // Target max pH (Base + Range)
+        PH_NOISE: 0.5
+    },
+
+    // ===== PHYSICS ENGINE CONFIGURATION =====
+    // Global mechanics affecting all entities
+    PHYSICS: {
+        GLOBAL_GRAVITY: 0.05,       // Downward force (New mechanic)
+        BROWNIAN_STRENGTH: 0.1,     // "Temperature" random movement intensity
+
+        // Fluid Resistance (Friction)
+        VISCOSITY_WATER: 0.95,      // Standard drag
+        VISCOSITY_SEDIMENT: 0.60,   // High drag (mud)
+        VISCOSITY_AIR: 0.99,        // Low drag
+
+        // Costs
+        COLLISION_ENERGY_COST: 0.5,
+        MOVEMENT_COST_MULTIPLIER: 1.0
+    },
+
+    // ===== VENT SYSTEM CONFIGURATION =====
+    // Hydrothermal vent parameters
+    VENTS: {
+        H2_BASE_FLUX: 5.0,
+        CO2_BASE_FLUX: 2.0,
+        FE2_BASE_FLUX: 1.0,
+        GLOBAL_FLUX_MULTIPLIER: 1.0,
+
+        // Vent Type Defaults (Can be overridden by Types)
+        DEFAULT_WIDTH: 3,
+        DEFAULT_INTENSITY: 1.0
+    },
 
     // ===== DIFFUSION SYSTEM CONFIGURATION =====
     // Controls how resources spread across the grid

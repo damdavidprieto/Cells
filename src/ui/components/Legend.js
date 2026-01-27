@@ -81,4 +81,14 @@ class Legend {
 
         parent.insertAdjacentHTML('beforeend', html);
     }
+
+    show() {
+        const el = document.getElementById('legend');
+        if (el) el.style.display = 'block';
+    }
+
+    hide() {
+        const el = document.getElementById('legend');
+        if (el) el.style.display = 'none';
+    }
 }

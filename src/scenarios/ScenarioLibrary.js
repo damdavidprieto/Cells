@@ -21,7 +21,11 @@ class ScenarioLibrary {
                 atmosphereDepth: 0.10, // 10% Atmósfera
                 sedimentDepth: 0.10,   // 10% Sedimento
                 restrictToVents: false, // Mundo abierto
-                vents: [] // Distribución natural
+                vents: [
+                    { type: 'ALKALINE', x: 20, width: 2, intensity: 1.0 },      // Shallow/Safe
+                    { type: 'BLACK_SMOKER', x: 60, width: 3, intensity: 1.5 },  // Deep/Hot
+                    { type: 'DIFFUSE', x: 100, width: 4, intensity: 0.8 }       // Wide/Mild
+                ]
             },
 
             spawn: {
@@ -44,7 +48,7 @@ class ScenarioLibrary {
             },
 
             logging: {
-                enabled: false, // Por defecto off en producción
+                enabled: true, // User request: All modes must log
                 logEveryFrame: false,
                 detailLevel: 'SUMMARY'
             },
@@ -63,7 +67,7 @@ class ScenarioLibrary {
             description: 'Entorno controlado y aislado. Una única columna de agua sobre un vent hidrotermal perfecto.',
 
             world: {
-                rows: 1, // Por defecto muy pequeño (Overrideable por slider)
+                rows: 0, // Auto (Full Screen vertical)
                 cols: 0, // Auto (calculado para llenar pantalla horizontalmente o centrado)
                 resolution: 60,
                 atmosphereDepth: 0.0, // Sin atmósfera (Océano profundo)
@@ -148,6 +152,82 @@ class ScenarioLibrary {
                 { frame: 1080, action: 'SET_VENT_PARAM', payload: { intensity: 1.0 } }, // 100% Flux
                 { frame: 1080, action: 'NOTIFY', payload: '✅ Sistemas Normalizados' }
             ]
+        });
+    }
+    // ------------------------------------------------------------------------
+    // ESCENARIOS DE PRESIÓN EVOLUTIVA (Legacy Migration)
+    // ------------------------------------------------------------------------
+
+    static get PRESSURE_OXYGEN() {
+        let base = ScenarioLibrary.LAB_SINGLE_VENT;
+        return new ScenarioDefinition({
+            ...base,
+            id: 'PRESSURE_OXYGEN',
+            name: 'Presión: Gran Oxidación',
+            description: 'Simulación del evento de Gran Oxidación. El oxígeno aumenta progresivamente hasta niveles tóxicos.',
+            logging: { enabled: true, logEveryFrame: true, detailLevel: 'FULL' },
+
+            // Custom Environment Setup (Managed by ScenarioManager)
+            initialEnvState: {
+                oxygen: 5.0,
+                progressiveOxygenEnabled: true,
+                maxOxygenEvent: 40.0,
+                oxygenRiseRate: 0.001
+            }
+        });
+    }
+
+    static get PRESSURE_LIGHT() {
+        let base = ScenarioLibrary.LAB_SINGLE_VENT;
+        return new ScenarioDefinition({
+            ...base,
+            id: 'PRESSURE_LIGHT',
+            name: 'Presión: Radiación UV',
+            description: 'Atmósfera transparente sin ozono. Radiación ultravioleta extrema.',
+            logging: { enabled: true, logEveryFrame: true, detailLevel: 'FULL' },
+
+            initialEnvState: {
+                light: 100,
+                uvRadiation: 80
+            }
+        });
+    }
+
+    static get PRESSURE_SCARCITY() {
+        let base = ScenarioLibrary.LAB_SINGLE_VENT;
+        return new ScenarioDefinition({
+            ...base,
+            id: 'PRESSURE_SCARCITY',
+            name: 'Presión: Escasez de Recursos',
+            description: 'Entorno pobre en nutrientes. Solo los más eficientes sobrevivirán.',
+            logging: { enabled: true, logEveryFrame: true, detailLevel: 'FULL' },
+
+            initialEnvState: {
+                h2Multiplier: 0.1,
+                phosphorusMultiplier: 0.1
+            }
+        });
+    }
+
+    static get PRESSURE_THERMAL() {
+        let base = ScenarioLibrary.LAB_SINGLE_VENT;
+        return new ScenarioDefinition({
+            ...base,
+            id: 'PRESSURE_THERMAL',
+            name: 'Presión: Hipertermia',
+            description: 'Océano en ebullición. Estrés térmico constante.',
+            logging: { enabled: true, logEveryFrame: true, detailLevel: 'FULL' },
+
+            // NEW: Synergy with Grid System
+            ecosystem: {
+                tempSurface: 85, // Surface is already hot
+                tempVent: 120    // Vents are hyper-thermal
+            },
+
+            initialEnvState: {
+                // Legacy support (optional, can be removed if grid system handles initialization correcty)
+                // temperature: 90 
+            }
         });
     }
 }

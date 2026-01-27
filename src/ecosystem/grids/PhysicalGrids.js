@@ -41,8 +41,9 @@ class PhysicalGrids {
 
                 // TEMPERATURE = Increases with depth (vents)
                 // Surface: 50-60°C, Vents: 70-80°C
-                let baseTemp = 50 + (30 * depthRatio);
-                let tempVariation = noise(i * 0.05 + 6000, j * 0.05 + 6000) * 5;
+                let range = GameConstants.ECOSYSTEM_INIT.TEMP_VENT - GameConstants.ECOSYSTEM_INIT.TEMP_SURFACE;
+                let baseTemp = GameConstants.ECOSYSTEM_INIT.TEMP_SURFACE + (range * depthRatio);
+                let tempVariation = noise(i * 0.05 + 6000, j * 0.05 + 6000) * GameConstants.ECOSYSTEM_INIT.TEMP_GRADIENT_NOISE;
                 grid[i][j] = baseTemp + tempVariation;
             }
         }
@@ -62,8 +63,9 @@ class PhysicalGrids {
 
                 // pH = Increases with depth (alkaline vents)
                 // Ocean: pH 6-7, Vents: pH 9-11
-                let basePH = 6 + (4 * depthRatio);
-                let pHVariation = noise(i * 0.08 + 7000, j * 0.08 + 7000) * 0.5;
+                let range = GameConstants.ECOSYSTEM_INIT.PH_VENT - GameConstants.ECOSYSTEM_INIT.PH_SURFACE;
+                let basePH = GameConstants.ECOSYSTEM_INIT.PH_SURFACE + (range * depthRatio);
+                let pHVariation = noise(i * 0.08 + 7000, j * 0.08 + 7000) * GameConstants.ECOSYSTEM_INIT.PH_NOISE;
                 grid[i][j] = basePH + pHVariation;
             }
         }

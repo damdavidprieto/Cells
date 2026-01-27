@@ -134,8 +134,8 @@ class Environment {
 
         this.initGrids();
 
-        // NEW: VENT SYSTEM INTEGRATION
-        this.ventSystem = new VentSystem();
+        // NEW: VENT SYSTEM INTEGRATION (Modular)
+        this.ventSystem = new VentManager();
         this.ventSystem.initialize(this.config);
     }
 
@@ -186,58 +186,7 @@ class Environment {
         // Currently, most scenarios are global.
     }
 
-    initializeScenario() {
-        const scenario = GameConstants.SCENARIO || 'STANDARD';
-        console.log(`[Environment] Initializing Scenario: ${scenario}`);
 
-        switch (scenario) {
-            case 'PRESSURE_OXYGEN':
-                // THE GREAT OXIDATION EVENT (Simulated)
-                // 1. Initialize Safe Baseline (Global)
-                for (let i = 0; i < this.cols; i++) {
-                    for (let j = 0; j < this.rows; j++) {
-                        this.oxygenGrid[i][j] = 5.0;
-                    }
-                }
-
-                // 2. Enable Progressive Rise Flag
-                this.progressiveOxygenEnabled = true;
-                this.maxOxygenEvent = 40.0;
-                this.maxOxygenEvent = 40.0;
-                this.oxygenRiseRate = 0.001; // Tuned: 0.001 * 5 * 120 = 0.6 O2/sec. ~1 min to max.
-                console.log('[Environment] Scenario: PRESSURE_OXYGEN (The Great Oxidation Event) Initialized to 5.0, Rising to 40.0');
-                break;
-
-            case 'PRESSURE_LIGHT':
-                // Global high visibility
-                for (let i = 0; i < this.cols; i++) {
-                    for (let j = 0; j < this.rows; j++) {
-                        this.lightGrid[i][j] = 100;
-                        this.uvRadiationGrid[i][j] = 80;
-                    }
-                }
-                break;
-
-            case 'PRESSURE_SCARCITY':
-                // Global reduction
-                for (let i = 0; i < this.cols; i++) {
-                    for (let j = 0; j < this.rows; j++) {
-                        this.h2Grid[i][j] *= 0.1;
-                        this.phosphorusGrid[i][j] *= 0.1;
-                    }
-                }
-                break;
-
-            case 'PRESSURE_THERMAL':
-                // Global heating
-                for (let i = 0; i < this.cols; i++) {
-                    for (let j = 0; j < this.rows; j++) {
-                        this.temperatureGrid[i][j] = 90;
-                    }
-                }
-                break;
-        }
-    }
 
     update() {
         // 1. Modular Vent System Update (Injects Chemicals/Heat)
@@ -531,15 +480,7 @@ class Environment {
         return 0;
     }
 
-    // Legacy compatibility - keep consumeEnergy as alias
-    consumeEnergy(x, y, amount) {
-        return this.consumeLight(x, y, amount);
-    }
 
-    // Legacy compatibility
-    consumeResource(x, y, amount) {
-        return this.consumeLight(x, y, amount);
-    }
 
     // ===== ENVIRONMENTAL STABILITY SYSTEM =====
     // Calculate environmental stability based on multiple factors
