@@ -1,647 +1,157 @@
 /**
- * ENVIRONMENT - Primordial Ocean Simulation
- * =========================================
+ * ENVIRONMENT - Primordial Ocean Simulation (Modularized Facade)
+ * ============================================================
  * 
- * Simulates the chemical and physical environment of early Earth oceans (~4.0-3.5 Ga)
- * where LUCA (Last Universal Common Ancestor) likely evolved.
- * 
- * SCIENTIFIC BASIS:
- * ----------------
- * 1. Resource Distribution (Weiss et al. 2016):
- *    - Light: Surface-concentrated (no ozone layer, direct sunlight)
- *    - Oxygen: Limited and patchy (pre-photosynthesis era)
- *    - Nitrogen: Sediment-concentrated (from decomposition, volcanic activity)
- *    - Phosphorus: Deep sediment (weathering of rocks, extremely limited)
- * 
- * 2. Hydrothermal Vent Model (Martin & Russell 2007):
- *    - LUCA likely lived near alkaline hydrothermal vents
- *    - Chemical gradients provided energy (chemiosmosis)
- *    - Sediment zones rich in reduced compounds (H₂, CH₄, NH₃)
- * 
- * 3. Environmental Stability (Koonin & Martin 2005):
- *    - Population variance indicates environmental stress
- *    - Resource distribution uniformity reflects stability
- *    - Mortality rate is key indicator of environmental harshness
- * 
- * IMPLEMENTATION:
- * --------------
- * - 4 Resource grids: Light, Oxygen, Nitrogen, Phosphorus
- * - Vertical stratification: Water (90%) + Sediment (10%)
- * - Exponential gradients (realistic diffusion)
- * - Environmental stability tracking (influences mutation rate evolution)
- * 
- * REFERENCES:
- * ----------
- * - Weiss, M. C., et al. (2016). The physiology and habitat of LUCA. Nat. Microbiol.
- * - Martin, W. & Russell, M. J. (2007). On the origin of biochemistry. Phil. Trans. R. Soc. B.
- * - Koonin, E. V. & Martin, W. (2005). On the origin of genomes and cells. Trends Genet.
+ * Orchestrates specialized components:
+ * - StratificationManager: Boundaries and layers.
+ * - GridSystem: Resource storage.
+ * - DynamicsManager: Physics and chemistry simulation.
+ * - EnvironmentRenderer: Visualization.
+ * - StatsManager: Analytics and stability.
  */
 class Environment {
     constructor(config = null) {
-        // Load Configuration (Default to Standard Ocean if not provided)
         this.config = config || WorldPresets.DEFAULT;
-
-        // Apply Config Parameters
         this.resolution = this.config.resolution;
         this.cols = this.config.cols > 0 ? this.config.cols : ceil(width / this.resolution);
         this.rows = this.config.rows > 0 ? this.config.rows : ceil(height / this.resolution);
 
-        // Resource grids
-        this.lightGrid = [];
-        this.oxygenGrid = [];
-        this.nitrogenGrid = [];
-        this.phosphorusGrid = [];
-        this.uvRadiationGrid = [];
-        this.co2Grid = [];
-        this.h2Grid = [];
-        this.fe2Grid = [];
-        this.temperatureGrid = [];
+        // SYNC CONFIG: Ensure sub-systems (like VentFactory) see the resolved dimensions
+        this.config.cols = this.cols;
+        this.config.rows = this.rows;
 
-        console.log(`[Environment] Initialized with Config: ${this.cols}x${this.rows} (Res: ${this.resolution})`);
+        // Core Components
+        this.stratification = new StratificationManager(this.config, this.rows, this.cols);
+        this.grids = new GridSystem(this.cols, this.rows);
+        this.dynamics = new DynamicsManager(this.config);
+        this.renderer = new EnvironmentRenderer(this.resolution);
+        this.stats = new StatsManager(this.grids, this.stratification);
 
-        // Vertical Stratification (From Config)
-        this.atmosphereDepth = this.config.atmosphereDepth;
-        this.atmosphereRow = Math.floor(this.rows * this.atmosphereDepth);
-        this.waterStartRow = this.atmosphereRow;
-
-        // WATER COLUMN (middle 80%): Habitable zone for cells
-        this.waterStartRow = this.atmosphereRow;
-
-        // SEDIMENT (bottom 10%): Hydrothermal vents, cells cannot spawn here
-        this.sedimentDepth = 0.10;
-        this.sedimentRow = floor(this.rows * (1 - this.sedimentDepth));
-
-        // VERTICAL BOUNDARIES (Columns)
-        // Default: Full width
-        this.waterStartCol = 0;
-        this.waterEndCol = this.cols;
-
-        if (this.config.restrictToVents) {
-            // REDUCE VENT HEIGHT TO 1 (User Request for Single Vent)
-            // Force the sediment (Source) to be only the absolute bottom row.
-            this.sedimentRow = this.rows - 1;
-
-            // Re-calculate derived values
-            this.waterEndRow = this.sedimentRow;
-
-            // CALCULATE BOUNDS based on Vents
-            // If we have vents, union their bounds? 
-            // Or if strict single vent mode, take the first one.
-            if (this.config.vents.length > 0) {
-                // Determine bounds of the first/central vent
-                let vWidth = this.config.vents[0].width || 1;
-                let center = Math.floor(this.cols / 2); // Default center
-
-                // If vent has specific position, use it
-                // But WorldPresets says 'CENTER' type.
-                // Constraint: We want to restrict the WATER COLUMN to this vent.
-
-                let radius = Math.floor(vWidth / 2);
-                this.waterStartCol = center - radius;
-                this.waterEndCol = center + radius + 1; // Exclusive
-
-                console.log(`[Environment] Restricted Mode: Confining from ${this.waterStartCol} to ${this.waterEndCol} (Bottom Row: ${this.sedimentRow})`);
-            }
-        }
-
-        this.waterEndRow = this.sedimentRow;
-
-        // ENVIRONMENTAL STABILITY SYSTEM
-        // Tracks environmental chaos/stability to influence mutation rate evolution
-        this.stabilityHistory = [];  // Track population sizes
-        this.currentStability = 0.5;  // 0 = chaotic, 1 = stable
-        this.stabilityUpdateCounter = 0;
-        this.lastDeathCount = 0;
-
-        this.stabilityUpdateCounter = 0;
-        this.lastDeathCount = 0;
-
-        // DYNAMIC VENT CONTROL
+        // Legacy Properties (for backward compatibility)
         this.fluxMultipliers = {
-            h2: 1.0,
-            co2: 1.0,
-            nitrogen: 1.0,
-            phosphorus: 1.0,
-            light: 1.0,
-            temperature: 1.0,
-            oxygen: 1.0 // Added dedicated O2 control
+            h2: 1.0, co2: 1.0, nitrogen: 1.0, phosphorus: 1.0,
+            light: 1.0, temperature: 1.0, oxygen: 1.0, ph: 1.0
         };
-        // Backwards compatibility getter/setter for h2FluxMultiplier
-        Object.defineProperty(this, 'h2FluxMultiplier', {
-            get: function () { return this.fluxMultipliers.h2; },
-            set: function (val) { this.fluxMultipliers.h2 = val; }
-        });
 
-        this.initGrids();
+        // Stability System (Delegated to StatsManager)
+        this.currentStability = 0.5;
 
-        // NEW: VENT SYSTEM INTEGRATION (Modular)
-        this.ventSystem = new VentManager();
-        this.ventSystem.initialize(this.config);
-    }
+        // Grid Proxies (Direct access for performance/compatibility)
+        this.lightGrid = this.grids.lightGrid;
+        this.oxygenGrid = this.grids.oxygenGrid;
+        this.nitrogenGrid = this.grids.nitrogenGrid;
+        this.phosphorusGrid = this.grids.phosphorusGrid;
+        this.uvRadiationGrid = this.grids.uvRadiationGrid;
+        this.co2Grid = this.grids.co2Grid;
+        this.h2Grid = this.grids.h2Grid;
+        this.fe2Grid = this.grids.fe2Grid;
+        this.ch4Grid = this.grids.ch4Grid;
+        this.h2sGrid = this.grids.h2sGrid;
+        this.nh3Grid = this.grids.nh3Grid;
+        this.temperatureGrid = this.grids.temperatureGrid;
 
-    initGrids() {
-        // Initialize grids using modular classes
-        // This replaces 80+ lines of initialization code with clean module calls
-        this.lightGrid = ResourceGrids.initializeLight(this.cols, this.rows, this.resolution);
-        this.oxygenGrid = ResourceGrids.initializeOxygen(this.cols, this.rows, this.resolution);
-        this.nitrogenGrid = ResourceGrids.initializeNitrogen(this.cols, this.rows, this.resolution);
-        this.phosphorusGrid = ResourceGrids.initializePhosphorus(this.cols, this.rows, this.resolution);
+        // Stratification Proxies
+        this.atmosphereRow = this.stratification.atmosphereRow;
+        this.sedimentRow = this.stratification.sedimentRow;
+        this.waterStartCol = this.stratification.waterStartCol;
+        this.waterEndCol = this.stratification.waterEndCol;
+        this.waterStartRow = this.stratification.waterStartRow;
+        this.waterEndRow = this.stratification.waterEndRow;
 
-        this.co2Grid = ChemicalGrids.initializeCO2(this.cols, this.rows, this.resolution);
-        this.h2Grid = ChemicalGrids.initializeH2(this.cols, this.rows, this.resolution);
-        this.fe2Grid = ChemicalGrids.initializeFe2(this.cols, this.rows, this.resolution);
+        // System Proxies
+        this.ventSystem = this.dynamics.ventManager;
 
-        this.uvRadiationGrid = PhysicalGrids.initializeUV(this.cols, this.rows, this.resolution);
-        this.temperatureGrid = PhysicalGrids.initializeTemperature(this.cols, this.rows, this.resolution);
-
-        // CLEANUP FOR RESTRICTED VENTS
+        // SANITIZE (Restricted modes)
         if (this.config.restrictToVents) {
-            // Ensure boundaries are set (might be redundant if constructor order is preserved, but safe)
-            const centerCol = Math.floor(this.cols / 2);
-            // We can use the props calculated in constructor if initGrids is called after.
-            // It's called at the end of constructor, so:
-
-            for (let i = 0; i < this.cols; i++) {
-                for (let j = 0; j < this.rows; j++) {
-                    // Check if outside valid column range
-                    if (i < this.waterStartCol || i >= this.waterEndCol) {
-                        this.lightGrid[i][j] = 0;
-                        this.oxygenGrid[i][j] = 0;
-                        this.nitrogenGrid[i][j] = 0;
-                        this.phosphorusGrid[i][j] = 0;
-                        this.co2Grid[i][j] = 0;
-                        this.h2Grid[i][j] = 0;
-                        this.fe2Grid[i][j] = 0;
-                    }
-                }
-            }
-            console.log("[Environment] Restricted Mode: Initial Grids Sanitized.");
+            this.grids.sanitize(this.stratification);
         }
+
+        console.log(`[Environment] Initialized Modular Facade: ${this.cols}x${this.rows}`);
     }
-
-
-
-    applyScenario(col, row) {
-        // Apply per-cell overrides if needed (mostly legacy or specific injections)
-        // Currently, most scenarios are global.
-    }
-
-
 
     update() {
-        // 1. Modular Vent System Update (Injects Chemicals/Heat)
-        this.ventSystem.update(this);
+        // Delegate to DynamicsManager
+        this.dynamics.update(this);
 
-        // 2. Diffuse & Regenerate (Standard Grids)
-        // Apply Progressive Oxygen Event (if enabled)
-        if (this.progressiveOxygenEnabled) {
-            this.applyProgressiveOxygenRise();
-        }
-
-        GridRegeneration.regenerateLight(this);
-        GridRegeneration.regenerateNitrogen(this);
-        GridRegeneration.regeneratePhosphorus(this);
-        // GridRegeneration.regenerateH2(this); // REMOVED: Handled by VentSystem
-        GridRegeneration.regenerateOxygen(this);  // Photolysis UV
-
-        // Skip Iron Sink during Great Oxidation Event to allow buildup
-        if (!this.progressiveOxygenEnabled) {
-            OxygenRegeneration.oxidarHierro(this);    // Fe²⁺ oxidation (O₂ sink)
-        }
-
-        // NEW: Diffusion from infinite reservoirs (atmosphere & ocean)
-        if (typeof ReservoirSystem !== 'undefined') {
-            ReservoirSystem.diffuseFromAtmosphere(this);
-            ReservoirSystem.diffuseFromOcean(this);
-            ReservoirSystem.enhanceVentFlux(this);
-        } else {
-            console.warn('[Environment] ReservoirSystem not loaded!');
-        }
-
-        // NEW: Internal Diffusion System (simulates fluid dynamics)
-        if (typeof DiffusionSystem !== 'undefined') {
-            DiffusionSystem.update(this);
-        } else {
-            console.warn('[Environment] DiffusionSystem not loaded!');
-        }
-
-        // FORCE IDEAL CONDITIONS (Single Cell Mode only)
-        // DISABLED: User requested to match Development mode behavior (no artificial survival)
-        // (Logic removed)
-
-        // LOGGING: Environmental Stats (Diffusion verification)
-        if (typeof frameCount !== 'undefined' &&
-            GameConstants.DATABASE_LOGGING.enabled &&
-            GameConstants.DATABASE_LOGGING.log_env_stats &&
-            frameCount % GameConstants.DATABASE_LOGGING.env_stats_interval === 0) {
-
-            this.calculateAndLogStats();
+        // Maintain State if requested
+        if (GameConstants.EXECUTION_MODE === 'SINGLE_VENT_MODE' && GameConstants.SINGLE_VENT_MODE.MAINTAIN_STATE) {
+            this.maintainBaseline();
         }
     }
-
 
     show() {
-        noStroke();
-
-        // Render Grid Cells
-        // OPTIMIZATION: Only loop through the active water column range.
-        // In Default mode, this is 0 to cols. In Single Vent mode, it's just the vent width.
-        for (let x = this.waterStartCol; x < this.waterEndCol; x++) {
-            for (let y = 0; y < this.rows; y++) {
-                let px = x * this.resolution;
-                let py = y * this.resolution;
-
-                let r, g, b;
-
-                // 1. Base Color by Zone (Atmosphere, Water, Sediment)
-                // (No need to check horizontal bounds here anymore, loop handles it)
-
-                if (y < this.atmosphereRow) {
-                    // ATMOSPHERE: Pale Blue / White
-                    r = 200; g = 230; b = 255;
-                } else if (y >= this.sedimentRow && !this.config.restrictToVents) {
-                    // SEDIMENT: Dark Red/Brown (Volcanic)
-                    // HIDE SEDIMENT IN SINGLE VENT MODE (User Request: "Use Ocean")
-                    r = 50; g = 20; b = 10;
-                } else {
-                    // WATER: Deep Blue Gradient
-                    let depth = (y - this.atmosphereRow) / (this.sedimentRow - this.atmosphereRow);
-                    // Handle division by zero for 1-row worlds
-                    if (!isFinite(depth)) depth = 1.0;
-
-                    r = 10; g = 20 + depth * 20; b = 60 + depth * 40;
-                }
-
-                // 2. Resource Overlay (Additive Blending)
-                // ... (Logic continues for the active column only) ...
-
-                // H2 (Vents) - Green Glow
-                let h2Val = this.h2Grid[x][y];
-                if (h2Val > 10) {
-                    let intensity = map(h2Val, 10, 250, 0, 120, true);
-
-                    if (this.config.restrictToVents) {
-                        // VISUAL FIX: Only show "Vent" (Green) at the very bottom (Source)
-                        // The user wants "1 vent of height". Visualizing the plume upwards makes it look tall.
-                        if (Math.floor(y / this.resolution) < this.sedimentRow) {
-                            intensity = 0;
-                        }
-                    }
-
-                    r += 0; g += intensity; b += 0;
-                }
-
-                // CO2 - Purple Haze
-                // FIX: In Single Vent Mode, restrict bright purple glow to bottom to look like a single source
-                let co2Val = this.co2Grid[x][y];
-                if (co2Val > 50) {
-                    let intensity = map(co2Val, 50, 200, 0, 80);
-
-                    if (this.config.restrictToVents) {
-                        // Fade out CO2 visual as it goes up
-                        let distFromBottom = (this.rows - 1) - y;
-                        if (distFromBottom > 2) {
-                            intensity = 0; // Hide CO2 glow above the source
-                        }
-                    }
-
-                    r += intensity; g += 0; b += intensity;
-                }
-
-                // O2 - Cyan Brightness
-                let o2Val = this.oxygenGrid[x][y];
-                if (o2Val > 5) {
-                    let intensity = map(o2Val, 5, 50, 0, 100);
-                    if (this.config.restrictToVents) {
-                        intensity = 0; // Hide O2 glow completely (it's likely background noise)
-                    }
-                    r += 0; g += intensity; b += intensity;
-                }
-
-                fill(constrain(r, 0, 255), constrain(g, 0, 255), constrain(b, 0, 255));
-                rect(px, py, this.resolution, this.resolution);
-            }
-        }
-
-        // Draw Zone Boundaries
-        // Respect vertical boundaries
-        let startX = this.waterStartCol * this.resolution;
-        let endX = this.waterEndCol * this.resolution;
-
-        let atmosphereY = this.atmosphereRow * this.resolution;
-        stroke(255, 255, 255, 100);
-        strokeWeight(2);
-        line(startX, atmosphereY, endX, atmosphereY);
-
-        let sedimentY = this.sedimentRow * this.resolution;
-        stroke(200, 50, 50, 150);
-        strokeWeight(2);
-        line(startX, sedimentY, endX, sedimentY);
-
-        noStroke();
+        // Delegate to EnvironmentRenderer
+        this.renderer.render(this.grids, this.stratification, this.config);
     }
 
-    consumeLight(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.lightGrid[i][j];
-            let taken = min(available, amount);
-            this.lightGrid[i][j] -= taken;
-            return taken;
-        }
-        return 0;
+    maintainBaseline() {
+        this.dynamics.maintainBaseline(this.grids, this.stratification, this.fluxMultipliers);
     }
 
-    consumeOxygen(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.oxygenGrid[i][j];
-            let taken = min(available, amount);
-            this.oxygenGrid[i][j] -= taken;
-            return taken;
-        }
-        return 0;
-    }
+    // --- Chemical / Physical Getters ---
+    getTemperature(x, y) { return this.grids.get('temperatureGrid', x, y, this.resolution); }
+    getUVLevel(x, y) { return this.grids.get('uvRadiationGrid', x, y, this.resolution); }
+    getOxygenLevel(x, y) { return this.grids.get('oxygenGrid', x, y, this.resolution); }
+    getPH(x, y) { return this.ventSystem ? this.ventSystem.getPHAt(x, y, this) : 8.1; }
+    getRedox(x, y) { return this.ventSystem ? this.ventSystem.getRedoxAt(x, y, this) : 0; }
+    getTraceElementLevel(x, y, symbol) { return this.ventSystem ? this.ventSystem.getTraceElementLevelAt(x, y, symbol) : 0; }
 
-    consumeNitrogen(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.nitrogenGrid[i][j];
-            let taken = min(available, amount);
-            this.nitrogenGrid[i][j] -= taken;
-            return taken;
-        }
-        return 0;
-    }
+    // --- Resource Consumption API ---
+    consumeLight(x, y, amount) { return this.grids.consume('lightGrid', x, y, this.resolution, amount); }
+    consumeOxygen(x, y, amount) { return this.grids.consume('oxygenGrid', x, y, this.resolution, amount); }
+    consumeNitrogen(x, y, amount) { return this.grids.consume('nitrogenGrid', x, y, this.resolution, amount); }
+    consumePhosphorus(x, y, amount) { return this.grids.consume('phosphorusGrid', x, y, this.resolution, amount); }
+    consumeCO2(x, y, amount) { return this.grids.consume('co2Grid', x, y, this.resolution, amount); }
+    consumeH2(x, y, amount) { return this.grids.consume('h2Grid', x, y, this.resolution, amount); }
+    consumeCH4(x, y, amount) { return this.grids.consume('ch4Grid', x, y, this.resolution, amount); }
+    consumeH2S(x, y, amount) { return this.grids.consume('h2sGrid', x, y, this.resolution, amount); }
+    consumeNH3(x, y, amount) { return this.grids.consume('nh3Grid', x, y, this.resolution, amount); }
 
-    consumePhosphorus(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.phosphorusGrid[i][j];
-            let taken = min(available, amount);
-            this.phosphorusGrid[i][j] -= taken;
-            return taken;
-        }
-        return 0;
-    }
-
-    // Get UV radiation level at position
-    getUVLevel(x, y) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            return this.uvRadiationGrid[i][j];
-        }
-        return 0;
-    }
-
-    // Get temperature at position (°C)
-    // Returns temperature gradient: 50-60°C surface, 70-80°C vents
-    getTemperature(x, y) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            return this.temperatureGrid[i][j];
-        }
-        return 60; // Default mid-range temperature
-    }
-
-    // Produce CO₂ (metabolic byproduct)
+    // --- Production API ---
     produceCO2(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            this.co2Grid[i][j] += amount;
-            // Cap CO₂ accumulation
-            this.co2Grid[i][j] = min(this.co2Grid[i][j], GameConstants.CO2_MAX_ACCUMULATION);
+        this.grids.add('co2Grid', x, y, this.resolution, amount);
+        // Cap (Proxy)
+        let col = Math.floor(x / this.resolution);
+        let row = Math.floor(y / this.resolution);
+        if (this.grids.co2Grid[col]) {
+            this.grids.co2Grid[col][row] = Math.min(this.grids.co2Grid[col][row], GameConstants.CO2_MAX_ACCUMULATION);
         }
     }
 
-    // Consume CO₂ (for future photosynthesis)
-    consumeCO2(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.co2Grid[i][j];
-            let taken = min(available, amount);
-            this.co2Grid[i][j] -= taken;
-            return taken;
+    produceCH4(x, y, amount) {
+        this.grids.add('ch4Grid', x, y, this.resolution, amount);
+        let col = Math.floor(x / this.resolution);
+        let row = Math.floor(y / this.resolution);
+        if (this.grids.ch4Grid[col]) {
+            this.grids.ch4Grid[col][row] = Math.min(this.grids.ch4Grid[col][row], GameConstants.CH4_MAX_ACCUMULATION);
         }
-        return 0;
     }
 
-    // Consume H₂ (for LUCA metabolism - Wood-Ljungdahl pathway)
-    consumeH2(x, y, amount) {
-        let i = floor(x / this.resolution);
-        let j = floor(y / this.resolution);
-        if (i >= 0 && i < this.cols && j >= 0 && j < this.rows) {
-            let available = this.h2Grid[i][j];
-            let taken = min(available, amount);
-            this.h2Grid[i][j] -= taken;
-            return taken;
+    recyclePhosphorus(x, y, amount) {
+        if (this.dynamics.regeneration.phosphorusRegen) {
+            this.dynamics.regeneration.phosphorusRegen.reciclarFosforo(this, x, y, amount);
         }
-        return 0;
     }
 
-    // Check if position is in sediment zone
-    isInSediment(y) {
-        let rowIndex = floor(y / this.resolution);
-        return rowIndex >= this.sedimentRow;
-    }
+    // --- Boundary Queries ---
+    isInSediment(y) { return this.stratification.isInSediment(Math.floor(y / this.resolution)); }
+    getViscosity(y) { return this.stratification.getViscosity(Math.floor(y / this.resolution)); }
+    isValidCellPosition(y) { return this.stratification.isInWater(0, Math.floor(y / this.resolution)); }
 
-    // Check if position is valid for cells (water zone only)
-    // Cells cannot live in atmosphere (gas) or sediment (solid)
-    isValidCellPosition(y) {
-        let rowIndex = floor(y / this.resolution);
-        return rowIndex >= this.waterStartRow && rowIndex < this.waterEndRow;
-    }
-
-    // Get viscosity factor at position
-    getViscosity(y) {
-        if (this.isInSediment(y)) {
-            return 0.7; // 30% slower in sediment
-        }
-        return 1.0;
-    }
-
-    // HELPER: Get Oxygen Level at specific coordinates
-    getOxygenLevel(x, y) {
-        let col = floor(x / this.resolution);
-        let row = floor(y / this.resolution);
-
-        // Safety bounds check
-        if (col >= 0 && col < this.cols && row >= 0 && row < this.rows) {
-            return this.oxygenGrid[col][row];
-        }
-        return 0;
-    }
-
-
-
-    // ===== ENVIRONMENTAL STABILITY SYSTEM =====
-    // Calculate environmental stability based on multiple factors
-    // Returns 0 (chaotic) to 1 (stable)
+    // --- Evolutionary Stats ---
     calculateEnvironmentalStability(cells, deathCount) {
-        if (!GameConstants.ENVIRONMENTAL_STABILITY_ENABLED) {
-            return 0.5;  // Neutral if disabled
-        }
-
-        // Factor 1: Population stability (low variance = stable)
-        let populationStability = this.calculatePopulationStability(cells.length);
-
-        // Factor 2: Resource stability (uniform distribution = stable)
-        let resourceStability = this.calculateResourceStability();
-
-        // Factor 3: Mortality stability (low death rate = stable)
-        let mortalityStability = this.calculateMortalityStability(deathCount);
-
-        // Weighted average (mortality is most important)
-        let stability = (populationStability * 0.3) + (resourceStability * 0.2) + (mortalityStability * 0.5);
-
-        return constrain(stability, 0, 1);
+        this.currentStability = this.stats.calculateStability(cells, deathCount);
+        return this.currentStability;
     }
 
-    calculatePopulationStability(currentPopulation) {
-        // Track population history
-        this.stabilityHistory.push(currentPopulation);
-        if (this.stabilityHistory.length > GameConstants.STABILITY_HISTORY_LENGTH) {
-            this.stabilityHistory.shift();
+    /**
+     * Camera Utility: Get the point of interest for the viewport
+     */
+    getViewportTarget() {
+        if (this.ventSystem && this.ventSystem.vents.length > 0) {
+            const v = this.ventSystem.vents[0];
+            return { x: v.pos.x, y: v.pos.y };
         }
-
-        if (this.stabilityHistory.length < 10) {
-            return 0.5;  // Not enough data yet
-        }
-
-        // Calculate variance
-        let mean = this.stabilityHistory.reduce((a, b) => a + b) / this.stabilityHistory.length;
-        let variance = this.stabilityHistory.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / this.stabilityHistory.length;
-        let stdDev = Math.sqrt(variance);
-
-        // Coefficient of variation (normalized measure)
-        let cv = mean > 0 ? stdDev / mean : 1;
-
-        // Low CV (< 0.1) = high stability, High CV (> 0.5) = low stability
-        return map(constrain(cv, 0, 0.5), 0, 0.5, 1, 0);
-    }
-
-    calculateResourceStability() {
-        // Measure uniformity of resource distribution
-        // Sample a few grid cells and check variance
-        let samples = [];
-        for (let i = 0; i < 10; i++) {
-            let col = floor(random(this.cols));
-            let row = floor(random(this.rows));
-            let totalResource = this.lightGrid[col][row] + this.oxygenGrid[col][row] +
-                this.nitrogenGrid[col][row] + this.phosphorusGrid[col][row];
-            samples.push(totalResource);
-        }
-
-        let mean = samples.reduce((a, b) => a + b) / samples.length;
-        let variance = samples.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / samples.length;
-        let stdDev = Math.sqrt(variance);
-        let cv = mean > 0 ? stdDev / mean : 1;
-
-        // Low variance = high stability
-        return map(constrain(cv, 0, 1), 0, 1, 1, 0);
-    }
-
-    calculateMortalityStability(currentDeathCount) {
-        // Low death rate = stable environment
-        // High death rate = chaotic/stressful environment
-
-        // Death rate as percentage of population
-        let populationSize = this.stabilityHistory.length > 0 ?
-            this.stabilityHistory[this.stabilityHistory.length - 1] : 100;
-
-        let deathRate = populationSize > 0 ? currentDeathCount / populationSize : 0;
-
-        // Low death rate (< 0.05) = high stability
-        // High death rate (> 0.3) = low stability
-        return map(constrain(deathRate, 0, 0.3), 0, 0.3, 1, 0);
-    }
-
-    // ===== STATS CALCULATION FOR LOGGING =====
-    calculateAndLogStats() {
-        if (!window.databaseLogger) return;
-
-        let h2Stats = this.getGridStats(this.h2Grid);
-        let co2Stats = this.getGridStats(this.co2Grid);
-        let o2Stats = this.getGridStats(this.oxygenGrid);
-        let tempStats = this.getGridStats(this.temperatureGrid);
-
-        // Specific check for Vents (bottom of map) vs Surface (top) for H2
-        // H2 should be high at bottom (vents) and low at top
-        let ventH2 = this.getAverageAtRow(this.h2Grid, this.rows - 2);
-        let surfaceH2 = this.getAverageAtRow(this.h2Grid, 2);
-
-        window.databaseLogger.logEnvironmentStats(frameCount, {
-            h2_avg: h2Stats.avg,
-            h2_max: h2Stats.max,
-            h2_min: h2Stats.min,
-            h2_vent: ventH2,
-            h2_surface: surfaceH2,
-
-            o2_avg: o2Stats.avg,
-            o2_max: o2Stats.max,
-
-            co2_avg: co2Stats.avg,
-            temp_avg: tempStats.avg
-        });
-    }
-
-    getGridStats(grid) {
-        let sum = 0;
-        let max = -Infinity;
-        let min = Infinity;
-        let count = 0;
-
-        for (let x = 0; x < this.cols; x++) {
-            for (let y = 0; y < this.rows; y++) {
-                let val = grid[x][y];
-                sum += val;
-                if (val > max) max = val;
-                if (val < min) min = val;
-                count++;
-            }
-        }
-
-        return {
-            avg: count > 0 ? sum / count : 0,
-            max: max,
-            min: min
-        };
-    }
-
-    applyProgressiveOxygenRise() {
-        // Increment ALL grid cells by the rise rate
-        // This simulates atmospheric accumulation
-        let maxReached = true;
-
-        for (let i = 0; i < this.cols; i++) {
-            for (let j = 0; j < this.rows; j++) {
-                if (this.oxygenGrid[i][j] < this.maxOxygenEvent) {
-                    this.oxygenGrid[i][j] += this.oxygenRiseRate;
-                    maxReached = false;
-                }
-            }
-        }
-
-        // Periodic Log (every ~10 seconds)
-        if (frameCount % 600 === 0 && !maxReached) {
-            console.log(`[GOE] Global Oxygen Rising: ${this.oxygenGrid[10][10].toFixed(2)} (Target: ${this.maxOxygenEvent})`);
-        }
-    }
-
-    getAverageAtRow(grid, rowIdx) {
-        if (rowIdx < 0 || rowIdx >= this.rows) return 0;
-        let sum = 0;
-        for (let x = 0; x < this.cols; x++) {
-            sum += grid[x][rowIdx];
-        }
-        return sum / this.cols;
+        return null; // World center fallback in Sketch
     }
 }

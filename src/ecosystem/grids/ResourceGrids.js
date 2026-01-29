@@ -9,16 +9,11 @@
  * - Phosphorus (very concentrated in sediment, limiting resource)
  */
 class ResourceGrids {
-    /**
-     * Initialize light grid (sunlight)
-     * Exponential decay with depth (no ozone layer)
-     */
-    static initializeLight(cols, rows, resolution) {
+    initializeLight(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
-                // LIGHT = SUNLIGHT (exponential decay with depth)
                 let depthRatio = j / rows;
                 let lightIntensity = GameConstants.ECOSYSTEM_INIT.LIGHT_SURFACE_INTENSITY *
                     exp(-GameConstants.ECOSYSTEM_INIT.LIGHT_DECAY_RATE * depthRatio);
@@ -29,17 +24,11 @@ class ResourceGrids {
         return grid;
     }
 
-    /**
-     * Initialize oxygen grid (traces from UV photolysis)
-     * LUCA era: <1% modern O₂ levels
-     */
-    static initializeOxygen(cols, rows, resolution) {
+    initializeOxygen(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
-                // OXYGEN = TRACES (fotólisis UV, pre-fotosíntesis)
-                // LUCA lived in nearly anoxic conditions (<1% modern O₂)
                 let oxygenNoise = noise(i * 0.15 + 1000, j * 0.15 + 1000);
                 grid[i][j] = map(oxygenNoise, 0, 1,
                     GameConstants.OXYGEN_GRID_MIN,
@@ -49,23 +38,14 @@ class ResourceGrids {
         return grid;
     }
 
-    /**
-     * Initialize nitrogen grid (concentrated in sediment)
-     * Inverse gradient of light
-     */
-    static initializeNitrogen(cols, rows, resolution) {
+    initializeNitrogen(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
                 let depthRatio = j / rows;
-
-                // NITROGEN = Concentrated in SEDIMENT (inverse of light)
-                // High at bottom, exponentially decreases upward
-                let nitrogenIntensity = 100 * exp(-4 * (1 - depthRatio)); // Inverse of light
+                let nitrogenIntensity = 100 * exp(-4 * (1 - depthRatio));
                 let nitrogenVariation = noise(i * 0.12 + 2000, j * 0.12 + 2000) * 0.3;
-
-                // FORCE BASELINE: Ensure minimum oceanic level for survival
                 let finalVal = nitrogenIntensity * (1 + nitrogenVariation);
                 grid[i][j] = Math.max(finalVal, GameConstants.OCEANIC_NITROGEN || 50);
             }
@@ -73,24 +53,15 @@ class ResourceGrids {
         return grid;
     }
 
-    /**
-     * Initialize phosphorus grid (very concentrated in sediment)
-     * Steeper gradient than nitrogen - limiting resource
-     */
-    static initializePhosphorus(cols, rows, resolution) {
+    initializePhosphorus(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
                 let depthRatio = j / rows;
-
-                // PHOSPHORUS = VERY concentrated in SEDIMENT (even more than nitrogen)
-                // Critical for DNA/RNA, extremely limited resource
                 let phosphorusIntensity = GameConstants.ECOSYSTEM_INIT.PHOSPHORUS_VENT_INTENSITY *
                     exp(-GameConstants.ECOSYSTEM_INIT.PHOSPHORUS_DECAY_RATE * (1 - depthRatio));
                 let phosphorusVariation = noise(i * 0.08 + 3000, j * 0.08 + 3000) * 0.4;
-
-                // FORCE BASELINE: Ensure minimum oceanic level for survival
                 let finalVal = phosphorusIntensity * (1 + phosphorusVariation);
                 grid[i][j] = Math.max(finalVal, GameConstants.OCEANIC_PHOSPHORUS || 50);
             }

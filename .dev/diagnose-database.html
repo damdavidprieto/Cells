@@ -275,6 +275,14 @@
                     <div class="label">Estadísticas de Frames</div>
                     <div class="value" id="total-stats">0</div>
                 </div>
+                <div class="info-card">
+                    <div class="label">Estadísticas de Entorno</div>
+                    <div class="value" id="total-env-stats">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Anomalías Detectadas</div>
+                    <div class="value" id="total-anomalies">0</div>
+                </div>
             </div>
         </div>
 
@@ -332,7 +340,7 @@
 
     <script>
         const DB_NAME = 'CellsDevLogs';
-        const DB_VERSION = 2;
+        const DB_VERSION = 3;
         let db = null;
 
         // Utilidades de logging
@@ -402,6 +410,21 @@
                         statsStore.createIndex('run_id', 'run_id', { unique: false });
                         statsStore.createIndex('frame', 'frame_number', { unique: false });
                         log('Store "frame_stats" creado', 'info');
+                    }
+
+                    if (!db.objectStoreNames.contains('environment_stats')) {
+                        const envStore = db.createObjectStore('environment_stats', { autoIncrement: true });
+                        envStore.createIndex('run_id', 'run_id', { unique: false });
+                        envStore.createIndex('frame', 'frame_number', { unique: false });
+                        log('Store "environment_stats" creado', 'info');
+                    }
+
+                    if (!db.objectStoreNames.contains('anomalies')) {
+                        const anomalyStore = db.createObjectStore('anomalies', { autoIncrement: true });
+                        anomalyStore.createIndex('run_id', 'run_id', { unique: false });
+                        anomalyStore.createIndex('frame', 'frame_number', { unique: false });
+                        anomalyStore.createIndex('severity', 'severity', { unique: false });
+                        log('Store "anomalies" creado', 'info');
                     }
                 };
             });
@@ -492,7 +515,7 @@
 
                 // 3. Verificar stores
                 log('3. Verificando object stores...', 'info');
-                const stores = ['runs', 'cell_events', 'mutations', 'frame_stats'];
+                const stores = ['runs', 'cell_events', 'mutations', 'frame_stats', 'environment_stats', 'anomalies'];
                 for (const storeName of stores) {
                     if (db.objectStoreNames.contains(storeName)) {
                         const count = await countRecords(storeName);
@@ -503,6 +526,8 @@
                         if (storeName === 'cell_events') document.getElementById('total-events').textContent = count;
                         if (storeName === 'mutations') document.getElementById('total-mutations').textContent = count;
                         if (storeName === 'frame_stats') document.getElementById('total-stats').textContent = count;
+                        if (storeName === 'environment_stats') document.getElementById('total-env-stats').textContent = count;
+                        if (storeName === 'anomalies') document.getElementById('total-anomalies').textContent = count;
                     } else {
                         log(`   ✗ Store "${storeName}" NO existe`, 'error');
                     }

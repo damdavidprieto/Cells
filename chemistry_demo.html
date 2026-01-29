@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periodic Table System - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .quick-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #764ba2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .quick-btn:hover {
+            background: #5f3a82;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .element-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .element-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .element-symbol {
+            font-size: 4em;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .element-number {
+            font-size: 1.5em;
+            opacity: 0.8;
+        }
+
+        .element-name {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .property {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .property-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .property-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .element-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .element-mini {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .element-mini:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .element-mini .symbol {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .element-mini .name {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .element-mini .number {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .essential-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Sistema de Tabla Periódica</h1>
+        <p class="subtitle">Demostración del sistema de química con datos científicos fidedignos</p>
+
+        <!-- Statistics -->
+        <div class="stats-grid" id="stats"></div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h2 class="section-title">🔍 Búsqueda de Elementos</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput"
+                    placeholder="Buscar por símbolo, nombre o número atómico (ej: H, Oxygen, 6)">
+                <button onclick="searchElement()">Buscar</button>
+            </div>
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="showEssential()">Elementos Esenciales</button>
+                <button class="quick-btn" onclick="showMacronutrients()">Macronutrientes (CHNOPS)</button>
+                <button class="quick-btn" onclick="showMetals()">Metales</button>
+                <button class="quick-btn" onclick="showNonmetals()">No Metales</button>
+                <button class="quick-btn" onclick="showAll()">Todos los Elementos</button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results"></div>
+
+        <!-- Console Output -->
+        <h2 class="section-title">📋 Consola</h2>
+        <div class="console-output" id="console"></div>
+    </div>
+
+    <!-- Load Scripts -->
+    <script src="src/chemistry/core/ElementCategories.js"></script>
+    <script src="src/chemistry/core/Element.js"></script>
+    <script src="src/chemistry/core/PeriodicTable.js"></script>
+    <script src="src/chemistry/data/elements/elements_001_020.js"></script>
+    <script src="src/chemistry/data/elements/elements_021_040.js"></script>
+    <script src="src/chemistry/data/elements/elements_041_060.js"></script>
+    <script src="src/chemistry/ChemistrySystem.js"></script>
+
+    <script>
+        // Inicializar el sistema
+        window.chemistrySystem.initialize();
+
+        // Capturar console.log
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            consoleDiv.innerHTML += args.join(' ') + '<br>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        // Mostrar estadísticas
+        function showStats() {
+            const stats = window.chemistrySystem.periodicTable.getStatistics();
+            const statsDiv = document.getElementById('stats');
+
+            statsDiv.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalElements}</div>
+                    <div class="stat-label">Elementos Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.essential}</div>
+                    <div class="stat-label">Esenciales para la Vida</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.metals}</div>
+                    <div class="stat-label">Metales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.nonmetals}</div>
+                    <div class="stat-label">No Metales</div>
+                </div>
+            `;
+        }
+
+        // Buscar elemento
+        function searchElement() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const element = window.chemistrySystem.getElement(query);
+            if (element) {
+                displayElement(element);
+            } else {
+                document.getElementById('results').innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #999;">
+                        No se encontró ningún elemento con: "${query}"
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar un elemento
+        function displayElement(element) {
+            const resultsDiv = document.getElementById('results');
+
+            resultsDiv.innerHTML = `
+                <div class="element-card">
+                    <div class="element-header">
+                        <div>
+                            <div class="element-number">#${element.atomicNumber}</div>
+                            <div class="element-symbol">${element.symbol}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="element-name">${element.name}</div>
+                            <div>${element.nameES}</div>
+                            ${element.essentialForLife ? '<div class="essential-badge">⭐ Esencial para la Vida</div>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="property-grid">
+                        <div class="property">
+                            <div class="property-label">Masa Atómica</div>
+                            <div class="property-value">${element.atomicMass} u</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Categoría</div>
+                            <div class="property-value">${element.getCategory().nameES}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Fase (25°C)</div>
+                            <div class="property-value">${element.phase}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Densidad</div>
+                            <div class="property-value">${element.density} g/cm³</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Punto de Fusión</div>
+                            <div class="property-value">${element.meltingPoint ? element.getMeltingPointCelsius().toFixed(2) + ' °C' : 'N/A'}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Electronegatividad</div>
+                            <div class="property-value">${element.electronegativity || 'N/A'}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Configuración Electrónica</div>
+                            <div class="property-value">${element.electronConfiguration}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Rol Biológico</div>
+                            <div class="property-value" style="font-size: 0.9em;">${element.biologicalRole}</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Abundancia Corteza</div>
+                            <div class="property-value">${element.crustalAbundance} ppm</div>
+                        </div>
+                        <div class="property">
+                            <div class="property-label">Descubrimiento</div>
+                            <div class="property-value">${element.discoveryYear || 'Antiguo'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Mostrar lista de elementos
+        function displayElementList(elements, title) {
+            const resultsDiv = document.getElementById('results');
+
+            let html = `<h2 class="section-title">${title} (${elements.length})</h2>`;
+            html += '<div class="element-list">';
+
+            elements.forEach(el => {
+                html += `
+                    <div class="element-mini" onclick="displayElement(window.chemistrySystem.getElement(${el.atomicNumber}))">
+                        <div class="number">#${el.atomicNumber}</div>
+                        <div class="symbol">${el.symbol}</div>
+                        <div class="name">${el.nameES}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        // Funciones de filtrado
+        function showEssential() {
+            const elements = window.chemistrySystem.getEssentialElements();
+            displayElementList(elements, '⭐ Elementos Esenciales para la Vida');
+        }
+
+        function showMacronutrients() {
+            const elements = window.chemistrySystem.getMacronutrients();
+            displayElementList(elements, '🧬 Macronutrientes (CHNOPS)');
+        }
+
+        function showMetals() {
+            const elements = window.chemistrySystem.periodicTable.getMetals();
+            displayElementList(elements, '🔩 Metales');
+        }
+
+        function showNonmetals() {
+            const elements = window.chemistrySystem.periodicTable.getNonmetals();
+            displayElementList(elements, '💨 No Metales');
+        }
+
+        function showAll() {
+            const elements = window.chemistrySystem.periodicTable.getAllElementsSorted();
+            displayElementList(elements, '📊 Todos los Elementos');
+        }
+
+        // Enter key para buscar
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchElement();
+            }
+        });
+
+        // Mostrar estadísticas al cargar
+        showStats();
+
+        // Mostrar elementos esenciales por defecto
+        showEssential();
+
+        console.log('=== SISTEMA LISTO ===');
+        console.log('Prueba buscar: H, Carbon, 8, Nitrogen, etc.');
+    </script>
+</body>
+
+</html>

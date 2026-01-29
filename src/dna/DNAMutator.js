@@ -37,7 +37,7 @@
  * - Drake, J. W. (1991). A constant rate of spontaneous mutation. PNAS.
  */
 class DNAMutator {
-    static mutate(parentDNA, environmentalStability = 0.5) {
+    mutate(parentDNA, environmentalStability = 0.5) {
         let mr = parentDNA.mutationRate;
         const sizeConfig = GameConstants.SIZE_EVOLUTION[GameConstants.SIZE_EVOLUTION_LEVEL];
         const colorConfig = GameConstants.COLOR_EVOLUTION[GameConstants.COLOR_EVOLUTION_LEVEL];
@@ -95,6 +95,18 @@ class DNAMutator {
                 20  // Maximum tolerance (generalist)
             ),
 
+            // PH & REDOX ADAPTATION
+            pHOptimum: constrain(
+                parentDNA.pHOptimum + random(-GameConstants.PH_OPTIMUM_MUTATION_RANGE * mr, GameConstants.PH_OPTIMUM_MUTATION_RANGE * mr),
+                0, 14
+            ),
+            redoxOptimum: constrain(
+                parentDNA.redoxOptimum + random(-GameConstants.REDOX_OPTIMUM_MUTATION_RANGE * mr, GameConstants.REDOX_OPTIMUM_MUTATION_RANGE * mr),
+                -1000, 1000
+            ),
+            pHTolerance: parentDNA.pHTolerance,
+            redoxTolerance: parentDNA.redoxTolerance,
+
             // METABOLISM & ORGANELLES - INHERIT FROM PARENT
             metabolismType: parentDNA.metabolismType,
             organelles: {
@@ -127,10 +139,10 @@ class DNAMutator {
      * Deep copy metabolisms object
      * Ensures all metabolism pathways are properly inherited
      */
-    static copyMetabolisms(parentMetabolisms) {
+    copyMetabolisms(parentMetabolisms) {
         if (!parentMetabolisms) {
             // Fallback: create default LUCA metabolisms if missing
-            return DNAFactory.createLUCA().metabolisms;
+            return window.dnaFactory.createLUCA().metabolisms;
         }
 
         let metabolismsCopy = {};
@@ -154,6 +166,9 @@ class DNAMutator {
             if (data.geochemicalBonus !== undefined) {
                 metabolismsCopy[name].geochemicalBonus = data.geochemicalBonus;
             }
+            if (data.producesCH4 !== undefined) {
+                metabolismsCopy[name].producesCH4 = data.producesCH4;
+            }
         }
 
         return metabolismsCopy;
@@ -174,7 +189,7 @@ class DNAMutator {
      * @param {number} environmentalStability - Stability index (0=chaotic, 1=stable)
      * @returns {number} New mutation rate with applied pressure
      */
-    static mutateMutationRate(parentMutationRate, environmentalStability) {
+    mutateMutationRate(parentMutationRate, environmentalStability) {
         if (!GameConstants.ENVIRONMENTAL_STABILITY_ENABLED) {
             // No pressure - random mutation only (neutral evolution)
             return constrain(
@@ -217,7 +232,7 @@ class DNAMutator {
      * @param {number} currentMutationRate - Current mutation rate
      * @returns {number} Directional pressure on mutation rate
      */
-    static calculateMutationPressure(environmentalStability, currentMutationRate) {
+    calculateMutationPressure(environmentalStability, currentMutationRate) {
         // Target mutation rate based on stability
         // Linear interpolation between primordial and modern rates
         let targetMutationRate = map(
@@ -239,7 +254,7 @@ class DNAMutator {
     }
 
     // Determine evolutionary era based on mutation rate
-    static getEvolutionaryEra(mutationRate) {
+    getEvolutionaryEra(mutationRate) {
         if (mutationRate > 0.15) {
             return 'primordial';  // LUCA-like (4.0-3.5 Ga)
         } else if (mutationRate > 0.08) {
@@ -249,7 +264,7 @@ class DNAMutator {
         }
     }
 
-    static applyMetabolicDivergence(parentDNA, childDNA) {
+    applyMetabolicDivergence(parentDNA, childDNA) {
         // === CONTINUOUS METABOLIC EVOLUTION ===
         // Instead of hard switching (mutation), we drift efficiencies of all latent pathways.
         // This allows gradual evolution: LUCA -> (LUCA+primitive Fermentation) -> Fermentation
@@ -274,14 +289,14 @@ class DNAMutator {
 
         // NEW: Recalculate Phenotypic Color based on metabolic mix
         // The color now reflects the cell's "metabolic cocktail"
-        childDNA.color = ColorSystem.calculatePhenotypicColor(childDNA);
+        childDNA.color = window.colorSystem.calculatePhenotypicColor(childDNA);
     }
 
     /**
      * Mutate efficiencies of ALL metabolic pathways
      * Allows latent genes to evolve until they cross the threshold
      */
-    static mutateMetabolicEfficiencies(dna) {
+    mutateMetabolicEfficiencies(dna) {
         let mr = dna.mutationRate;
 
         for (let [name, data] of Object.entries(dna.metabolisms)) {
@@ -329,7 +344,7 @@ class DNAMutator {
      * UV damage causes thymine dimers and DNA breaks.
      * Imperfect repair (low dnaRepairEfficiency) causes mutations.
      */
-    static applyUVMutation(childDNA) {
+    applyUVMutation(childDNA) {
         // Apply extra mutation to one random trait
         let traits = ['size', 'color', 'metabolicEfficiency', 'storageCapacity', 'dnaRepairEfficiency', 'sodEfficiency', 'thermalOptimum', 'thermalTolerance'];
         let randomTrait = random(traits);

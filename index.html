@@ -63,15 +63,19 @@
     <script>
         const scripts = [
             // Utils & Logging
-            'src/logging/CircuitFilter.js',
-            'src/logging/ReproductionIndexCalculator.js',
-            'src/logging/DatabaseLogger.js',
             'src/logging/AnomalyDetector.js', // Sanitizer
+            // Modular Database Logging
+            'src/logging/db/DBConfig.js',
+            'src/logging/db/DBSchema.js',
+            'src/logging/db/DBWriter.js',
+            'src/logging/db/DBExporter.js',
+            'src/logging/db/DatabaseManager.js',
 
             // DNA & Genetics
             'src/dna/DNAFactory.js',
             'src/dna/DNAMutator.js',
             'src/dna/GeneticDistance.js',
+            'src/dna/GeneticTranslation.js',
 
             // Organelles
             'src/organelles/Organelle.js',
@@ -79,6 +83,24 @@
             'src/organelles/Flagellum.js',
             'src/organelles/Hydrogenosome.js',
             'src/organelles/ChemosyntheticEnzymes.js',
+
+            // Chemistry System
+            'src/chemistry/core/ElementCategories.js',
+            'src/chemistry/core/Element.js',
+            'src/chemistry/core/PeriodicTable.js',
+            'src/chemistry/data/elements/elements_001_020.js',
+            'src/chemistry/data/elements/elements_021_040.js',
+            'src/chemistry/data/elements/elements_041_060.js',
+            'src/chemistry/molecules/Molecule.js',
+            'src/chemistry/data/molecules.js',
+            'src/chemistry/molecules/Reaction.js',
+            'src/chemistry/data/reactions.js',
+            'src/chemistry/bio/Protein.js',
+            'src/chemistry/bio/Enzyme.js',
+            'src/chemistry/data/enzymes.js',
+            'src/chemistry/bio/Proteome.js',
+            'src/chemistry/molecules/MolecularSystem.js',
+            'src/chemistry/ChemistrySystem.js',
 
             // Cellular Systems
             'src/cellular_systems/FlagellaCosts.js',
@@ -88,6 +110,7 @@
             'src/cellular_systems/ColorSystem.js',
             'src/cellular_systems/OxygenTolerance.js',
             'src/cellular_systems/ThermalStress.js',
+            'src/cellular_systems/ChemotaxisSystem.js',
             'src/reproduction/ReproductionSystem.js',
 
             // Visualization
@@ -102,15 +125,28 @@
             'src/ecosystem/WorldConfig.js',
             'src/ecosystem/WorldPresets.js',
             'src/ecosystem/vents/VentTypes.js',
+            'src/ecosystem/vents/VentLifecycle.js',
+            'src/ecosystem/vents/VentPlume.js',
+            'src/ecosystem/vents/VentPlumeCalculator.js',
+            'src/ecosystem/vents/VentChemistry.js',
+            'src/ecosystem/vents/Vent.js',
             'src/ecosystem/vents/VentFactory.js',
+            'src/ecosystem/vents/VentEventSystem.js',
+            'src/ecosystem/vents/VentRenderer.js',
+            'src/ecosystem/vents/VentActivityLogger.js',
             'src/ecosystem/vents/VentManager.js',
             'src/ecosystem/regeneration/GridRegeneration.js',
             'src/ecosystem/regeneration/OxygenRegeneration.js',
             'src/ecosystem/regeneration/PhosphorusRegeneration.js',
             'src/ecosystem/reservoirs/ReservoirSystem.js',
+            'src/ecosystem/environment/GridSystem.js',
+            'src/ecosystem/environment/StratificationManager.js',
+            'src/ecosystem/environment/DynamicsManager.js',
+            'src/ecosystem/environment/StatsManager.js',
+            'src/ecosystem/environment/EnvironmentRenderer.js',
             'src/ecosystem/DiffusionSystem.js',
             'src/ecosystem/Environment.js',
-            'src/core/Entity.js',
+            'src/entities/Entity.js',
 
             // Scenario Management Layer (New)
             'src/scenarios/ScenarioDefinition.js',
@@ -121,21 +157,25 @@
             'src/ui/components/ConfigScreen.js',
             'src/ui/components/StatsPanel.js',
             'src/ui/components/CellInspector.js',
+            'src/ui/components/MoleculeInspector.js',
             'src/ui/components/VentInspector.js',
             'src/ui/components/Legend.js',
-            'src/ui/components/VentControlPanel.js',
             'src/ui/UIManager.js',
 
             // Core Game Loop
-            'src/core/GameGovernor.js',
-            'src/core/GameController.js',
-            'src/core/Sketch.js',
+            'src/orchestrators/GameGovernor.js',
+            'src/orchestrators/GameController.js',
+            'src/orchestrators/Sketch.js',
 
             // Testing Layer (Runtime)
             'src/testing/TestManager.js',
             'src/testing/suites/VentTests.js',
+            'src/testing/suites/MetabolismTests.js',
             'src/testing/suites/ScenarioTests.js',
-            'src/testing/suites/PhysicsTests.js'
+            'src/testing/suites/PhysicsTests.js',
+            'src/testing/suites/DatabaseTests.js',
+            'src/testing/suites/GridTests.js',
+            'src/testing/suites/BioChemistryTests.js'
         ];
 
         // Load all scripts with unique timestamp
@@ -143,6 +183,10 @@
         scripts.forEach(src => {
             document.write('<script src="' + src + '?v=' + v + '"><\/script>');
         });
+
+        // Log timestamp for verification
+        console.log('%c🔄 Scripts loaded with cache-busting timestamp: ' + v, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+        console.log('%c📅 Load time: ' + new Date().toLocaleString(), 'color: #00ffff;');
     </script>
 </body>
 

@@ -20,9 +20,9 @@
  * - Lane (2015). The Vital Question.
  */
 class MetabolicCosts {
-    static calculate(entity, environment) {
+    calculate(entity, environment) {
         let baseCost = GameConstants.BASE_METABOLIC_COST;
-        let thermalStress = ThermalStress.calculateThermalStress(entity, environment);
+        let thermalStress = window.thermalStress.calculateThermalStress(entity, environment);
 
         // MULTI-METABOLISM SYSTEM
         // Try each enabled metabolism and use the best one
@@ -60,7 +60,7 @@ class MetabolicCosts {
     /**
      * Select the best available metabolism based on substrate availability
      */
-    static selectBestMetabolism(entity, environment) {
+    selectBestMetabolism(entity, environment) {
         let bestEnergy = -Infinity;
         let bestMetabolism = null;
 
@@ -87,7 +87,7 @@ class MetabolicCosts {
      * Check substrate availability for a metabolism
      * Returns 0-1 (fraction of substrates available)
      */
-    static checkSubstrates(entity, environment, metabolism) {
+    checkSubstrates(entity, environment, metabolism) {
         let minAvailability = 1.0;
 
         for (let [substrate, amount] of Object.entries(metabolism.substrates)) {
@@ -98,8 +98,21 @@ class MetabolicCosts {
                     let col = floor(entity.pos.x / environment.resolution);
                     let row = floor(entity.pos.y / environment.resolution);
                     let h2 = environment.h2Grid?.[col]?.[row] || 0;
-                    // SCIENTIFIC UPDATE: Lowered threshold to 0.01 (high affinity hydrogenase)
                     available = h2 >= 0.01 ? min(h2 / amount, 1.0) : 0;
+                    break;
+
+                case 'H2S':
+                    let h2sCol = floor(entity.pos.x / environment.resolution);
+                    let h2sRow = floor(entity.pos.y / environment.resolution);
+                    let h2s = environment.h2sGrid?.[h2sCol]?.[h2sRow] || 0;
+                    available = h2s >= 0.01 ? min(h2s / amount, 1.0) : 0;
+                    break;
+
+                case 'CH4':
+                    let ch4Col = floor(entity.pos.x / environment.resolution);
+                    let ch4Row = floor(entity.pos.y / environment.resolution);
+                    let ch4 = environment.ch4Grid?.[ch4Col]?.[ch4Row] || 0;
+                    available = ch4 >= 0.01 ? min(ch4 / amount, 1.0) : 0;
                     break;
 
                 case 'CO2':
@@ -138,7 +151,7 @@ class MetabolicCosts {
     /**
      * Calculate costs for a specific metabolism
      */
-    static calculateMetabolismCosts(entity, environment, metabolismName, metabolism, baseCost, thermalStress) {
+    calculateMetabolismCosts(entity, environment, metabolismName, metabolism, baseCost, thermalStress) {
         let energyCost = 0;
         let oxygenCost = 0;
         let nitrogenCost = 0;
@@ -150,25 +163,54 @@ class MetabolicCosts {
                 case 'H2':
                     environment.consumeH2(entity.pos.x, entity.pos.y, amount);
                     break;
+                case 'CH4':
+                    environment.consumeCH4(entity.pos.x, entity.pos.y, amount);
+                    break;
+                case 'H2S':
+                    environment.consumeH2S(entity.pos.x, entity.pos.y, amount);
+                    break;
                 case 'CO2':
                     environment.consumeCO2(entity.pos.x, entity.pos.y, amount);
                     break;
                 case 'O2':
                     oxygenCost = amount;
                     break;
-                case 'energy':
-                    // Will be deducted from entity.energy
-                    break;
             }
         }
 
         // Calculate energy production
-        let energyProduced = metabolism.energyYield * metabolism.efficiency;
+        // NEW: Use real thermodynamic yield if available
+        let energyProduced = metabolism.energyYield;
+
+        if (window.chemistrySystem && window.chemistrySystem.initialized) {
+            const reactionId = this._mapMetabolismToReaction(metabolismName);
+            const reaction = window.chemistrySystem.getReaction(reactionId);
+
+            if (reaction) {
+                // Potential ATP yield from ΔG
+                const realYield = reaction.calculateATPYield();
+                if (realYield > 0) {
+                    energyProduced = realYield;
+                }
+
+                // NEW: Apply Enzyme Catalytic Bonus (from Proteome)
+                if (entity.proteome) {
+                    const bonus = entity.proteome.getCatalyticBonus(reactionId, window.chemistrySystem, environment);
+                    energyProduced *= bonus;
+                }
+            }
+        }
+
+        energyProduced *= metabolism.efficiency;
+
+        // Produce CH4 if methanogenesis
+        if (metabolism.producesCH4) {
+            environment.produceCH4(entity.pos.x, entity.pos.y, metabolism.producesCH4 * metabolism.efficiency);
+        }
 
         // NEW: Apply Color System Light Absorption
-        // Darker cells absorb more light (bonus) but pay higher maintenance cost
         if (metabolism.requiresLight) {
-            let absorptionMultiplier = ColorSystem.calculateLightAbsorption(entity.dna.color);
+            let absorptionMultiplier = window.colorSystem.calculateLightAbsorption(entity.dna.color);
             energyProduced *= absorptionMultiplier;
         }
 
@@ -177,31 +219,52 @@ class MetabolicCosts {
             energyProduced += 0.5 * metabolism.efficiency;
         }
 
-        // Base metabolic cost (removed hardcoded * 2 multiplier that was causing starvation)
-        let maintenanceCost = baseCost * thermalStress * entity.dna.metabolicEfficiency;
+        // --- NEW: ENVIRONMENTAL STRESS (pH & Redox) ---
+        let ph = environment.getPH(entity.pos.x, entity.pos.y);
+        let redox = environment.getRedox(entity.pos.x, entity.pos.y);
+
+        // pH Stress: Gaussian penalty for deviation from optimum
+        let phDiff = Math.abs(ph - entity.dna.pHOptimum);
+        let phStress = phDiff > entity.dna.pHTolerance ? 1.0 + (phDiff - entity.dna.pHTolerance) * 0.2 : 1.0;
+
+        // Redox Stress: Penalty for deviation from target redox potential
+        let redoxDiff = Math.abs(redox - entity.dna.redoxOptimum);
+        let redoxStress = redoxDiff > entity.dna.redoxTolerance ? 1.0 + (redoxDiff - entity.dna.redoxTolerance) * 0.002 : 1.0;
+
+        // Base metabolic cost
+        let maintenanceCost = baseCost * thermalStress * phStress * redoxStress * (entity.dna.metabolicEfficiency || 1.0);
 
         // Net energy cost (negative = energy gain, positive = energy loss)
-        // This will be SUBTRACTED from entity.energy, so negative values increase energy
         energyCost = maintenanceCost - energyProduced;
 
-        // Produce O₂ if oxygenic photosynthesis
-        if (metabolism.producesO2 && metabolism.producesO2 > 0) {
-            // TODO: Implement produceO2 method in Environment
-            // environment.produceO2(entity.pos.x, entity.pos.y, metabolism.producesO2 * metabolism.efficiency);
-        }
-
-        // Produce CO₂ (most metabolisms)
-        if (metabolismName !== 'oxigenicPhotosynthesis') {
-            co2Produced = baseCost * 0.1 * metabolism.efficiency;
+        // Produce CO₂
+        if (metabolismName !== 'oxigenicPhotosynthesis' && metabolismName !== 'methanotrophy') {
+            co2Produced = baseCost * 0.1 * (metabolism.efficiency || 1.0);
             environment.produceCO2(entity.pos.x, entity.pos.y, co2Produced);
         }
 
         return {
-            energy: energyCost,  // Can be negative (gain) or positive (loss)
+            energy: energyCost,
             oxygen: oxygenCost,
             nitrogen: nitrogenCost,
             co2Produced: co2Produced,
-            metabolismUsed: metabolismName  // For debugging/logging
+            metabolismUsed: metabolismName,
+            stressFactors: { ph: phStress, redox: redoxStress } // For analytics
         };
+    }
+
+    /**
+     * Maps legacy metabolism IDs to chemistry system reaction IDs
+     */
+    _mapMetabolismToReaction(metabolismName) {
+        const mapping = {
+            'luca': 'wood_ljungdahl',
+            'methanogenesis': 'methanogenesis',
+            'oxigenicPhotosynthesis': 'oxigenic_photosynthesis',
+            'aerobicRespiration': 'aerobic_respiration',
+            'sulfurOxidation': 'sulfur_oxidation',
+            'fermentation': 'fermentation'
+        };
+        return mapping[metabolismName] || metabolismName;
     }
 }

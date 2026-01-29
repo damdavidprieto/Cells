@@ -10,9 +10,21 @@ class CellInspector {
         this.width = 200;
         this.height = 220; // Increased to fit all data
         this.margin = 20;
+        this.enabled = false; // Controlado por ScenarioManager
+    }
+
+    enable() {
+        this.enabled = true;
+    }
+
+    disable() {
+        this.enabled = false;
     }
 
     draw() {
+        // Only active if enabled by ScenarioManager
+        if (!this.enabled) return;
+
         // Only active in SINGLE_CELL_MODE or SINGLE_VENT_MODE and if entities exist
         if ((GameConstants.EXECUTION_MODE !== 'SINGLE_CELL_MODE' && GameConstants.EXECUTION_MODE !== 'SINGLE_VENT_MODE') || !window.entities || window.entities.length === 0) return;
 

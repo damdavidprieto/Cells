@@ -4,35 +4,19 @@ Esta carpeta contiene **scripts y documentación para desarrollo** que pueden su
 
 ## 📁 Contenido
 
-### Scripts de PowerShell
+### Herramientas de Diagnóstico
 
-- **`check-database.ps1`** - Verifica el estado de IndexedDB en navegadores instalados
-  - No requiere permisos de administrador
-  - Soporta Chrome, Edge y Firefox
-  - Muestra tamaño y ubicación de la base de datos
-
-### Documentación
-
-- **`CHECK_DATABASE.md`** - Guía completa sobre cómo verificar el estado de IndexedDB
-  - Métodos manuales (DevTools)
-  - Métodos automáticos (scripts)
-  - Solución de problemas
-  - Comandos útiles para desarrollo
+- **`diagnose-database.html`** - Herramienta web para inspeccionar la base de datos IndexedDB.
+  - Permite ver estadísticas de ejecuciones, eventos, mutaciones y anomalías.
+  - Incluye gráficas de población y energía en tiempo real (según logs).
+  - Compatible con la arquitectura modular (DB v3).
 
 ## 🚀 Uso Rápido
 
-### Verificar Estado de la Base de Datos
-
-```powershell
-# Verificar en todos los navegadores
-.\.dev\check-database.ps1
-
-# Verificar solo en Chrome
-.\.dev\check-database.ps1 -Browser Chrome
-
-# Verificar en un perfil específico
-.\.dev\check-database.ps1 -Browser Firefox -BrowserProfile "dev-edition-default"
-```
+### Inspeccionar la Base de Datos
+1. Abre `index.html` en tu navegador y ejecuta una simulación.
+2. Abre `.dev/diagnose-database.html` en una nueva pestaña.
+3. Haz clic en "Ejecutar Diagnóstico Completo" para ver los datos de la sesión actual.
 
 ## 🔒 Seguridad
 

@@ -32,7 +32,7 @@ class ThermalStress {
      * @param {Environment} environment - The environment with temperature grid
      * @returns {number} Stress multiplier (1.0 = no stress, 2.0 = 100% cost increase)
      */
-    static calculateThermalStress(entity, environment) {
+    calculateThermalStress(entity, environment) {
         if (!GameConstants.TEMPERATURE_ENABLED) {
             return 1.0; // No stress if temperature system disabled
         }
@@ -64,7 +64,7 @@ class ThermalStress {
      * @param {number} stressMultiplier - The stress multiplier value
      * @returns {string} Category: 'none', 'low', 'medium', 'high', 'severe'
      */
-    static getStressCategory(stressMultiplier) {
+    getStressCategory(stressMultiplier) {
         if (stressMultiplier <= 1.0) return 'none';
         if (stressMultiplier <= 1.2) return 'low';
         if (stressMultiplier <= 1.5) return 'medium';

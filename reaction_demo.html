@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metabolic Reactions - Demo</title>
+    <style>
+        :root {
+            --primary: #27ae60;
+            --secondary: #2ecc71;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --white: #ffffff;
+            --accent: #e67e22;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .reaction-card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            border-left: 8px solid var(--primary);
+        }
+
+        .reaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reaction-name {
+            font-size: 1.5em;
+            font-weight: 800;
+        }
+
+        .reaction-pathway {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            color: #7f8c8d;
+        }
+
+        .equation {
+            font-size: 1.4em;
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: #fdfdfd;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #95a5a6;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 1.1em;
+            font-weight: 700;
+        }
+
+        .exergonic {
+            color: var(--primary);
+        }
+
+        .endergonic {
+            color: var(--danger);
+        }
+
+        .atp-badge {
+            background: #f1c40f;
+            color: #7f6a00;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+
+        sub {
+            font-size: 0.6em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Metabolic Reactions & Energetics</h1>
+            <p>Fase 3: Integración de estequiometría y termodinámica real</p>
+        </header>
+
+        <div id="reactions-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/chemistry/core/ElementCategories.js"></script>
+    <script src="src/chemistry/core/Element.js"></script>
+    <script src="src/chemistry/core/PeriodicTable.js"></script>
+    <script src="src/chemistry/data/elements/elements_001_020.js"></script>
+    <script src="src/chemistry/data/elements/elements_021_040.js"></script>
+    <script src="src/chemistry/data/elements/elements_041_060.js"></script>
+    <script src="src/chemistry/molecules/Molecule.js"></script>
+    <script src="src/chemistry/data/molecules.js"></script>
+    <script src="src/chemistry/molecules/Reaction.js"></script>
+    <script src="src/chemistry/data/reactions.js"></script>
+    <script src="src/chemistry/molecules/MolecularSystem.js"></script>
+    <script src="src/chemistry/ChemistrySystem.js"></script>
+
+    <script>
+        // Inicializar
+        window.chemistrySystem.initialize();
+        const molSystem = window.chemistrySystem.molecularSystem;
+        const reactions = molSystem.getAllReactions();
+
+        const container = document.getElementById('reactions-container');
+
+        container.innerHTML = reactions.map(r => `
+            <div class="reaction-card" style="border-left-color: ${r.isExergonic() ? 'var(--primary)' : 'var(--danger)'}">
+                <div class="reaction-header">
+                    <div class="reaction-name">${r.nameES}</div>
+                    <div class="reaction-pathway">${r.metabolicPathway}</div>
+                </div>
+                
+                <div class="equation">${r.getEquationHTML()}</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">ΔGr° (kJ/mol)</span>
+                        <span class="stat-value ${r.isExergonic() ? 'exergonic' : 'endergonic'}">${r.deltaG}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Rendimiento ATP</span>
+                        <span class="stat-value"><span class="atp-badge">${r.calculateATPYield().toFixed(2)} ATP</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Balanceada</span>
+                        <span class="stat-value">${r.isMassBalanced() ? '✅ Masa' : '❌ Masa'} | ${r.isChargeBalanced() ? '✅ Carga' : '❌ Carga'}</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 0.9em; background: #fffcea; padding: 10px; border-radius: 6px;">
+                    <strong>Dato Científico:</strong> 1 mol de esta reacción produce aprox. 
+                    ${Math.abs(r.deltaG).toFixed(0)} kJ de energía libre, lo que equivale biolólicamente a 
+                    ${r.calculateATPYield().toFixed(1)} moléculas de ATP (considerando 100% eficiencia).
+                </div>
+            </div>
+        `).join('');
+    </script>
+</body>
+
+</html>

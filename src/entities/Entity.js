@@ -9,16 +9,16 @@ class Entity {
         this.acc = createVector(0, 0);
 
         // DNA - use factory for LUCA or provided DNA
-        this.dna = dna || DNAFactory.createLUCA();
+        this.dna = dna || window.dnaFactory.createLUCA();
 
         // Calculate maxSpeed from flagellaLevel AND size
         // LUCA (0) = brownian motion (PHISICS_BROWNIAN), flagella (1-6) = active locomotion
         let baseSpeed = this.dna.flagellaLevel === 0 ? GameConstants.PHYSICS.BROWNIAN_STRENGTH : this.dna.flagellaLevel;
-        let sizeModifier = MembraneSystem.calculateMovementPenalty(this.dna.size);
+        let sizeModifier = window.membraneSystem.calculateMovementPenalty(this.dna.size);
         this.maxSpeed = baseSpeed * sizeModifier * GameConstants.SPEED_MULTIPLIER;
 
         // Quadruple resource system (affected by storage capacity AND size)
-        this.maxResources = MembraneSystem.calculateStorageCapacity(
+        this.maxResources = window.membraneSystem.calculateStorageCapacity(
             this.dna.storageCapacity,
             this.dna.size
         );
@@ -50,6 +50,9 @@ class Entity {
 
         // Movement offset for perlin noise visualization
         this.noiseOffset = random(1000);
+
+        // PROTEOME SYSTEM (Enzymes)
+        this.proteome = new Proteome(this);
     }
 
     initializeOrganelles() {
@@ -91,19 +94,19 @@ class Entity {
         this.move(environment);
 
         // Metabolic consumption (Restored)
-        this.eat(environment);
+        // No longer calls this.eat() as consumption is handled in applyMetabolicCosts -> window.metabolicCosts.calculate
 
         // PASSIVE DIFFUSION (Osmosis) - New Mechanic
         // Free nutrient uptake in rich environments (Vents)
-        MembraneSystem.performPassiveDiffusion(this, environment);
+        window.membraneSystem.performPassiveDiffusion(this, environment);
 
         // Apply all costs
         this.applyMetabolicCosts(environment);
         this.applyFlagellaCosts();
 
         // Oxygen tolerance system (SOD)
-        OxygenTolerance.updateSODLevels(this);
-        this.oxidativeDamage = OxygenTolerance.calculateOxidativeDamage(this, environment);
+        window.oxygenTolerance.updateSODLevels(this);
+        this.oxidativeDamage = window.oxygenTolerance.calculateOxidativeDamage(this, environment);
 
         // STRUCTURAL INTEGRITY SYSTEM
         // 1. Accumulate Damage (Oxidative Stress)
@@ -128,6 +131,14 @@ class Entity {
             this.reproductionCooldown--;
         }
 
+        // Update Proteome (Degradation)
+        this.proteome.update();
+
+        // Express Genes (Synthesize Proteins) - Every 100 frames to avoid spamming synthesis
+        if (this.age % 100 === 0 && window.chemistrySystem) {
+            GeneticTranslation.expressGenes(this, window.chemistrySystem);
+        }
+
         this.age++;
     }
 
@@ -139,8 +150,8 @@ class Entity {
 
         // 2. Chemotaxis (Biased drift towards nutrients - "Smell")
         // Only active if ChemotaxisSystem is available (it should be)
-        if (typeof ChemotaxisSystem !== 'undefined') {
-            let biasForce = ChemotaxisSystem.calculateBias(this, environment);
+        if (window.chemotaxisSystem) {
+            let biasForce = window.chemotaxisSystem.calculateBias(this, environment);
             this.applyForce(biasForce);
         }
     }
@@ -195,13 +206,13 @@ class Entity {
     }
 
     applyMetabolicCosts(environment) {
-        let costs = MetabolicCosts.calculate(this, environment);
+        let costs = window.metabolicCosts.calculate(this, environment);
 
         // Apply size-based cost multiplier
-        let sizeMultiplier = MembraneSystem.calculateMetabolicCost(1.0, this.dna.size);
+        let sizeMultiplier = window.membraneSystem.calculateMetabolicCost(1.0, this.dna.size);
 
         // Apply pigment cost (color-based)
-        let pigmentCost = ColorSystem.calculatePigmentCost(this.dna.color);
+        let pigmentCost = window.colorSystem.calculatePigmentCost(this.dna.color);
 
         // Calculate Organelle Maintenance Costs
         let organelleMaintenance = 0;
@@ -312,13 +323,11 @@ class Entity {
         }
     }
 
-    eat(environment) {
-        ResourceConsumption.consume(this, environment);
-    }
+    // eat() removed: Resource consumption is handled via window.metabolicCosts.calculate in applyMetabolicCosts()
 
     reproduce(environmentalStability = 0.5) {
-        if (ReproductionSystem.canReproduce(this)) {
-            return ReproductionSystem.reproduce(this, environmentalStability);
+        if (window.reproductionSystem.canReproduce(this)) {
+            return window.reproductionSystem.reproduce(this, environmentalStability);
         }
         return null;
     }
@@ -375,13 +384,13 @@ class Entity {
     }
 
     show() {
-        CellRenderer.render(this);
+        window.cellRenderer.render(this);
     }
 
     // SPECIES DIFFERENTIATION SYSTEM
     // Calculate genetic distance between this cell and another DNA
     calculateGeneticDistance(otherDNA) {
-        return GeneticDistance.calculate(this.dna, otherDNA);
+        return window.geneticDistance.calculate(this.dna, otherDNA);
     }
 
     // Get species identifier based on genetic traits
@@ -408,7 +417,7 @@ class Entity {
         let uvLevel = environment.getUVLevel(this.pos.x, this.pos.y);
 
         // Calculate photoprotection from color (dark pigments protect)
-        let photoprotection = ColorSystem.calculatePhotoprotection(this.dna.color);
+        let photoprotection = window.colorSystem.calculatePhotoprotection(this.dna.color);
 
         // Effective UV (reduced by protection)
         let effectiveUV = uvLevel / photoprotection;
@@ -457,7 +466,7 @@ class Entity {
     // Simulates oxidative stress from O2 radicals
     applyOxygenDamage(environment) {
         // Calculate damage based on O2 level and SOD efficiency
-        let damage = OxygenTolerance.calculateOxidativeDamage(this, environment);
+        let damage = window.oxygenTolerance.calculateOxidativeDamage(this, environment);
 
         if (damage > 0) {
             this.structuralDamage += damage;
@@ -485,6 +494,6 @@ class Entity {
         }
 
         // Update SOD levels to adapt to current pressure
-        OxygenTolerance.updateSODLevels(this);
+        window.oxygenTolerance.updateSODLevels(this);
     }
 }

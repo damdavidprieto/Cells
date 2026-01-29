@@ -178,70 +178,16 @@
  */
 
 class OxygenRegeneration {
-    /**
-     * Regenerar O₂ vía fotólisis UV (era pre-fotosíntesis)
-     * 
-     * PROCESO: 2H₂O + UV → 2H₂ + O₂
-     * 
-     * DETALLES DE IMPLEMENTACIÓN:
-     * ═══════════════════════════════════════════════════════════════════
-     */
-    static regenerate(environment) {
+    regenerate(environment) {
         for (let i = 0; i < environment.cols; i++) {
             for (let j = 0; j < environment.rows; j++) {
-
-                // 1. ZONA DE REGENERACIÓN: Solo superficie (top 45% del agua)
-                // ¿Qué hace?: Limita regeneración a donde UV penetra
-                // ¿Por qué?: UV no penetra profundidad (absorbido por agua)
-                // Efecto en juego: O₂ solo se regenera en superficie
-                //                  Vents (sedimento) NO regeneran O₂
-                // ✅ REALISTA PARA LUCA: UV penetra ~10-50m en océano Arcaico
-                if (j < environment.sedimentRow / 2) {  // Top 45% del agua
-
-                    // 2. OBTENER NIVEL DE UV EN ESTA POSICIÓN
-                    // ¿Qué hace?: Lee intensidad UV del grid
-                    // ¿Por qué?: Fotólisis proporcional a UV disponible
-                    // Valores: 100 (superficie) → 10 (media profundidad) → 0 (vents)
-                    // ✅ CORRECTO: Más UV en superficie = más fotólisis
+                if (j < environment.sedimentRow / 2) {
                     let uvLevel = environment.uvRadiationGrid[i][j];
-
-                    // 3. CALCULAR TASA DE FOTÓLISIS UV
-                    // ¿Qué hace?: photolysisRate = (UV / 100) × 0.02
-                    // ¿Por qué?: Más UV = más fotólisis (relación lineal simplificada)
-                    // 
-                    // FÓRMULA REAL (simplificada para juego):
-                    // J(O₂) = σ(λ) × Φ(λ) × I(λ)
-                    // - σ(λ) = Sección transversal de absorción H₂O
-                    // - Φ(λ) = Rendimiento cuántico (eficiencia)
-                    // - I(λ) = Intensidad UV
-                    // 
-                    // SIMPLIFICACIÓN EN JUEGO:
-                    // photolysisRate ∝ UV (lineal, no espectral)
-                    // 
-                    // TASAS RESULTANTES:
-                    // - Superficie (UV=100): 0.02 O₂/frame
-                    // - Media (UV=50):       0.01 O₂/frame
-                    // - Profundidad (UV=10): 0.002 O₂/frame
-                    // 
-                    // ✅ REALISTA PARA LUCA: Tasa muy lenta (10⁻¹⁴ mol/cm²/s real)
                     let photolysisRate = (uvLevel / 100) * 0.02;
 
-                    // 4. AÑADIR O₂ AL GRID
-                    // ¿Qué hace?: Incrementa O₂ en esta celda
-                    // ¿Por qué?: Simula producción continua por fotólisis
-                    // Efecto en juego: O₂ aumenta lentamente en superficie
-                    // 
-                    // ⚠️ PROBLEMA SIN Fe²⁺ SINK:
-                    // Sin oxidación de Fe²⁺, O₂ se acumula sin límite
-                    // En era LUCA real: Fe²⁺ + O₂ → Fe³⁺ (consume O₂ rápidamente)
-                    // Resultado: O₂ se mantiene en trazas naturalmente
                     environment.oxygenGrid[i][j] += photolysisRate;
 
-                    // 5. CAP EN MÁXIMO
-                    // Prioritize Environment's dynamic event cap over static constant
                     let maxO2 = environment.maxOxygenEvent || GameConstants.OXYGEN_GRID_MAX;
-
-                    // Allow higher cap for GOE scenario safety
                     if (GameConstants.SCENARIO === 'PRESSURE_OXYGEN') maxO2 = Math.max(maxO2, 100.0);
 
                     environment.oxygenGrid[i][j] = min(
@@ -253,146 +199,19 @@ class OxygenRegeneration {
         }
     }
 
-    /**
-     * Oxidar Fe²⁺ (hierro ferroso) - SUMIDERO PRINCIPAL DE O₂
-     * 
-     * PROCESO: 4Fe²⁺ + O₂ + 10H₂O → 4Fe(OH)₃ (hidróxido férrico)
-     * 
-     * CONTEXTO CIENTÍFICO - Oxidación de Hierro en Era LUCA:
-     * ═══════════════════════════════════════════════════════════════════
-     * 
-     * IMPORTANCIA:
-     * - SUMIDERO PRINCIPAL de O₂ en océanos Arcaicos
-     * - Consumía O₂ MÁS RÁPIDO de lo que fotólisis UV lo producía
-     * - Mantenía O₂ en niveles de trazas (<10⁻⁵ PAL)
-     * - Permitió que vida anaeróbica (como LUCA) prosperara
-     * 
-     * QUÍMICA:
-     * Reacción: 4Fe²⁺ + O₂ + 10H₂O → 4Fe(OH)₃ + 8H⁺
-     * Ratio estequiométrico: 4 moles Fe²⁺ : 1 mol O₂
-     * 
-     * Producto: Fe(OH)₃ (hidróxido férrico)
-     * - Precipita como óxido de hierro
-     * - Se deposita en fondo oceánico
-     * - Forma Banded Iron Formations (BIF)
-     * 
-     * EVIDENCIA GEOLÓGICA:
-     * ═══════════════════════════════════════════════════════════════════
-     * 
-     * BANDED IRON FORMATIONS (BIF):
-     * - Formaciones rocosas del Arcaico (3.8-1.8 Ga)
-     * - Capas alternadas de Fe-rico (magnetita, hematita) y Fe-pobre (chert)
-     * - Indican oxidación episódica de Fe²⁺ por O₂
-     * - Evidencia directa de océanos ricos en Fe²⁺
-     * 
-     * EJEMPLOS:
-     * - Isua Supracrustal Belt, Groenlandia (~3.8 Ga)
-     * - Hamersley Basin, Australia (~2.5 Ga)
-     * - Transvaal Supergroup, Sudáfrica (~2.5 Ga)
-     * 
-     * INTERPRETACIÓN:
-     * - Capas Fe-ricas: Períodos de oxidación (O₂ disponible)
-     * - Capas Fe-pobres: Períodos sin oxidación (O₂ agotado, Fe²⁺ agotado)
-     * - Ciclos indican balance delicado entre producción y consumo de O₂
-     * 
-     * TASA DE OXIDACIÓN:
-     * ═══════════════════════════════════════════════════════════════════
-     * 
-     * REAL:
-     * - k_obs ≈ 10⁻² - 10⁻¹ M⁻¹ s⁻¹ (constante de velocidad)
-     * - Muy rápida en presencia de O₂
-     * - Limitada por disponibilidad de O₂ (no de Fe²⁺)
-     * 
-     * SIMULACIÓN:
-     * - oxidationRate = 0.015 O₂/frame
-     * - Consume 4× más Fe²⁺ (ratio 4:1)
-     * - Comparable a tasa de fotólisis UV (0.02/frame)
-     * - Resultado: O₂ se mantiene en trazas naturalmente
-     * 
-     * BALANCE EN JUEGO:
-     * ═══════════════════════════════════════════════════════════════════
-     * 
-     * SIN Fe²⁺ OXIDATION:
-     * Producción O₂: 0.02/frame (fotólisis UV)
-     * Consumo O₂:    0.5/frame (células, si hay)
-     * Resultado:     O₂ se acumula en áreas despobladas (IRREAL)
-     * 
-     * CON Fe²⁺ OXIDATION:
-     * Producción O₂:  0.02/frame (fotólisis UV)
-     * Consumo Fe²⁺:   0.015/frame (oxidación)
-     * Consumo células: 0.5/frame (si hay)
-     * Neto:           0.005/frame (acumulación muy lenta)
-     * Resultado:      O₂ en trazas (REALISTA)
-     * 
-     * REFERENCIAS:
-     * ═══════════════════════════════════════════════════════════════════
-     * - Holland, H. D. (2006). The oxygenation of the atmosphere and oceans.
-     *   Phil. Trans. R. Soc. B.
-     * - Lyons, T. W., et al. (2014). The rise of oxygen in Earth's early ocean
-     *   and atmosphere. Nature.
-     * - Konhauser, K. O., et al. (2007). Could bacteria have formed the
-     *   Precambrian banded iron formations? Geology.
-     * - Bekker, A., et al. (2010). Iron formation: The sedimentary product of a
-     *   complex interplay among mantle, tectonic, oceanic, and biospheric processes.
-     * 
-     * IMPLEMENTACIÓN:
-     * ═══════════════════════════════════════════════════════════════════
-     */
-    static oxidarHierro(environment) {
+    oxidarHierro(environment) {
         for (let i = 0; i < environment.cols; i++) {
             for (let j = 0; j < environment.rows; j++) {
-
-                // 1. VERIFICAR DISPONIBILIDAD DE REACTIVOS
-                // ¿Qué hace?: Comprueba si hay O₂ y Fe²⁺ suficientes
-                // ¿Por qué?: Reacción requiere ambos reactivos
-                // Condiciones:
-                //   - O₂ > 5 (suficiente para reaccionar)
-                //   - Fe²⁺ > 10 (umbral de agotamiento)
                 if (environment.oxygenGrid[i][j] > 5 &&
                     environment.fe2Grid[i][j] > GameConstants.FE2_DEPLETION_THRESHOLD) {
 
-                    // 2. CALCULAR TASA DE OXIDACIÓN
-                    // ¿Qué hace?: Determina cuánto O₂ se consume
-                    // ¿Por qué?: Simula velocidad de reacción Fe²⁺ + O₂
-                    // Tasa: 0.015 O₂/frame (comparable a fotólisis UV)
-                    // 
-                    // NOTA CIENTÍFICA:
-                    // Tasa real depende de [O₂], [Fe²⁺], pH, temperatura
-                    // Simplificación: tasa constante si reactivos disponibles
-                    let oxidationRate = GameConstants.FE2_OXIDATION_RATE;  // 0.015
+                    let oxidationRate = GameConstants.FE2_OXIDATION_RATE;
 
-                    // 3. CONSUMIR O₂
-                    // ¿Qué hace?: Reduce O₂ en el grid
-                    // ¿Por qué?: O₂ es consumido en la reacción
-                    // Efecto en juego: O₂ no se acumula indefinidamente
-                    //                  Mantiene O₂ en trazas (5-20)
-                    //                  REALISTA para era LUCA
                     environment.oxygenGrid[i][j] -= oxidationRate;
+                    environment.fe2Grid[i][j] -= oxidationRate * 4;
 
-                    // 4. CONSUMIR Fe²⁺ (RATIO 4:1)
-                    // ¿Qué hace?: Reduce Fe²⁺ en el grid
-                    // ¿Por qué?: Estequiometría 4Fe²⁺ : 1O₂
-                    // Efecto en juego: Fe²⁺ se agota con el tiempo
-                    //                  Eventualmente permite acumulación de O₂
-                    //                  Simula transición Arcaico → Proterozoico
-                    // 
-                    // NOTA CIENTÍFICA:
-                    // En realidad, Fe²⁺ se reponía por vents hidrotermales
-                    // Aquí: Fe²⁺ finito (simplificación)
-                    // Resultado: Eventualmente se agota (realista a largo plazo)
-                    environment.fe2Grid[i][j] -= oxidationRate * 4;  // Ratio 4:1
-
-                    // 5. ASEGURAR NO NEGATIVOS
-                    // ¿Qué hace?: Previene valores negativos
-                    // ¿Por qué?: Concentraciones no pueden ser negativas
                     environment.oxygenGrid[i][j] = max(environment.oxygenGrid[i][j], 0);
                     environment.fe2Grid[i][j] = max(environment.fe2Grid[i][j], 0);
-
-                    // EFECTO NETO:
-                    // - O₂ se mantiene bajo (consumido por Fe²⁺)
-                    // - Fe²⁺ se agota lentamente
-                    // - Cuando Fe²⁺ < 10, oxidación se detiene
-                    // - O₂ puede empezar a acumularse (Great Oxidation Event)
                 }
             }
         }

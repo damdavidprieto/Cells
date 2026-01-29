@@ -22,6 +22,7 @@ class WorldPresets {
         // The "Laboratory" Mode: One single column of water in the void
         return new WorldConfig({
             resolution: 60,
+            rows: 1,
             atmosphereDepth: 0.0, // No atmosphere (Deep Sea)
             sedimentDepth: 1,     // Force single bottom row as sediment source
             // Better: We handle strict row override in Environment or improve Config

@@ -1,6 +1,6 @@
 // Membrane System - Handles size-based mechanics
 class MembraneSystem {
-    static calculateStorageCapacity(baseStorage, size) {
+    calculateStorageCapacity(baseStorage, size) {
         const level = GameConstants.SIZE_EVOLUTION_LEVEL;
         const config = GameConstants.SIZE_EVOLUTION[level];
 
@@ -13,7 +13,7 @@ class MembraneSystem {
         return baseStorage * storageBonus;
     }
 
-    static calculateMetabolicCost(baseCost, size) {
+    calculateMetabolicCost(baseCost, size) {
         const level = GameConstants.SIZE_EVOLUTION_LEVEL;
         const config = GameConstants.SIZE_EVOLUTION[level];
 
@@ -26,7 +26,7 @@ class MembraneSystem {
         return baseCost * costMultiplier;
     }
 
-    static calculateMovementPenalty(size) {
+    calculateMovementPenalty(size) {
         const level = GameConstants.SIZE_EVOLUTION_LEVEL;
         const config = GameConstants.SIZE_EVOLUTION[level];
 
@@ -48,7 +48,7 @@ class MembraneSystem {
      * - In Vents (High Ext, Low Int): FREE ENERGY influx
      * - In Ocean (Low Ext, High Int): LEAKAGE (Efflux)
      */
-    static performPassiveDiffusion(entity, environment) {
+    performPassiveDiffusion(entity, environment) {
         let gridX = Math.floor(entity.pos.x / environment.resolution);
         let gridY = Math.floor(entity.pos.y / environment.resolution);
 

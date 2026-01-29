@@ -41,8 +41,12 @@ class ScenarioDefinition {
             showStatsPanel: config.ui?.showStatsPanel ?? true,
             showVentMonitor: config.ui?.showVentMonitor ?? false,
             showCellInspector: config.ui?.showCellInspector ?? false,
+            showChemistryInspector: config.ui?.showChemistryInspector ?? false,
             showLegend: config.ui?.showLegend ?? true,
             showControls: config.ui?.showControls ?? true,
+            exitButton: config.ui?.exitButton ?? false,
+            canAddVents: config.ui?.canAddVents ?? true,
+            showVentLabels: config.ui?.showVentLabels ?? true,
 
             // Personalización visual
             theme: config.ui?.theme || 'DEFAULT' // DEFAULT, LAB_DARK, etc.
@@ -52,7 +56,8 @@ class ScenarioDefinition {
         this.render = {
             centerVertically: config.render?.centerVertically ?? false, // Para mapas pequeños (1 vent)
             zoomLevel: config.render?.zoomLevel || 1.0,
-            showGrid: config.render?.showGrid ?? false
+            showGrid: config.render?.showGrid ?? false,
+            blackScreen: config.render?.blackScreen ?? false
         };
 
         // 6. Configuración de Logs (Base de Datos)

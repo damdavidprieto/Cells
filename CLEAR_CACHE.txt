@@ -1,0 +1,47 @@
+INSTRUCCIONES PARA LIMPIAR CACHE DEL NAVEGADOR
+===============================================
+
+OPCIÓN 1: Atajo de Teclado (MÁS RÁPIDO)
+----------------------------------------
+1. Con la página abierta en el navegador
+2. Presiona: Ctrl + Shift + R (o Ctrl + F5)
+3. Esto fuerza una recarga completa sin cache
+
+OPCIÓN 2: Herramientas de Desarrollador
+----------------------------------------
+1. Presiona F12 para abrir DevTools
+2. Haz clic derecho en el botón de recargar (junto a la barra de direcciones)
+3. Selecciona "Vaciar caché y volver a cargar de manera forzada"
+
+OPCIÓN 3: Configuración del Navegador
+--------------------------------------
+Chrome/Edge:
+1. Presiona Ctrl + Shift + Delete
+2. Selecciona "Imágenes y archivos en caché"
+3. Rango de tiempo: "Desde siempre"
+4. Haz clic en "Borrar datos"
+
+Firefox:
+1. Presiona Ctrl + Shift + Delete
+2. Selecciona "Caché"
+3. Haz clic en "Limpiar ahora"
+
+OPCIÓN 4: Modo Incógnito (TEMPORAL)
+------------------------------------
+1. Presiona Ctrl + Shift + N (Chrome/Edge) o Ctrl + Shift + P (Firefox)
+2. Abre el archivo index.html en la ventana incógnita
+3. El cache no se usará
+
+VERIFICACIÓN
+------------
+Después de limpiar el cache:
+1. Abre index.html
+2. Presiona F12 para abrir la consola
+3. Busca en la consola el mensaje: "Scripts loaded with timestamp: [número]"
+4. El número debe ser reciente (timestamp actual)
+
+NOTA IMPORTANTE
+---------------
+El archivo index.html usa cache busting automático con Date.now()
+pero algunos navegadores pueden cachear agresivamente el HTML mismo.
+Por eso es importante usar Ctrl + Shift + R.

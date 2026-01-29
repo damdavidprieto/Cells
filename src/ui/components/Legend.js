@@ -91,4 +91,14 @@ class Legend {
         const el = document.getElementById('legend');
         if (el) el.style.display = 'none';
     }
+
+    /**
+     * Destruye el componente y lo elimina del DOM
+     */
+    destroy() {
+        const el = document.getElementById('legend');
+        if (el) {
+            el.remove();
+        }
+    }
 }

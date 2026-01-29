@@ -30,7 +30,7 @@
  * - Koonin, E. V. & Wolf, Y. I. (2008). Genomics of bacteria and archaea. Nucleic Acids Res.
  */
 class DNAFactory {
-    static createLUCA() {
+    createLUCA() {
         // Get variability configuration based on selected level
         const level = GameConstants.LUCA_VARIABILITY_LEVEL;
         const config = GameConstants.LUCA_VARIABILITY[level];
@@ -75,6 +75,12 @@ class DNAFactory {
             // - Intermediate between surface (50°C) and vents (80°C)
             thermalOptimum: random(58, 62),      // Optimal ~60°C (moderate thermophile)
             thermalTolerance: random(8, 12),     // Temperature tolerance range (±10°C avg)
+
+            // PH & REDOX ADAPTATION
+            pHOptimum: random(8.5, 9.5),         // LUCA favored alkaline conditions
+            redoxOptimum: random(-400, -300),    // Reducing environment (mV)
+            pHTolerance: 1.5,                    // ±1.5 units
+            redoxTolerance: 100,                 // ±100 mV
 
             // MULTI-METABOLISM SYSTEM (Phase 1)
             // Cells can have multiple metabolic pathways with individual efficiencies
@@ -142,6 +148,37 @@ class DNAFactory {
                     energyYield: 36.0,          // Very efficient!
                     requiresO2: true,
                     requiresLight: false
+                },
+
+                // 6. METHANOGENESIS (Archaea)
+                // 4H₂ + CO₂ → CH4 + 2H₂O
+                methanogenesis: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { H2: 0.6, CO2: 0.2 },
+                    energyYield: 3.5,
+                    requiresO2: false,
+                    producesCH4: 0.5
+                },
+
+                // 7. METHANOTROPHY
+                // CH4 + 2O₂ → CO₂ + 2H₂O
+                methanotrophy: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { CH4: 0.4, O2: 1.0 },
+                    energyYield: 18.0,
+                    requiresO2: true
+                },
+
+                // 8. SULFUR OXIDATION (Chemolithotrophy)
+                // H₂S + 0.5O₂ → S + H₂O
+                sulfurOxidation: {
+                    enabled: false,
+                    efficiency: 0.0,
+                    substrates: { H2S: 0.5, O2: 0.4 },
+                    energyYield: 12.0,
+                    requiresO2: true
                 }
             },
 
