@@ -11,7 +11,7 @@ class GridUtils {
     /**
      * Create empty grid
      */
-    static createGrid(cols, rows) {
+    createGrid(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
@@ -25,7 +25,7 @@ class GridUtils {
     /**
      * Get grid value safely (with bounds checking)
      */
-    static getGridValue(grid, x, y, resolution, cols, rows) {
+    getGridValue(grid, x, y, resolution, cols, rows) {
         let i = floor(x / resolution);
         let j = floor(y / resolution);
         if (i >= 0 && i < cols && j >= 0 && j < rows) {
@@ -37,7 +37,7 @@ class GridUtils {
     /**
      * Set grid value safely (with bounds checking)
      */
-    static setGridValue(grid, x, y, value, resolution, cols, rows) {
+    setGridValue(grid, x, y, value, resolution, cols, rows) {
         let i = floor(x / resolution);
         let j = floor(y / resolution);
         if (i >= 0 && i < cols && j >= 0 && j < rows) {
@@ -48,7 +48,7 @@ class GridUtils {
     /**
      * Consume from grid (returns amount consumed)
      */
-    static consumeFromGrid(grid, x, y, amount, resolution, cols, rows) {
+    consumeFromGrid(grid, x, y, amount, resolution, cols, rows) {
         let i = floor(x / resolution);
         let j = floor(y / resolution);
         if (i >= 0 && i < cols && j >= 0 && j < rows) {

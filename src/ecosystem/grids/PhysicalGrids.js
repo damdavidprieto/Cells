@@ -8,18 +8,11 @@
  * - pH (future)
  */
 class PhysicalGrids {
-    /**
-     * Initialize UV radiation grid
-     * Exponential decay (3× faster than light, no ozone layer)
-     * Primordial Earth: 10-100× higher UV than modern
-     */
-    static initializeUV(cols, rows, resolution) {
+    initializeUV(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
-                // UV RADIATION = Exponential decay (3x faster than light, no ozone layer)
-                // Primordial Earth had 10-100x higher UV than modern
                 let uvIntensity = GameConstants.UV_SURFACE_INTENSITY *
                     exp(-GameConstants.UV_DECAY_RATE * j);
                 grid[i][j] = uvIntensity;
@@ -28,19 +21,12 @@ class PhysicalGrids {
         return grid;
     }
 
-    /**
-     * Initialize temperature grid (FUTURE)
-     * Gradient: 50-60°C surface, 70-80°C vents
-     */
-    static initializeTemperature(cols, rows, resolution) {
+    initializeTemperature(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
                 let depthRatio = j / rows;
-
-                // TEMPERATURE = Increases with depth (vents)
-                // Surface: 50-60°C, Vents: 70-80°C
                 let range = GameConstants.ECOSYSTEM_INIT.TEMP_VENT - GameConstants.ECOSYSTEM_INIT.TEMP_SURFACE;
                 let baseTemp = GameConstants.ECOSYSTEM_INIT.TEMP_SURFACE + (range * depthRatio);
                 let tempVariation = noise(i * 0.05 + 6000, j * 0.05 + 6000) * GameConstants.ECOSYSTEM_INIT.TEMP_GRADIENT_NOISE;
@@ -50,19 +36,12 @@ class PhysicalGrids {
         return grid;
     }
 
-    /**
-     * Initialize pH grid (FUTURE)
-     * Gradient: pH 6-7 ocean, pH 9-11 vents (alkaline)
-     */
-    static initializePH(cols, rows, resolution) {
+    initializePH(cols, rows) {
         let grid = [];
         for (let i = 0; i < cols; i++) {
             grid[i] = [];
             for (let j = 0; j < rows; j++) {
                 let depthRatio = j / rows;
-
-                // pH = Increases with depth (alkaline vents)
-                // Ocean: pH 6-7, Vents: pH 9-11
                 let range = GameConstants.ECOSYSTEM_INIT.PH_VENT - GameConstants.ECOSYSTEM_INIT.PH_SURFACE;
                 let basePH = GameConstants.ECOSYSTEM_INIT.PH_SURFACE + (range * depthRatio);
                 let pHVariation = noise(i * 0.08 + 7000, j * 0.08 + 7000) * GameConstants.ECOSYSTEM_INIT.PH_NOISE;

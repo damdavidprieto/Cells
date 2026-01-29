@@ -119,11 +119,11 @@ class OxygenTolerance {
      * RETORNA:
      * - Daño oxidativo (0.0 - N)
      */
-    static calculateOxidativeDamage(entity, environment) {
+    calculateOxidativeDamage(entity, environment) {
         // 1. OBTENER NIVEL DE O₂ EN POSICIÓN DE LA CÉLULA
         // ¿Qué hace?: Lee O₂ del grid ambiental
         // ¿Por qué?: Daño depende de concentración local de O₂
-        let oxygenLevel = GridUtils.getGridValue(
+        let oxygenLevel = window.gridUtils.getGridValue(
             environment.oxygenGrid,
             entity.pos.x,
             entity.pos.y,
@@ -194,7 +194,7 @@ class OxygenTolerance {
      * - Nivel de SOD tiende hacia eficiencia del DNA
      * - Síntesis gradual (no instantánea)
      */
-    static updateSODLevels(entity) {
+    updateSODLevels(entity) {
         // 1. OBTENER EFICIENCIA OBJETIVO (del DNA)
         // ¿Qué hace?: Lee eficiencia de SOD que la célula "quiere" tener
         // ¿Por qué?: DNA determina capacidad de síntesis de SOD
@@ -232,7 +232,7 @@ class OxygenTolerance {
      * RETORNA:
      * - Costo energético (unidades de energía/frame)
      */
-    static getSODMaintenanceCost(entity) {
+    getSODMaintenanceCost(entity) {
         // 1. OBTENER NIVEL ACTUAL DE SOD
         // ¿Qué hace?: Lee cuánta SOD tiene la célula
         // ¿Por qué?: Costo proporcional a cantidad de SOD

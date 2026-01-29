@@ -9,8 +9,8 @@ const GameConstants = {
     // PRODUCTION: Normal speed, clean UI, no debug logs
     // SINGLE_CELL_MODE: Analysis mode with 1 cell in ideal conditions
     // SINGLE_VENT_MODE: Manual control of a single vent with phantom mitosis
-    EXECUTION_MODE: 'SINGLE_VENT_MODE',  // Options: 'DEVELOPMENT', 'PRODUCTION', 'SINGLE_CELL_MODE', 'SINGLE_VENT_MODE'
-    SCENARIO: 'PRESSURE_OXYGEN',         // Keep Oxygen Pressure scenario
+    EXECUTION_MODE: 'DEVELOPMENT',  // Default to development for coding sessions
+    SCENARIO: 'STANDARD',          // Default to full grid ocean
 
     // Mode-specific settings
     DEVELOPMENT: {
@@ -55,6 +55,7 @@ const GameConstants = {
         INITIAL_POPULATION: 1,        // Start with exactly 1 cell
         FORCE_IDEAL_CONDITIONS: false,// Rely on dynamic vent control
         PHANTOM_MITOSIS: true,        // Enable phantom mitosis (log & discard offspring)
+        MAINTAIN_STATE: true,         // CUSTOM: Maintain baseline conditions (Laboratory)
         LOG_DEATHS: true,
         LOG_REPRODUCTIONS: true,
         LOG_METABOLIC_DIVERGENCE: true,
@@ -212,6 +213,8 @@ const GameConstants = {
     EFFICIENCY_MUTATION_RANGE: 0.1,
     STORAGE_MUTATION_RANGE: 10,
     MUTATION_RATE_CHANGE: 0.02,
+    PH_OPTIMUM_MUTATION_RANGE: 0.5,
+    REDOX_OPTIMUM_MUTATION_RANGE: 20,
 
     // Mutation Limits
     MUTATION_RATE_MIN: 0.01,
@@ -250,6 +253,9 @@ const GameConstants = {
     ENABLE_CHEMOSYNTHESIS: true,   // If false, cells cannot evolve Chemosynthesis
     ENABLE_PHOTOSYNTHESIS: true,   // If false, cells cannot evolve Photosynthesis (Anox/Ox)
     ENABLE_FERMENTATION: true,     // If false, cells cannot evolve Fermentation
+    ENABLE_METHANOGENESIS: true,   // H2 + CO2 -> CH4
+    ENABLE_METHANOTROPHY: true,    // CH4 + O2 -> CO2
+    ENABLE_SULFUR_OXIDATION: true, // H2S + O2 -> Energy
 
     // ===== VISUAL DEBUGGING =====
     ENABLE_DNA_COLOR_TINT: true,    // If false, removes the random DNA color variation (30% mix)
@@ -317,6 +323,9 @@ const GameConstants = {
     VENT_NITROGEN_FLUX: 0.5,       // Continuous Flux
     OCEANIC_NITROGEN: 50,          // Baseline
     NITROGEN_GRID_MAX: 200,        // Max
+    CH4_MAX_ACCUMULATION: 100,
+    H2S_MAX_ACCUMULATION: 100,
+    NH3_MAX_ACCUMULATION: 100,
 
     // Fe²⁺ Grid Range (hierro ferroso - océano Arcaico)
     // SCIENTIFIC BASIS: Holland 2006, Lyons et al. 2014
@@ -432,6 +441,44 @@ const GameConstants = {
         PH_NOISE: 0.5
     },
 
+    // ===== VENT SYSTEM CONFIGURATION =====
+    // Hydrothermal vent parameters
+    VENTS: {
+        H2_BASE_FLUX: 5.0,
+        CO2_BASE_FLUX: 2.0,
+        FE2_BASE_FLUX: 1.0,
+        CH4_BASE_FLUX: 1.5,
+        H2S_BASE_FLUX: 2.0,
+        NH3_BASE_FLUX: 1.0,
+        GLOBAL_FLUX_MULTIPLIER: 1.0,
+
+        // Plume Configuration
+        DEFAULT_PLUME_RADIUS: 5,
+        DEFAULT_PLUME_HEIGHT: 20,
+        DEFAULT_DECAY_RATE: 0.15,
+
+        // Vent Type Defaults
+        DEFAULT_WIDTH: 3,
+        DEFAULT_INTENSITY: 1.0
+    },
+
+    // ===== LUCA ENVIRONMENT BASELINES (Single Vent Mode) =====
+    // Martin & Russell (2007) - Alkaline Hydrothermal Vents
+    LUCA_ENVIRONMENT: {
+        H2: 150,           // High H2 concentration
+        CO2: 100,          // Reduced CO2 (Bicarbonate/Carbonate at high pH)
+        CH4: 50,           // Methane present
+        H2S: 20,           // Low sulfide in alkaline chimneys
+        NH3: 30,           // Reduced nitrogen
+        TEMPERATURE: 70,    // 70°C optimum for survival (compromise)
+        PH: 10,            // Alkaline (Lost City type)
+        PHOSPHORUS: 80,    // Steady phosphorus supply
+        NITROGEN: 50,      // Steady nitrogen (Ammonia/N2)
+        OXYGEN: 0,         // Anoxic environment
+        LIGHT: 0,          // Deep ocean
+        UV: 0              // No UV at depth
+    },
+
     // ===== PHYSICS ENGINE CONFIGURATION =====
     // Global mechanics affecting all entities
     PHYSICS: {
@@ -446,19 +493,6 @@ const GameConstants = {
         // Costs
         COLLISION_ENERGY_COST: 0.5,
         MOVEMENT_COST_MULTIPLIER: 1.0
-    },
-
-    // ===== VENT SYSTEM CONFIGURATION =====
-    // Hydrothermal vent parameters
-    VENTS: {
-        H2_BASE_FLUX: 5.0,
-        CO2_BASE_FLUX: 2.0,
-        FE2_BASE_FLUX: 1.0,
-        GLOBAL_FLUX_MULTIPLIER: 1.0,
-
-        // Vent Type Defaults (Can be overridden by Types)
-        DEFAULT_WIDTH: 3,
-        DEFAULT_INTENSITY: 1.0
     },
 
     // ===== DIFFUSION SYSTEM CONFIGURATION =====

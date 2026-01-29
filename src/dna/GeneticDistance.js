@@ -1,6 +1,6 @@
 // Genetic Distance - Calculates genetic distance between two DNA samples
 class GeneticDistance {
-    static calculate(dna1, dna2) {
+    calculate(dna1, dna2) {
         let distance = 0;
 
         // Metabolic efficiency difference (normalized to 0-1)

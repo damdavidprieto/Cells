@@ -48,31 +48,6 @@ class ConfigScreen {
         </div>
 
         <div class="config-actions">
-            <!-- NEW: Single Vent Mode (Prominent) -->
-            <div style="margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
-                <button id="start-vent-btn" class="btn-play" style="width: 100%; background: linear-gradient(135deg, #2c3e50, #4ca1af); border-left: 4px solid #4ca1af; padding: 15px; font-size: 1.1em; margin-bottom: 15px;">
-                    <span class="icon">🌋</span>
-                    <span class="text">Iniciar Modo Vent Único</span>
-                </button>
-                
-                <div style="display: flex; gap: 20px; align-items: flex-end;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; color: #aaa;">Ancho (Cols)</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="range" id="vent-width-slider" min="1" max="10" value="1" step="1" style="flex: 1;">
-                            <span id="vent-width-val" style="width: 20px; text-align: right; color: #4ca1af; font-weight: bold;">1</span>
-                        </div>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.8em; color: #aaa;">Alto (Filas)</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="range" id="vent-height-slider" min="0" max="100" value="0" step="1" style="flex: 1;">
-                            <span id="vent-height-val" style="width: 30px; text-align: right; color: #e67e22; font-weight: bold;">Auto</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- PRODUCTION / STANDARD CONTROLS -->
             <div class="production-controls" style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button id="reset-btn" class="btn-secondary" style="flex: 1;">
@@ -89,7 +64,7 @@ class ConfigScreen {
                     🛠️ Zona de Ingeniería (Local/Dev)
                 </p>
                 
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px;">
                     <!-- General Dev Mode -->
                     <button id="start-dev-btn" class="btn-dev" style="flex: 1; min-width: 150px;">
                         🛠️ Modo Desarrollo
@@ -100,6 +75,9 @@ class ConfigScreen {
                         <div style="flex-grow: 1;">
                             <select id="scenario-select" style="width: 100%; padding: 8px; background: #222; color: #ecf0f1; border: 1px solid #555; border-radius: 4px; font-size: 0.9em;">
                                 <option value="STANDARD">🔵 Estándar (Ideal)</option>
+                                <option value="EMPTY_GRID">⬜ Grid Vacío (Testing)</option>
+                                <option value="SINGLE_VENT_DEV">🛠️ Dev: Vent Central (Sinergia)</option>
+                                <option value="HYDROTHERMAL_COLONIZATION">🌋 Evolución Hidrotermal</option>
                                 <option value="PRESSURE_OXYGEN">💀 Toxicidad O₂</option>
                                 <option value="PRESSURE_LIGHT">☀️ Alta radiación UV</option>
                                 <option value="PRESSURE_SCARCITY">📉 Escasez Recursos</option>
@@ -110,6 +88,34 @@ class ConfigScreen {
                             🔬 Single Cell
                         </button>
                     </div>
+                </div>
+
+                <!-- NEW: Single Vent Mode Laboratory (Relocated to Dev) -->
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <button id="start-vent-btn" class="btn-play" style="width: 100%; background: linear-gradient(135deg, #16222a, #3a6073); border-left: 4px solid #3a6073; border-radius: 4px; padding: 12px; font-size: 1.0em; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <span class="icon">🧪</span>
+                        <span class="text">Laboratorio de Vent Singular</span>
+                    </button>
+                    
+                    <div style="display: flex; gap: 20px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75em; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 5px; display: block;">Ancho del Vent (Cols)</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="vent-width-slider" min="1" max="10" value="1" step="1" style="flex: 1; accent-color: #3a6073;">
+                                <span id="vent-width-val" style="width: 25px; text-align: right; color: #3a6073; font-weight: bold; font-family: monospace;">1</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75em; text-transform: uppercase; color: #888; letter-spacing: 1px; margin-bottom: 5px; display: block;">Alto del Grid (Filas)</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <input type="range" id="vent-height-slider" min="1" max="100" value="1" step="1" style="flex: 1; accent-color: #e67e22;">
+                                <span id="vent-height-val" style="width: 35px; text-align: right; color: #e67e22; font-weight: bold; font-family: monospace;">1</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.7em; color: #666; margin-top: 10px; font-style: italic;">
+                        Usa este modo para validar la estabilidad del entorno y el comportamiento del grid.
+                    </p>
                 </div>
             </div>
         </div>
@@ -307,7 +313,7 @@ class ConfigScreen {
                 // Iniciar juego con ScenarioManager
                 setTimeout(() => {
                     if (!window.gameInstance) window.gameInstance = new GameController();
-                    ScenarioManager.loadScenario(ScenarioLibrary.STANDARD);
+                    window.scenarioManager.loadScenario(ScenarioLibrary.STANDARD);
                     this.startGame('PRODUCTION');
                 }, 100);
             });
@@ -332,10 +338,10 @@ class ConfigScreen {
                 // Feedback visual
                 devBtn.innerHTML = '⏳ Cargando...';
 
-                // Iniciar juego con ScenarioManager (Development default = Lab)
+                // Iniciar juego con ScenarioManager (Development default = Standard/Full Grid)
                 setTimeout(() => {
                     if (!window.gameInstance) window.gameInstance = new GameController();
-                    ScenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT);
+                    window.scenarioManager.loadScenario(ScenarioLibrary.STANDARD);
                     this.startGame('DEVELOPMENT');
                 }, 100);
             });
@@ -365,7 +371,7 @@ class ConfigScreen {
                     }
 
                     if (!window.gameInstance) window.gameInstance = new GameController();
-                    ScenarioManager.loadScenario(scenarioDef);
+                    window.scenarioManager.loadScenario(scenarioDef);
 
                     // Start loop (Manager handles setup)
                     this.startGame('SINGLE_CELL_MODE');
@@ -380,7 +386,7 @@ class ConfigScreen {
         const ventHeightVal = document.getElementById('vent-height-val');
 
         // Defaults (Flux 1.0 = Standard, user modifies via runtime controls)
-        this.ventParams = { width: 1, height: 0, flux: 1.0 }; // height 0 = Auto
+        this.ventParams = { width: 1, height: 1, flux: 1.0 }; // Default height 1
 
         if (ventWidthSlider && ventWidthVal) {
             ventWidthSlider.addEventListener('input', (e) => {
@@ -393,7 +399,7 @@ class ConfigScreen {
             ventHeightSlider.addEventListener('input', (e) => {
                 const val = parseInt(e.target.value);
                 this.ventParams.height = val;
-                ventHeightVal.textContent = val === 0 ? "Auto" : val;
+                ventHeightVal.textContent = val;
             });
         }
 
@@ -424,7 +430,7 @@ class ConfigScreen {
 
                 // 3. Delegar al ScenarioManager
                 // Usa el preset LAB_SINGLE_VENT como base
-                ScenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT, overrides);
+                window.scenarioManager.loadScenario(ScenarioLibrary.LAB_SINGLE_VENT, overrides);
 
                 // 4. Iniciar el Loop del Juego
                 setTimeout(() => {
@@ -465,6 +471,8 @@ class ConfigScreen {
         GameConstants.REPRODUCTION_THRESHOLD = this.currentValues.reproduction_threshold;
         GameConstants.MEMBRANE_PERMEABILITY = this.currentValues.membrane_permeability;
         GameConstants.THERMAL_STRESS_MULTIPLIER = this.currentValues.thermal_stress;
+        GameConstants.OXIDATIVE_DAMAGE_RATE = this.currentValues.oxygen_toxicity;
+
         GameConstants.OXIDATIVE_DAMAGE_RATE = this.currentValues.oxygen_toxicity;
 
         GameConstants.SCENARIO = scenario;

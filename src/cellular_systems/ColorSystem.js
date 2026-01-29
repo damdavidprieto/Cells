@@ -12,7 +12,7 @@ class ColorSystem {
      * @param {Array} color - RGB array [r, g, b]
      * @returns {number} Brightness value (0-255)
      */
-    static calculateBrightness(color) {
+    calculateBrightness(color) {
         return (color[0] + color[1] + color[2]) / 3;
     }
 
@@ -22,7 +22,7 @@ class ColorSystem {
      * @param {Array} color - RGB array
      * @returns {number} Absorption multiplier (0.5-1.5)
      */
-    static calculateLightAbsorption(color) {
+    calculateLightAbsorption(color) {
         const level = GameConstants.COLOR_EVOLUTION_LEVEL;
         const config = GameConstants.COLOR_EVOLUTION[level];
 
@@ -48,7 +48,7 @@ class ColorSystem {
      * @param {Array} color - RGB array
      * @returns {number} Protection multiplier (1.0-2.5)
      */
-    static calculatePhotoprotection(color) {
+    calculatePhotoprotection(color) {
         const level = GameConstants.COLOR_EVOLUTION_LEVEL;
         const config = GameConstants.COLOR_EVOLUTION[level];
 
@@ -75,7 +75,7 @@ class ColorSystem {
      * @param {Array} color - RGB array
      * @returns {number} Energy cost per frame
      */
-    static calculatePigmentCost(color) {
+    calculatePigmentCost(color) {
         const level = GameConstants.COLOR_EVOLUTION_LEVEL;
         const config = GameConstants.COLOR_EVOLUTION[level];
 
@@ -93,7 +93,7 @@ class ColorSystem {
      * @param {string} metabolismType - 'luca', 'fermentation', 'chemosynthesis'
      * @returns {Array} Base RGB color
      */
-    static getMetabolismBaseColor(metabolismType) {
+    getMetabolismBaseColor(metabolismType) {
         const baseColors = {
             'luca': [200, 200, 220],           // Gray/white
             'fermentation': [180, 100, 150],    // Purple
@@ -114,7 +114,7 @@ class ColorSystem {
      * @param {Array} dnaColor - DNA color values
      * @returns {Array} Final RGB color
      */
-    static applyColorVariation(metabolismType, dnaColor) {
+    applyColorVariation(metabolismType, dnaColor) {
         // ... kept for compatibility or base variation ...
         // Better: this should be part of the phenotypic calculation
         return this.calculatePhenotypicColor({ metabolisms: { [metabolismType]: { efficiency: 1.0 } }, color: dnaColor });
@@ -124,7 +124,7 @@ class ColorSystem {
      * Calculate final phenotypic color based on metabolic mix
      * Blends colors of all enabled metabolisms weighted by efficiency
      */
-    static calculatePhenotypicColor(dna) {
+    calculatePhenotypicColor(dna) {
         let totalWeight = 0;
         let r = 0, g = 0, b = 0;
 

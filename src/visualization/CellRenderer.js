@@ -1,6 +1,6 @@
 // Cell Renderer - Handles visual rendering of cells
 class CellRenderer {
-    static render(entity) {
+    render(entity) {
         noStroke();
         let pulse = map(sin(frameCount * 0.1 + entity.noiseOffset), -1, 1, -2, 2);
 
@@ -18,9 +18,9 @@ class CellRenderer {
         this.drawOrganelles(entity);
     }
 
-    static drawCellBody(entity, pulse, healthFactor, overrideAlpha = null) {
+    drawCellBody(entity, pulse, healthFactor, overrideAlpha = null) {
         // Get final color with variation (metabolism base + DNA variation)
-        let finalColor = ColorSystem.applyColorVariation(
+        let finalColor = window.colorSystem.applyColorVariation(
             entity.dna.metabolismType,
             entity.dna.color
         );
@@ -53,14 +53,14 @@ class CellRenderer {
         circle(entity.pos.x, entity.pos.y, entity.dna.size + pulse);
     }
 
-    static drawNucleus(entity, healthFactor) {
+    drawNucleus(entity, healthFactor) {
         // Nucleus (size reflects storage capacity)
         let nucleusSize = map(entity.dna.storageCapacity, 100, 300, 0.3, 0.5);
         fill(255, 255, 255, 200 * healthFactor);
         circle(entity.pos.x, entity.pos.y, entity.dna.size * nucleusSize);
     }
 
-    static drawOrganelles(entity) {
+    drawOrganelles(entity) {
         let organelleSize = 2;
 
         // Ribosomes (all cells have them) - white dots
@@ -79,7 +79,7 @@ class CellRenderer {
         }
     }
 
-    static drawRibosomes(entity, organelleSize) {
+    drawRibosomes(entity, organelleSize) {
         // DEBUG: Force Gray
         if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(220, 220, 220, 180);
         else fill(255, 255, 255, 180);
@@ -93,7 +93,7 @@ class CellRenderer {
         }
     }
 
-    static drawHydrogenosomes(entity, organelleSize) {
+    drawHydrogenosomes(entity, organelleSize) {
         // DEBUG: Force Gray
         if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(150, 150, 150, 200);
         else fill(180, 80, 200, 200);
@@ -107,7 +107,7 @@ class CellRenderer {
         }
     }
 
-    static drawChemosyntheticEnzymes(entity, organelleSize) {
+    drawChemosyntheticEnzymes(entity, organelleSize) {
         // DEBUG: Force Gray
         if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(180, 180, 180, 200);
         else fill(255, 215, 0, 200); // GOLD (Distinct from H2 Green Background)
@@ -121,7 +121,7 @@ class CellRenderer {
         }
     }
 
-    static getMetabolismColor(metabolismType) {
+    getMetabolismColor(metabolismType) {
         const colors = {
             'luca': [200, 200, 220],           // Gray/white (primitive)
             'fermentation': [180, 100, 150],    // Reddish-purple (anaerobic)

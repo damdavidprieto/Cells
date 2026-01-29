@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Enzyme & Proteome Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f3f5;
+            padding: 20px;
+        }
+
+        .enzyme-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 10px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .cofactor-tag {
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🧬 Bio-Machinery: Enzymes & Cofactors</h1>
+        <p>Fase 5: Proteínas funcionales y requerimientos metálicos</p>
+    </div>
+
+    <div id="enzyme-list" class="grid"></div>
+
+    <!-- Scripts -->
+    <script src="src/chemistry/core/ElementCategories.js"></script>
+    <script src="src/chemistry/core/Element.js"></script>
+    <script src="src/chemistry/core/PeriodicTable.js"></script>
+    <script src="src/chemistry/data/elements/elements_001_020.js"></script>
+    <script src="src/chemistry/data/elements/elements_021_040.js"></script>
+    <script src="src/chemistry/data/elements/elements_041_060.js"></script>
+    <script src="src/chemistry/molecules/Molecule.js"></script>
+    <script src="src/chemistry/data/molecules.js"></script>
+    <script src="src/chemistry/molecules/Reaction.js"></script>
+    <script src="src/chemistry/data/reactions.js"></script>
+    <script src="src/chemistry/bio/Protein.js"></script>
+    <script src="src/chemistry/bio/Enzyme.js"></script>
+    <script src="src/chemistry/data/enzymes.js"></script>
+    <script src="src/chemistry/molecules/MolecularSystem.js"></script>
+    <script src="src/chemistry/ChemistrySystem.js"></script>
+
+    <script>
+        window.chemistrySystem.initialize();
+        const enzymes = window.chemistrySystem.getAllEnzymes();
+        const container = document.getElementById('enzyme-list');
+
+        container.innerHTML = enzymes.map(e => `
+            <div class="enzyme-card" style="border-left-color: ${e.cpkColor}">
+                <h3>${e.nameES} (${e.name})</h3>
+                <p><strong>Cataliza:</strong> ${e.targetReactionId}</p>
+                <p><strong>Eficiencia:</strong> x${e.catalyticEfficiency.toFixed(1)}</p>
+                <div>
+                    <strong>Cofactores Nec.:</strong> 
+                    ${e.cofactors.map(c => `<span class="cofactor-tag" style="background: ${window.chemistrySystem.getElement(c).cpkColor}">${c}</span>`).join('')}
+                </div>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    <em>${e.biologicalRole}</em>
+                </p>
+                <p style="font-size: 0.8em; background: #eee; padding: 5px; border-radius: 4px;">
+                    Coste Síntesis: ${e.baseSynthesisCost} ATP | Tamaño: ${e.aminoAcidCount} aa
+                </p>
+            </div>
+        `).join('');
+    </script>
+</body>
+
+</html>

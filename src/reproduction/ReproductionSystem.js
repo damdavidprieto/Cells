@@ -38,7 +38,7 @@
  * - Lane, N. & Martin, W. F. (2010). The origin of membrane bioenergetics. Cell.
  */
 class ReproductionSystem {
-    static canReproduce(entity) {
+    canReproduce(entity) {
         // 0. Cooldown Check (Cell Cycle)
         if (entity.reproductionCooldown > 0) return false;
 
@@ -98,7 +98,7 @@ class ReproductionSystem {
             random(1) < chance;
     }
 
-    static reproduce(parent, environmentalStability = 0.5) {
+    reproduce(parent, environmentalStability = 0.5) {
         // Split ALL resources
         parent.energy *= 0.5;
         parent.oxygen *= 0.5;
@@ -106,11 +106,11 @@ class ReproductionSystem {
         parent.phosphorus *= 0.5;
 
         // Create child with mutations (pass environmental stability for evolutionary pressure)
-        let childDNA = DNAMutator.mutate(parent.dna, environmentalStability);
+        let childDNA = window.dnaMutator.mutate(parent.dna, environmentalStability);
 
         // Apply UV-induced mutation if pending
         if (parent.uvMutationPending) {
-            childDNA = DNAMutator.applyUVMutation(childDNA);
+            childDNA = window.dnaMutator.applyUVMutation(childDNA);
             parent.uvMutationPending = false;  // Reset flag
         }
 
@@ -166,7 +166,7 @@ class ReproductionSystem {
         return child;
     }
 
-    static applyConstructionCosts(parent, child) {
+    applyConstructionCosts(parent, child) {
         // 1. Calculate cost of ALL organelles (Ribosomes, Flagella, etc.)
         // We iterate over the CHILD's organelles because that's what is being built.
         let totalEnergyCost = 0;
@@ -208,7 +208,7 @@ class ReproductionSystem {
     }
 
     // Helper for canReproduce (Optional: strict checking)
-    static estimateConstructionCost(dna) {
+    estimateConstructionCost(dna) {
         let e = 0, p = 0, n = 0;
 
         // Ribosomes

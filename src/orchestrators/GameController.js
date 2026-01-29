@@ -68,11 +68,18 @@ class GameController {
         noLoop(); // p5.js stop
         if (window.gameInstance) {
             window.gameInstance.isRunning = false;
+            if (window.gameInstance.databaseLogger) {
+                window.gameInstance.databaseLogger.endRun();
+            }
         }
         if (window.uiManager) {
             window.uiManager.resetUI();
         }
-        console.log("[GameController] Juego detenido.");
+        console.log("[GameController] Juego detenido y logs cerrados.");
+    }
+
+    stop() {
+        GameController.stopGame();
     }
 
     /**
@@ -99,7 +106,7 @@ class GameController {
         // Otherwise, fallback to defaults (Legacy support or direct run).
         if (!this.environment) {
             console.log("%% [GameController] No Environment injected. Loading STANDARD Scenario.");
-            ScenarioManager.loadScenario(ScenarioLibrary.STANDARD);
+            if (window.scenarioManager) window.scenarioManager.loadScenario(ScenarioLibrary.STANDARD);
             // Sync reference after manager creates it
             this.environment = window.environment;
         }
@@ -110,15 +117,17 @@ class GameController {
 
         // DatabaseLogger (IndexedDB - no network)
         if (GameConstants.DATABASE_LOGGING.enabled) {
-            this.databaseLogger = new DatabaseLogger();
+            // Initialize Database Logger (Modular)
+            this.databaseLogger = new DatabaseManager();
+            // Expose globally for access by Entity/Env
             try {
                 await this.databaseLogger.init();
-                console.log('[GameController] DatabaseLogger initialized');
-                window.databaseLogger = this.databaseLogger; // Acceso global para consola
+                console.log('[GameController] DatabaseManager initialized');
+                window.databaseLogger = this.databaseLogger;
 
                 this.databaseLogger.startRun();
             } catch (err) {
-                console.error('[GameController] DatabaseLogger init failed:', err);
+                console.error('[GameController] DatabaseManager init failed:', err);
             }
         }
 
@@ -146,6 +155,9 @@ class GameController {
         console.log(`[GameController] Executing Spawn Rules: ${rules.mode} (Count: ${rules.count})`);
 
         switch (rules.mode) {
+            case 'NONE':
+                console.log('[GameController] Spawn mode NONE - No entities will be created');
+                break;
             case 'CENTER_VENT':
                 this._spawnCenterVent(rules.count);
                 break;

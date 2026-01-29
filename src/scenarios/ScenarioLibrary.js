@@ -67,8 +67,8 @@ class ScenarioLibrary {
             description: 'Entorno controlado y aislado. Una única columna de agua sobre un vent hidrotermal perfecto.',
 
             world: {
-                rows: 0, // Auto (Full Screen vertical)
-                cols: 0, // Auto (calculado para llenar pantalla horizontalmente o centrado)
+                rows: 1, // Fixed height for laboratory
+                cols: 0, // Auto (calculada para llenar pantalla horizontalmente o centrado)
                 resolution: 60,
                 atmosphereDepth: 0.0, // Sin atmósfera (Océano profundo)
                 sedimentDepth: 1,     // Todo el fondo activo (si rows=1, todo es vent)
@@ -89,16 +89,21 @@ class ScenarioLibrary {
             },
 
             ui: {
-                showStatsPanel: true,
-                showVentMonitor: true, // PANEL CRÍTICO solicitado
-                showCellInspector: true, // Para ver datos de la célula única
-                showLegend: true,
-                showControls: true
+                showStatsPanel: false, // Changed to false for minimalist view
+                showVentMonitor: false, // Desactivado para vista minimal
+                showCellInspector: false, // Desactivado para vista minimal
+                showLegend: false,
+                showControls: false, // Changed to false for minimalist view
+                exitButton: true,
+                showChemistryInspector: false,
+                showVentLabels: false, // Cleaner view for Lab
+                canAddVents: false
             },
 
             render: {
                 centerVertically: true, // Flotar en el centro de la pantalla
-                zoomLevel: 1.0
+                zoomLevel: 1.0,
+                blackScreen: true // Fondo negro puro
             },
 
             logging: {
@@ -228,6 +233,223 @@ class ScenarioLibrary {
                 // Legacy support (optional, can be removed if grid system handles initialization correcty)
                 // temperature: 90 
             }
+        });
+    }
+
+    // ------------------------------------------------------------------------
+    // ESCENARIO 4: COLONIZACIÓN HIDROTERMAL (Showcase Fase 1-4)
+    // ------------------------------------------------------------------------
+    static get HYDROTHERMAL_COLONIZATION() {
+        return new ScenarioDefinition({
+            id: 'HYDROTHERMAL_COLONIZATION',
+            name: 'Evolución Hidrotermal',
+            description: 'Profundidades abisales ricas en Metano y Sulfuro. Ideal para observar la diversificación metabólica.',
+
+            world: {
+                rows: 0,
+                cols: 0,
+                resolution: 50,
+                atmosphereDepth: 0.0,
+                sedimentDepth: 0.15,
+                restrictToVents: false,
+                vents: [
+                    { type: 'ALKALINE', x: 20, width: 4, intensity: 1.2 },    // Metano y Amoníaco
+                    { type: 'BLACK_SMOKER', x: 80, width: 3, intensity: 2.0 },// Alta Temperatura y H2
+                    { type: 'DIFFUSE', x: 50, width: 2, intensity: 1.5 }      // Sulfuro y H2 (Neutro)
+                ]
+            },
+
+            spawn: {
+                mode: 'RANDOM',
+                count: 15,
+                type: 'LUCA'
+            },
+
+            ui: {
+                showStatsPanel: true,
+                showVentMonitor: true,
+                showLegend: true,
+                showControls: true
+            },
+
+            render: {
+                zoomLevel: 1.2
+            },
+
+            logging: {
+                enabled: true,
+                logEveryFrame: true,
+                detailLevel: 'FULL'
+            },
+
+            events: [
+                { frame: 100, action: 'NOTIFY', payload: '🌋 Iniciando Simulación Abisal. Vents Activos.' },
+                { frame: 1000, action: 'NOTIFY', payload: '🧪 Methane Surge: Observando Metanogénesis.' },
+                { frame: 2000, action: 'NOTIFY', payload: '⚡ Seismic Event: Posible creación de nuevos Vents.' }
+            ]
+        });
+    }
+
+    // ------------------------------------------------------------------------
+    // ESCENARIO 5: MODO DESARROLLO (Vent Único Central)
+    // ------------------------------------------------------------------------
+    static get SINGLE_VENT_DEV() {
+        return new ScenarioDefinition({
+            id: 'SINGLE_VENT_DEV',
+            name: 'Dev: Vent Único Central',
+            description: 'Entorno de desarrollo con un solo vent en el centro del océano para pruebas de sinergia.',
+
+            world: {
+                rows: 0,
+                cols: 0,
+                resolution: 50,
+                atmosphereDepth: 0.1,
+                sedimentDepth: 0.1,
+                restrictToVents: false, // Océano abierto alrededor
+                vents: [
+                    { type: 'CENTER', subType: 'ALKALINE', width: 4, intensity: 1.5 }
+                ]
+            },
+
+            spawn: {
+                mode: 'CENTER_VENT',
+                count: 5,
+                type: 'LUCA'
+            },
+
+            ui: {
+                showStatsPanel: false,
+                showVentMonitor: false,
+                showCellInspector: false,
+                showLegend: false,
+                showControls: false,
+                exitButton: true,
+                showChemistryInspector: false,
+                canAddVents: false
+            },
+
+            render: {
+                zoomLevel: 1.5
+            },
+
+            logging: {
+                enabled: true,
+                logEveryFrame: true,
+                detailLevel: 'FULL'
+            },
+
+            events: [
+                { frame: 60, action: 'NOTIFY', payload: '🛠️ Modo Dev: Vent Central Activo - Sinergia Química OK' }
+            ]
+        });
+    }
+
+    // ------------------------------------------------------------------------
+    // ESCENARIO 6: GRID VACÍO (Testing Puro)
+    // ------------------------------------------------------------------------
+    static get EMPTY_GRID() {
+        return new ScenarioDefinition({
+            id: 'EMPTY_GRID',
+            name: 'Grid Vacío',
+            description: 'Escenario minimalista sin UI, sin vents, solo el grid para testing del sistema de renderizado.',
+
+            world: {
+                rows: 0,
+                cols: 0,
+                resolution: 50,
+                atmosphereDepth: 0.1,
+                sedimentDepth: 0.1,
+                restrictToVents: false,
+                vents: [] // Sin vents
+            },
+
+            spawn: {
+                mode: 'NONE', // No spawning
+                count: 0,
+                type: 'LUCA'
+            },
+
+            ui: {
+                showStatsPanel: false,
+                showVentMonitor: false,
+                showCellInspector: false,
+                showChemistryInspector: false,
+                showLegend: false,
+                showControls: false,
+                exitButton: true, // Solo botón de salir
+                canAddVents: false
+            },
+
+            render: {
+                centerVertically: false,
+                zoomLevel: 1.0,
+                showGrid: true // Mostrar grid para debugging
+            },
+
+            logging: {
+                enabled: false,
+                logEveryFrame: false,
+                detailLevel: 'SUMMARY'
+            },
+
+            events: []
+        });
+    }
+
+    // ------------------------------------------------------------------------
+    // ESCENARIO 7: LABORATORIO DE VENTS (Black Screen + Advanced Controls)
+    // ------------------------------------------------------------------------
+    static get VENT_LABORATORY() {
+        return new ScenarioDefinition({
+            id: 'VENT_LABORATORY',
+            name: 'Laboratorio de Vents',
+            description: 'Pantalla negra para observar vents y sus plumas químicas sin distracciones.',
+
+            world: {
+                // NOTA: rows y cols son valores por defecto (0 = sin grid)
+                // En runtime se sobrescriben con dimensiones calculadas del window
+                rows: 0,
+                cols: 0,
+                resolution: 50,
+                atmosphereDepth: 0.0,  // No atmosphere (deep ocean)
+                sedimentDepth: 0.2,     // 20% sediment
+                restrictToVents: false,
+                vents: [
+                    { type: 'ALKALINE', x: 30, width: 3, intensity: 1.2 },
+                    { type: 'BLACK_SMOKER', x: 70, width: 2, intensity: 1.5 }
+                ]
+            },
+
+            spawn: {
+                mode: 'NONE',  // No cells in laboratory mode
+                count: 0,
+                type: 'LUCA'
+            },
+
+            ui: {
+                showStatsPanel: false,
+                showVentMonitor: false,
+                showCellInspector: false,
+                showChemistryInspector: false,
+                showLegend: false,
+                showControls: false,
+                exitButton: true,
+                showVentLabels: false // Cleaner view for Lab
+            },
+
+            render: {
+                centerVertically: false,
+                zoomLevel: 1.0,
+                blackScreen: true  // Render black background instead of environment
+            },
+
+            logging: {
+                enabled: false,
+                logEveryFrame: false,
+                detailLevel: 'SUMMARY'
+            },
+
+            events: []
         });
     }
 }

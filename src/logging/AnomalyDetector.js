@@ -6,13 +6,7 @@
  */
 class AnomalyDetector {
 
-    /**
-     * Ejecuta un escaneo completo de la simulación.
-     * @param {Array} entities - Lista de células activas
-     * @param {Object} environment - Estado del entorno
-     * @returns {Array} Lista de anomalías encontradas
-     */
-    static scan(entities, environment) {
+    scan(entities, environment) {
         let anomalies = [];
 
         // 1. Verificar Entidades
@@ -29,7 +23,7 @@ class AnomalyDetector {
         return anomalies;
     }
 
-    static checkEntity(e) {
+    checkEntity(e) {
         // A. INTEGRIDAD DE DATOS (CRITICAL)
         if (isNaN(e.pos.x) || isNaN(e.pos.y)) {
             return {

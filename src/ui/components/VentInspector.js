@@ -21,53 +21,36 @@ class VentInspector {
     }
 
     draw() {
-        // Mostrar si está activado explícitamente (ScenarioManager) o si es el modo legado SINGLE_VENT
         if (!this.active && GameConstants.EXECUTION_MODE !== 'SINGLE_VENT_MODE') return;
 
         let env = window.environment;
+        if (!env || !env.ventSystem) return;
 
-        // Target: The single vent center (waterStartCol -> waterEndCol)
-        // If undefined (loading), skip
-        if (typeof env.waterStartCol === 'undefined') return;
-
-        let centerCol = Math.floor((env.waterStartCol + env.waterEndCol) / 2);
-        let bottomRow = env.sedimentRow;
-
-        // Get values at the vent source (bottom)
-        let h2 = env.h2Grid[centerCol][bottomRow];
-        let co2 = env.co2Grid[centerCol][bottomRow] || 0; // Assuming CO2 grid exists or we simulate
-        // If CO2 comes from atmosphere, read top? No, let's read *Ambient* at cell location if cell exists?
-
-        // BETTER: Read exactly where the cell IS (if exists), otherwise Vent Source.
-        let targetX = centerCol;
-        let targetY = bottomRow;
-
-        if (window.entities && window.entities.length > 0) {
-            let cell = window.entities[0];
-            targetX = Math.floor(cell.pos.x / env.resolution);
-            targetY = Math.floor(cell.pos.y / env.resolution);
-        }
-
-        // Clamp
-        if (targetX < 0) targetX = 0; if (targetX >= env.cols) targetX = env.cols - 1;
-        if (targetY < 0) targetY = 0; if (targetY >= env.rows) targetY = env.rows - 1;
-
-        let currentH2 = env.h2Grid[targetX][targetY];
-        let currentO2 = env.oxygenGrid[targetX][targetY];
-        let currentLight = env.lightGrid[targetX][targetY];
-        let currentTemp = 80; // Default vent temp? Or derived?
+        const ventData = env.ventSystem.getVentData();
+        if (!ventData || ventData.length === 0) return;
 
         push();
         // Position on bottom-right of screen
-        translate(width - this.width - 20, height - this.height - 20);
+        translate(width - this.width - 20, height - (this.height * Math.min(ventData.length, 3)) - 20);
+
+        ventData.slice(0, 3).forEach((vent, index) => {
+            this._drawVentPanel(vent, 0, index * (this.height + 10));
+        });
+
+        pop();
+    }
+
+    _drawVentPanel(vent, x, y) {
+        push();
+        translate(x, y);
 
         // Shadow
         fill(0, 0, 0, 100);
         noStroke();
         rect(5, 5, this.width, this.height, 10);
 
-        // Dark Background (Industrial/Scientific look)
-        fill(30, 40, 50);
+        // Dark Background
+        fill(30, 40, 50, 230);
         stroke(100, 200, 200);
         strokeWeight(2);
         rect(0, 0, this.width, this.height, 10);
@@ -76,51 +59,47 @@ class VentInspector {
         noStroke();
         fill(100, 255, 200);
         textAlign(CENTER, TOP);
-        textSize(14);
+        textSize(12);
         textStyle(BOLD);
-        text("VENT DATA MONITOR", this.width / 2, 10);
-        textSize(10);
+        text(vent.type.toUpperCase(), this.width / 2, 8);
+
+        textSize(9);
         textStyle(NORMAL);
         fill(150, 200, 200);
-        text(`Probe: [${targetX}, ${targetY}]`, this.width / 2, 28);
+        const lifecycleText = vent.lifecycle ? `${vent.lifecycle.phase} (${(vent.lifecycle.progress * 100).toFixed(0)}%)` : "N/A";
+        text(`Status: ${lifecycleText} | Int: ${(vent.intensity * 100).toFixed(0)}%`, this.width / 2, 22);
 
         // DATA METERS
         textAlign(LEFT, TOP);
-        textSize(11);
+        textSize(10);
         fill(220);
 
-        let startY = 50;
-        let gap = 20;
+        let startY = 40;
+        let gap = 18;
 
-        // Helper to draw bars
-        const drawBar = (label, value, max, color, y) => {
+        const drawBar = (label, value, max, color, barY) => {
             fill(220);
-            text(label, 10, y);
-
-            // Bar background
+            text(label, 10, barY);
             fill(0, 0, 0, 100);
-            rect(60, y, 120, 10);
-
-            // Bar Value
+            rect(65, barY, 110, 8);
             fill(color);
-            let w = map(value, 0, max, 0, 120, true);
-            rect(60, y, w, 10);
-
-            // Text Value
+            let w = map(value, 0, max, 0, 110, true);
+            rect(65, barY, w, 8);
             fill(255);
             textAlign(RIGHT);
-            text(value.toFixed(1), 180, y - 1);
+            text(value.toFixed(1), 185, barY - 1);
             textAlign(LEFT);
         };
 
-        drawBar("H₂", currentH2, 100, color(0, 255, 100), startY);
-        drawBar("O₂", currentO2, 100, color(0, 200, 255), startY + gap);
-        drawBar("Light", currentLight, 100, color(255, 255, 0), startY + gap * 2);
+        drawBar("H₂ Flux", vent.output.h2, 20, color(0, 255, 100), startY);
+        drawBar("CO₂ Flux", vent.output.co2, 10, color(150, 100, 255), startY + gap);
+        drawBar("Fe₂ Flux", vent.output.fe2, 5, color(255, 150, 50), startY + gap * 2);
+        drawBar("Temp", vent.output.temperature, 350, color(255, 100, 100), startY + gap * 3);
 
-        // Temp (Simulated based on depth/vent proximity)
-        // If near vent (y high), hot.
-        let temp = (targetY / env.rows) * 80 + 20; // 20C surface, 100C vent
-        drawBar("Temp", temp, 120, color(255, 100, 100), startY + gap * 3);
+        // pH and Redox info
+        textSize(8);
+        fill(180);
+        text(`pH: ${vent.ph.toFixed(1)} | Redox: ${vent.redox}mV`, 10, startY + gap * 4 + 2);
 
         pop();
     }

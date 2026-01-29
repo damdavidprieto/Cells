@@ -26,13 +26,7 @@
  */
 class ChemotaxisSystem {
 
-    /**
-     * Calculate the bias vector for a cell
-     * @param {Entity} entity - The cell
-     * @param {Environment} environment - The environment
-     * @returns {p5.Vector} - Force vector
-     */
-    static calculateBias(entity, environment) {
+    calculateBias(entity, environment) {
         let sensorRadius = environment.resolution;
         let gridX = floor(entity.pos.x / environment.resolution);
         let gridY = floor(entity.pos.y / environment.resolution);
@@ -99,17 +93,14 @@ class ChemotaxisSystem {
         // 4. NEGATIVE CHEMOTAXIS (OXYGEN AVOIDANCE)
         // If cell is anaerobic (LUCA) and detects O2, flee!
         if (entity.dna.metabolismType === 'luca' && entity.oxygenTolerance < 10) {
-            let repulsion = ChemotaxisSystem.calculateRepulsion(entity, environment, environment.oxygenGrid);
+            let repulsion = this.calculateRepulsion(entity, environment, environment.oxygenGrid);
             totalForce.add(repulsion);
         }
 
         return totalForce;
     }
 
-    /**
-     * Calculates vector AWAY from high concentrations
-     */
-    static calculateRepulsion(entity, environment, grid) {
+    calculateRepulsion(entity, environment, grid) {
         let gridX = floor(entity.pos.x / environment.resolution);
         let gridY = floor(entity.pos.y / environment.resolution);
         let currentAmt = 0;
@@ -150,5 +141,4 @@ class ChemotaxisSystem {
         pEscape.mult(GameConstants.CHEMOTAXIS_STRENGTH * 2.0); // Fear is stronger than hunger
         return pEscape;
     }
-}
 }

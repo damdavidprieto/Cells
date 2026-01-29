@@ -176,6 +176,7 @@ span {
     margin-bottom: 0;
     background: linear-gradient(to right, #00ffff, #0088ff);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
 }
@@ -301,6 +302,123 @@ span {
     /* Safe vertical centering */
     max-width: 1000px;
     width: 90%;
+
+    /* Base Panel Style */
+    .panel {
+        background: rgba(15, 25, 40, 0.9);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(100, 200, 255, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        pointer-events: all;
+        color: #e0f0ff;
+    }
+
+    /* Specific Panel Locations */
+    .side-panel {
+        width: 260px;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+    }
+
+    .center-overlay {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 320px;
+        z-index: 1001;
+    }
+
+    .stat-row {
+        margin-bottom: 12px;
+    }
+
+    .stat-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #8899aa;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-weight: bold;
+        color: #fff;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.4s ease-out;
+    }
+
+    .bar-energy {
+        background: #ffcc00;
+        box-shadow: 0 0 5px #ffcc00;
+    }
+
+    .bar-pop {
+        background: #00d2ff;
+        box-shadow: 0 0 5px #00d2ff;
+    }
+
+    .bar-o2 {
+        background: #ff4b2b;
+        box-shadow: 0 0 5px #ff4b2b;
+    }
+
+    .bar-n2 {
+        background: #4169e1;
+        box-shadow: 0 0 5px #4169e1;
+    }
+
+    .bar-p {
+        background: #ffd200;
+        box-shadow: 0 0 5px #ffd200;
+    }
+
+    .btn-exit {
+        transition: all 0.2s;
+    }
+
+    .btn-exit:hover {
+        background: #c0392b !important;
+        transform: scale(1.02);
+    }
+
+    @keyframes pulse-glow {
+        0% {
+            border-color: rgba(0, 255, 255, 0.2);
+        }
+
+        50% {
+            border-color: rgba(0, 255, 255, 0.5);
+        }
+
+        100% {
+            border-color: rgba(0, 255, 255, 0.2);
+        }
+    }
+
+    .glow-active {
+        animation: pulse-glow 3s infinite;
+    }
+
     padding: 40px;
     background: rgba(0, 20, 40, 0.7);
     border-radius: 16px;
