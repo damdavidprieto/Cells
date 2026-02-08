@@ -40,77 +40,87 @@ class MembraneSystem {
     }
 
     /**
-     * Perform Passive Diffusion (Osmosis)
+     * Perform Passive Diffusion (Osmosis and Natural PMF)
      * 
      * SCIENTIFIC BASIS:
      * - LUCA membranes were permeable to small non-polar molecules (H2, CO2)
      * - Nutrients flow DOWN the concentration gradient
-     * - In Vents (High Ext, Low Int): FREE ENERGY influx
-     * - In Ocean (Low Ext, High Int): LEAKAGE (Efflux)
+     * - Natural PMF: Alkaline vents (pH 10) vs Acidic Ocean (pH 6) create a 
+     *   NATURAL proton gradient that LUCA could tap into via ATP-synthase.
      */
     performPassiveDiffusion(entity, environment) {
         let gridX = Math.floor(entity.pos.x / environment.resolution);
         let gridY = Math.floor(entity.pos.y / environment.resolution);
 
-        if (gridX >= 0 && gridX < environment.cols && gridY >= 0 && gridY < environment.rows) {
+        if (gridX < 0 || gridX >= environment.cols || gridY < 0 || gridY >= environment.rows) return;
 
-            // 1. HYDROGEN (H2) DIFFUSION
-            // Small molecule, passes easily through primitive membranes
-            let envH2 = environment.h2Grid[gridX][gridY];
-            // Normalize cellular H2 (energy) to compare with grid concentration
-            // This is an abstraction: Cell Energy vs Environmental H2
-            let cellEnergyConc = entity.energy / 5.0; // Approximation of internal concentration
+        // 1. DYNAMIC PERMEABILITY (Affects "Leakage")
+        // Structural damage makes the membrane more "holey"
+        let damageFactor = entity.structuralDamage / GameConstants.MAX_STRUCTURAL_DAMAGE;
+        let effectivePermeability = GameConstants.MEMBRANE_PERMEABILITY * (1.0 + damageFactor);
+        let leakRate = GameConstants.MEMBRANE_LEAK_RATE * (1.0 + damageFactor * 2.0);
 
-            let gradientH2 = envH2 - cellEnergyConc;
+        // 2. NATURAL QUIMIOSMOSIS (PMF)
+        // Harnessing the environmental pH gradient (Russell & Martin Hypothesis)
+        let extPH = environment.getPH(entity.pos.x, entity.pos.y);
+        let intrinsicPH = 8.5; // Hypothetical internal pH of LUCA
+        let phGradient = extPH - intrinsicPH;
 
-            // Diffusion: Rate * Gradient
-            let diffusionAmount = gradientH2 * GameConstants.MEMBRANE_PERMEABILITY;
+        // Favorable gradient: Alkaline exterior (pH 10) vs lower pH inside
+        // This provides "Free Energy" flux even without substrates
+        if (phGradient > 0) {
+            let pmfEnergy = phGradient * GameConstants.PMF_ENERGY_YIELD;
+            entity.energy += pmfEnergy;
+            entity.pmfEnergyFrame = pmfEnergy; // For logging
+        }
 
-            if (diffusionAmount > 0) {
-                // INFLUX: Absorb from environment
-                // Cap at available environment resources AND entity storage capacity
-                let roomLeft = entity.maxResources - entity.energy;
-                if (roomLeft > 0) {
-                    let taken = Math.min(diffusionAmount, envH2, roomLeft);
-                    environment.h2Grid[gridX][gridY] -= taken;
-                    entity.energy += taken;
-                }
-            } else {
-                // EFFLUX: Leak into environment (Cost of leaky membrane)
-                // entity.energy loses, environment gains (optional, usually negligible for env)
-                entity.energy += diffusionAmount; // diffusionAmount is negative here
+        // 3. HYDROGEN (H2) DIFFUSION
+        let envH2 = environment.h2Grid[gridX][gridY];
+        let cellEnergyConc = entity.energy / 5.0; // Approximation
+        let gradientH2 = envH2 - cellEnergyConc;
+        let diffusionH2 = gradientH2 * effectivePermeability;
+
+        if (diffusionH2 > 0) {
+            let roomLeft = entity.maxResources - entity.energy;
+            if (roomLeft > 0) {
+                let taken = Math.min(diffusionH2, envH2, roomLeft);
+                environment.h2Grid[gridX][gridY] -= taken;
+                entity.energy += taken;
             }
+        } else {
+            // Efflux / Leakage
+            entity.energy += (diffusionH2 - leakRate); // Adds leak overhead
+        }
 
-            // 2. PHOSPHORUS DIFFUSION
-            // Only if dissolved P is high (vents)
-            let envP = environment.phosphorusGrid[gridX][gridY];
-            let cellP = entity.phosphorus;
-
-            // P gradient check (simplified)
-            if (envP > cellP) {
-                let roomLeftP = entity.maxResources - entity.phosphorus;
-                if (roomLeftP > 0) {
-                    let pDiff = (envP - cellP) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Slower than H2
-                    let takenP = Math.min(pDiff, envP, roomLeftP);
-                    environment.phosphorusGrid[gridX][gridY] -= takenP;
-                    entity.phosphorus += takenP;
-                }
+        // 4. CO2 DIFFUSION (Passive Exchange)
+        let envCO2 = environment.co2Grid[gridX][gridY];
+        // CO2 is small and non-polar, crosses easily
+        if (envCO2 > 0) {
+            let co2Diff = (envCO2 - 50) * GameConstants.MEMBRANE_CO2_DIFFUSION; // 50 is base internal
+            if (co2Diff > 0) {
+                // Cell absorbs CO2 passively (needed for Wood-Ljungdahl)
+                entity.energy += co2Diff * 0.1; // Small metabolic boost from carbon capture
             }
+        }
 
-            // 3. NITROGEN DIFFUSION (MISSING LINK FIXED)
-            // Ammonia (NH4+) diffusion from environment
-            let envN = environment.nitrogenGrid[gridX][gridY];
-            let cellN = entity.nitrogen;
+        // 5. PHOSPHORUS & NITROGEN (Slow ionic diffusion)
+        let envP = environment.phosphorusGrid[gridX][gridY];
+        if (envP > entity.phosphorus) {
+            let pDiff = (envP - entity.phosphorus) * effectivePermeability * 0.1;
+            entity.phosphorus += Math.min(pDiff, envP, entity.maxResources - entity.phosphorus);
+        }
 
-            if (envN > cellN) {
-                let roomLeftN = entity.maxResources - entity.nitrogen;
-                if (roomLeftN > 0) {
-                    let nDiff = (envN - cellN) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Similar to P
-                    let takenN = Math.min(nDiff, envN, roomLeftN);
-                    environment.nitrogenGrid[gridX][gridY] -= takenN;
-                    entity.nitrogen += takenN;
-                }
-            }
+        let envN = environment.nitrogenGrid[gridX][gridY];
+        if (envN > entity.nitrogen) {
+            let nDiff = (envN - entity.nitrogen) * effectivePermeability * 0.1;
+            entity.nitrogen += Math.min(nDiff, envN, entity.maxResources - entity.nitrogen);
+        }
+
+        // 6. RESOURCE LOSS (ENTROPIC LEAK)
+        // Passive loss into the dilute ocean
+        if (!environment.isInSediment(entity.pos.y)) {
+            entity.nitrogen -= leakRate * 0.5;
+            entity.phosphorus -= leakRate * 0.1;
         }
     }
 }

@@ -199,6 +199,7 @@ class DatabaseManager {
             oxidative_impact: data.oxidativeImpact || 0,
             thermal_stress: data.thermalStress || 1.0,
             repair_paid: data.repairPaid || 0,
+            pmf_energy: data.pmfEnergy || 0,
             energy: data.energy || 0,
             timestamp: new Date().toISOString()
         });
