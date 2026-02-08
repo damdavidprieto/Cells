@@ -254,7 +254,11 @@ class MetabolicCosts {
             co2Produced: co2Produced,
             metabolismUsed: metabolismName,
             substratesConsumed: substratesConsumed, // Para trazabilidad
-            stressFactors: { ph: phStress, redox: redoxStress } // For analytics
+            stressFactors: {
+                ph: phStress,
+                redox: redoxStress,
+                thermal: thermalStress
+            } // For analytics
         };
     }
 

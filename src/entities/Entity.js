@@ -121,15 +121,29 @@ class Entity {
         this.structuralDamage += this.oxidativeDamage;
 
         // 2. Active Repair (Spend Energy to fix Damage)
-        this.applyRepair();
+        this.repairCostPaid = this.applyRepair();
 
         // Apply UV damage if enabled
+        this.uvDamageFrame = 0;
         if (GameConstants.UV_RADIATION_ENABLED) {
             this.applyUVDamage(environment);
         }
 
         // Apply Oxygen Toxicity (Oxidative Stress)
+        this.oxidativeDamageFrame = 0;
         this.applyOxygenDamage(environment);
+
+        // LOG SURVIVAL every 100 frames (or 20 for sentinel)
+        if (window.databaseLogger && (frameCount % 100 === 0 || (this.id === 0 && frameCount % 20 === 0))) {
+            window.databaseLogger.logSurvival(frameCount, this.id, {
+                totalDamage: this.structuralDamage,
+                uvImpact: this.uvDamageFrame,
+                oxidativeImpact: this.oxidativeDamageFrame,
+                thermalStress: this.thermalStressMultiplier || 1.0,
+                repairPaid: this.repairCostPaid,
+                energy: this.energy
+            });
+        }
 
         // Check death
         this.checkDeath();
@@ -266,6 +280,9 @@ class Entity {
         this.oxygen -= result.oxygen * sizeMultiplier;
         this.nitrogen -= result.nitrogen * sizeMultiplier;
 
+        // Capture thermal stress for survival logs
+        this.thermalStressMultiplier = result.stressFactors?.thermal || 1.0;
+
         // NEW: TRAZABILIDAD METABÓLICA (Logs Perfectos)
         // Log every 100 frames for all cells, or every 20 frames for Sentinel Cell (ID 0)
         if (window.databaseLogger && (frameCount % 100 === 0 || (this.id === 0 && frameCount % 20 === 0))) {
@@ -314,16 +331,20 @@ class Entity {
             // Full repair step
             this.energy -= energyCost;
             this.structuralDamage -= damageToFix;
+            return energyCost;
         } else {
             // Partial repair (Starvation Mode)
             // Can only repair what we have energy for
             let possibleFix = this.energy / GameConstants.REPAIR_ENERGY_COST;
+            let actualCost = this.energy;
             this.energy = 0;
             this.structuralDamage -= possibleFix;
+            return actualCost;
         }
 
         // Clamp to 0
         if (this.structuralDamage < 0) this.structuralDamage = 0;
+        return 0;
     }
 
     checkDeath() {
@@ -504,7 +525,7 @@ class Entity {
         // 3. Add to Structural Integrity System
         // Instead of just costing energy, it now threatens Lysis
         this.structuralDamage += actualDamage;
-        this.uvDamageFrame = actualDamage; // Track for statistics
+        this.uvDamageFrame = actualDamage; // Track for survival logs
 
         // 4. Mutation Risk (Kept separate)
         if (random(1) > this.dna.dnaRepairEfficiency) {
@@ -523,6 +544,7 @@ class Entity {
 
         if (damage > 0) {
             this.structuralDamage += damage;
+            this.oxidativeDamageFrame = damage; // Track for survival logs
 
             // FORENSIC TRACE: Log mechanism details for Sentinel Cell 0
             if (this.id === 0 && GameConstants.DEBUG_OXYGEN_DAMAGE && window.databaseLogger) {
