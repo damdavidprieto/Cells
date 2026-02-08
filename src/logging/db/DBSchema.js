@@ -78,5 +78,14 @@ class DBSchema {
             s.createIndex('event_type', 'eventType', { unique: false });
             console.log(`[DBSchema] Created store: ${stores.GEOLOGICAL_EVENTS}`);
         }
+
+        // Store: metabolism_logs
+        if (!db.objectStoreNames.contains(stores.METABOLISM)) {
+            const s = db.createObjectStore(stores.METABOLISM, { autoIncrement: true });
+            s.createIndex('run_id', 'run_id', { unique: false });
+            s.createIndex('frame', 'frame_number', { unique: false });
+            s.createIndex('cell_id', 'cell_id', { unique: false });
+            console.log(`[DBSchema] Created store: ${stores.METABOLISM}`);
+        }
     }
 }

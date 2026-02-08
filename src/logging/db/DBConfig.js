@@ -5,7 +5,7 @@
  */
 class DBConfig {
     static get DB_NAME() { return 'CellsDevLogs'; }
-    static get DB_VERSION() { return 4; }
+    static get DB_VERSION() { return 5; }
 
     static get STORE_NAMES() {
         return {
@@ -16,7 +16,8 @@ class DBConfig {
             ENV_STATS: 'environment_stats',
             ANOMALIES: 'anomalies',
             VENT_ACTIVITY: 'vent_activity',
-            GEOLOGICAL_EVENTS: 'geological_events'
+            GEOLOGICAL_EVENTS: 'geological_events',
+            METABOLISM: 'metabolism_logs'
         };
     }
 }

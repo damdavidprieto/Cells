@@ -94,7 +94,7 @@ class DNAFactory {
                     enabled: true,              // ✅ LUCA starts with this
                     efficiency: random(0.7, 0.9), // 70-90% efficiency
                     substrates: { H2: 0.4, CO2: 0.2 },
-                    energyYield: 1.5,           // Reduced from 2.5 - primitive metabolism
+                    energyYield: 1.2,           // Yield per catalysis event
                     requiresO2: false,
                     requiresLight: false,
                     geochemicalBonus: true      // Bonus in sediment (vents)

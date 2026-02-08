@@ -192,7 +192,7 @@ const GameConstants = {
 
     // Metabolism
     // Legacy multipliers removed - now handled by multi-pathway metabolism system
-    BASE_METABOLIC_COST: 0.05,  // Base maintenance cost (scientifically calibrated)
+    BASE_METABOLIC_COST: 0.08,  // Increased from 0.05 for thermodynamic rigor
     OXYGEN_COST: 0.02,          // Cost of oxygen toxicity management
 
     // Reproduction

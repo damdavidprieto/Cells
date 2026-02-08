@@ -166,6 +166,25 @@ class DatabaseManager {
         });
     }
 
+    /**
+     * LOG METABOLISM event - Tracking energy, substrates and stress
+     */
+    logMetabolism(frame, cellId, metabolicResult) {
+        if (!this.initialized) return;
+        this.writer.add(DBConfig.STORE_NAMES.METABOLISM, {
+            run_id: this.runId,
+            frame_number: frame,
+            cell_id: cellId,
+            metabolism_type: metabolicResult.metabolismUsed,
+            energy_gain: metabolicResult.energyProduced || 0,
+            energy_loss: metabolicResult.maintenanceCost || 0,
+            net_energy: -(metabolicResult.energy || 0), // positive is gain
+            substrates: metabolicResult.substratesConsumed || {},
+            stress: metabolicResult.stressFactors || {},
+            timestamp: new Date().toISOString()
+        });
+    }
+
     logGeologicalEvent(data) {
         if (!this.initialized) return;
         this.writer.add(DBConfig.STORE_NAMES.GEOLOGICAL_EVENTS, {
