@@ -37,11 +37,11 @@ class VentRenderer {
 
         // Render based on context
         if (vent.context === 'SUBMARINE') {
-            this._renderSubmarineVent(vent, screenX, screenY, width);
+            this._renderSubmarineVent(vent, screenX, screenY, width, env);
         } else if (vent.context === 'SUBAERIAL') {
-            this._renderSubaerialVent(vent, screenX, screenY, width);
+            this._renderSubaerialVent(vent, screenX, screenY, width, env);
         } else {
-            this._renderGenericVent(vent, screenX, screenY, width);
+            this._renderGenericVent(vent, screenX, screenY, width, env);
         }
 
         // Render plume particles
@@ -63,7 +63,7 @@ class VentRenderer {
         }
     }
 
-    _renderSubmarineVent(vent, x, y, width, resolution) {
+    _renderSubmarineVent(vent, x, y, width, env) {
         const type = vent.type;
         const intensity = vent.getVisualIntensity();
         const albedo = type.albedo || 0.5;
