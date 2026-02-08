@@ -28,7 +28,7 @@ function createReactions(molecularSystem) {
 
     // ===== 2. RUTA WOOD-LJUNGDAHL (ACETOGÉNESIS) =====
     // 4H₂ + 2CO₂ → CH₃COOH (Acetato) + 2H₂O
-    // Nota: Usamos una simplificación por ahora si no tenemos Acetato
+    // SCIENTIFIC BASIS: ΔG°' ≈ -95 kJ/mol (Schuchmann & Müller, 2014)
     REACTIONS.push({
         id: 'wood_ljungdahl',
         name: 'Wood-Ljungdahl Pathway',
@@ -38,12 +38,13 @@ function createReactions(molecularSystem) {
             { molecule: molecularSystem.getMolecule('CO2'), coefficient: 2 }
         ],
         products: [
-            // CH3COOH aproximado (usamos CO2 + H2 por ahora o solo el ATP generado)
             { molecule: molecularSystem.getMolecule('H2O'), coefficient: 2 }
+            // Acetyl-CoA/Acetate is the carbon outcome
         ],
-        // ΔGr° ≈ -95 kJ/mol
+        deltaG: -95,
+        atpYield: 0.5, // Weiss et al. 2016, Lane 2015
         metabolicPathway: 'acetogenesis',
-        geochemicalBonus: true // Favorecido en vents
+        geochemicalBonus: true // Favored in vents
     });
 
     // ===== 3. OXIDACIÓN DE SULFURO (QUIMIOSÍNTESIS) =====

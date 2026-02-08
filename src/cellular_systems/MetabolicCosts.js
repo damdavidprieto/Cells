@@ -156,10 +156,25 @@ class MetabolicCosts {
         let oxygenCost = 0;
         let nitrogenCost = 0;
         let co2Produced = 0;
+        let substratesConsumed = {};
 
-        // Consume substrates
-        for (let [substrate, amount] of Object.entries(metabolism.substrates)) {
-            switch (substrate) {
+        // NEW: Get stoichiometry from ChemistrySystem if available
+        let reaction = null;
+        if (window.chemistrySystem && window.chemistrySystem.initialized) {
+            const reactionId = this._mapMetabolismToReaction(metabolismName);
+            reaction = window.chemistrySystem.getReaction(reactionId);
+        }
+
+        // 1. Consume substrates (Prioritize reaction stoichiometry)
+        const sources = reaction ? reaction.reactants : Object.entries(metabolism.substrates).map(([s, a]) => ({ molecule: { symbol: s }, coefficient: a }));
+
+        for (let s of sources) {
+            const symbol = s.molecule?.symbol || s.molecule;
+            const amount = s.coefficient || s.amount;
+
+            substratesConsumed[symbol] = amount;
+
+            switch (symbol) {
                 case 'H2':
                     environment.consumeH2(entity.pos.x, entity.pos.y, amount);
                     break;
@@ -178,27 +193,14 @@ class MetabolicCosts {
             }
         }
 
-        // Calculate energy production
-        // NEW: Use real thermodynamic yield if available
-        let energyProduced = metabolism.energyYield;
+        // 2. Calculate energy production
+        // NEW: Use atpYield from reaction or fallback
+        let energyProduced = reaction?.atpYield || metabolism.energyYield;
 
-        if (window.chemistrySystem && window.chemistrySystem.initialized) {
-            const reactionId = this._mapMetabolismToReaction(metabolismName);
-            const reaction = window.chemistrySystem.getReaction(reactionId);
-
-            if (reaction) {
-                // Potential ATP yield from ΔG
-                const realYield = reaction.calculateATPYield();
-                if (realYield > 0) {
-                    energyProduced = realYield;
-                }
-
-                // NEW: Apply Enzyme Catalytic Bonus (from Proteome)
-                if (entity.proteome) {
-                    const bonus = entity.proteome.getCatalyticBonus(reactionId, window.chemistrySystem, environment);
-                    energyProduced *= bonus;
-                }
-            }
+        // Apply Enzyme Catalytic Bonus (from Proteome)
+        if (reaction && entity.proteome) {
+            const bonus = entity.proteome.getCatalyticBonus(reaction.id, window.chemistrySystem, environment);
+            energyProduced *= bonus;
         }
 
         energyProduced *= metabolism.efficiency;
@@ -245,10 +247,13 @@ class MetabolicCosts {
 
         return {
             energy: energyCost,
+            energyProduced: energyProduced,
+            maintenanceCost: maintenanceCost,
             oxygen: oxygenCost,
             nitrogen: nitrogenCost,
             co2Produced: co2Produced,
             metabolismUsed: metabolismName,
+            substratesConsumed: substratesConsumed, // Para trazabilidad
             stressFactors: { ph: phStress, redox: redoxStress } // For analytics
         };
     }

@@ -247,7 +247,7 @@ class Entity {
     }
 
     applyMetabolicCosts(environment) {
-        let costs = window.metabolicCosts.calculate(this, environment);
+        let result = window.metabolicCosts.calculate(this, environment);
 
         // Apply size-based cost multiplier
         let sizeMultiplier = window.membraneSystem.calculateMetabolicCost(1.0, this.dna.size);
@@ -261,9 +261,21 @@ class Entity {
             organelleMaintenance += organelle.getMaintenanceCost();
         }
 
-        this.energy -= (costs.energy * sizeMultiplier) + pigmentCost + organelleMaintenance;
-        this.oxygen -= costs.oxygen * sizeMultiplier;
-        this.nitrogen -= costs.nitrogen * sizeMultiplier;
+        // Final Energy Impact
+        this.energy -= (result.energy * sizeMultiplier) + pigmentCost + organelleMaintenance;
+        this.oxygen -= result.oxygen * sizeMultiplier;
+        this.nitrogen -= result.nitrogen * sizeMultiplier;
+
+        // NEW: TRAZABILIDAD METABÓLICA (Logs Perfectos)
+        // Log every 100 frames for all cells, or every 20 frames for Sentinel Cell (ID 0)
+        if (window.databaseLogger && (frameCount % 100 === 0 || (this.id === 0 && frameCount % 20 === 0))) {
+            window.databaseLogger.logMetabolism(frameCount, this.id, {
+                ...result,
+                organelleMaintenance: organelleMaintenance,
+                pigmentCost: pigmentCost,
+                totalEnergyChange: -((result.energy * sizeMultiplier) + pigmentCost + organelleMaintenance)
+            });
+        }
     }
 
     applyFlagellaCosts() {
