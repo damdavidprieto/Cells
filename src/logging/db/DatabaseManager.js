@@ -185,6 +185,25 @@ class DatabaseManager {
         });
     }
 
+    /**
+     * LOG SURVIVAL event - Tracking damage, repair and stress
+     */
+    logSurvival(frame, cellId, data) {
+        if (!this.initialized) return;
+        this.writer.add(DBConfig.STORE_NAMES.SURVIVAL, {
+            run_id: this.runId,
+            frame_number: frame,
+            cell_id: cellId,
+            total_damage: data.totalDamage,
+            uv_impact: data.uvImpact || 0,
+            oxidative_impact: data.oxidativeImpact || 0,
+            thermal_stress: data.thermalStress || 1.0,
+            repair_paid: data.repairPaid || 0,
+            energy: data.energy || 0,
+            timestamp: new Date().toISOString()
+        });
+    }
+
     logGeologicalEvent(data) {
         if (!this.initialized) return;
         this.writer.add(DBConfig.STORE_NAMES.GEOLOGICAL_EVENTS, {

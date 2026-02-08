@@ -87,5 +87,14 @@ class DBSchema {
             s.createIndex('cell_id', 'cell_id', { unique: false });
             console.log(`[DBSchema] Created store: ${stores.METABOLISM}`);
         }
+
+        // Store: survival_logs
+        if (!db.objectStoreNames.contains(stores.SURVIVAL)) {
+            const s = db.createObjectStore(stores.SURVIVAL, { autoIncrement: true });
+            s.createIndex('run_id', 'run_id', { unique: false });
+            s.createIndex('frame', 'frame_number', { unique: false });
+            s.createIndex('cell_id', 'cell_id', { unique: false });
+            console.log(`[DBSchema] Created store: ${stores.SURVIVAL}`);
+        }
     }
 }
