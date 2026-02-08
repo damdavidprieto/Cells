@@ -78,10 +78,6 @@ class Entity {
             this.organelles.push(new Flagellum(this.dna.flagellaLevel));
         }
 
-        // 5. Chemosynthetic Enzymes (Metabolic support)
-        if (this.dna.organelles?.chemosynthetic_enzymes) {
-            this.organelles.push(new ChemosyntheticEnzymes());
-        }
 
         // Register all biological capabilities enabled by these organelles
         this.capabilities = {};
