@@ -499,6 +499,7 @@ span {
             rgba(255, 255, 0, 0.3) 50%,
             rgba(244, 67, 54, 0.3) 100%);
     outline: none;
+    appearance: none;
     -webkit-appearance: none;
     margin-bottom: 10px;
 }
@@ -617,4 +618,109 @@ span {
 .config-actions button:disabled:hover {
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* ===== PREMIUM MODAL SYSTEM ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(5, 10, 20, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+}
+
+.modal-container {
+    background: rgba(15, 25, 45, 0.95);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.15), 0 10px 30px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    text-align: center;
+}
+
+.modal-overlay.active .modal-container {
+    transform: scale(1);
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: #00ffff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
+}
+
+.modal-body {
+    margin-bottom: 30px;
+    color: #aaccff;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-btn {
+    padding: 10px 25px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.modal-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #00ffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.modal-btn-confirm {
+    background: rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.5);
+    color: #00ffff;
+}
+
+.modal-btn-confirm:hover {
+    background: rgba(0, 255, 255, 0.25);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+.modal-btn-error {
+    background: rgba(255, 75, 43, 0.15);
+    border-color: rgba(255, 75, 43, 0.5);
+    color: #ff4b2b;
+}
+
+.modal-btn-error:hover {
+    background: rgba(255, 75, 43, 0.25);
+    box-shadow: 0 0 20px rgba(255, 75, 43, 0.4);
 }

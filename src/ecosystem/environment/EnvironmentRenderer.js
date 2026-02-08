@@ -7,88 +7,37 @@ class EnvironmentRenderer {
         this.resolution = resolution;
     }
 
-    render(gridSystem, stratification, config) {
-        // Check if black screen mode is enabled
-        const blackScreenMode = config.renderConfig && config.renderConfig.blackScreen;
+    render(grids, stratification, config) {
+        // 1. BACKGROUND (Pure Black)
+        this.drawBackground();
 
-        // 1. BACKGROUND
-        if (!blackScreenMode) {
-            this.drawBackground();
-        }
-        // In blackScreenMode, we rely on the global background(0) call in Sketch.js 
-        // to avoid translation issues and ensure a pure black void.
-
-        // 2. GRID CELLS (Skip in black screen mode)
-        if (!blackScreenMode) {
-            this.drawGrids(gridSystem, stratification);
-        }
-
-        // 3. VENTS (Always render, even in black screen mode)
-        if (window.environment && window.environment.ventSystem) {
+        // 2. VENTS (Always render)
+        if (window.environment?.ventSystem) {
             window.environment.ventSystem.render(window.environment);
         }
 
-        // 4. BOUNDARIES (Optional, skip in black screen mode)
-        if (!config.restrictToVents && !blackScreenMode) {
-            this.drawBoundaries(stratification);
-        }
+        // Simplification: In Lab Mode, we don't draw anything else (mist, grids, boundaries)
     }
 
     drawBackground() {
-        // Full screen deep ocean
-        noStroke();
-        fill(5, 10, 25);
-        rect(0, 0, width, height);
-    }
+        // Instead of pure black, use a very deep "Archaean Teal"
+        // based on the water color system if available
+        const vcs = window.ventColorSystem;
+        if (vcs) {
+            // Get color at a representative depth (e.g. 500p) with average chemicals
+            const avgChemicals = { fe2: 5.0 }; // Typical for this scenario
+            const baseTint = vcs.getAmbientColor(500, avgChemicals);
 
-
-
-    drawGrids(gridSystem, stratification) {
-        const res = this.resolution;
-        const h2 = gridSystem.h2Grid;
-        const co2 = gridSystem.co2Grid;
-        const o2 = gridSystem.oxygenGrid;
-        const light = gridSystem.lightGrid;
-        const temp = gridSystem.temperatureGrid;
-
-        for (let i = stratification.waterStartCol; i < stratification.waterEndCol; i++) {
-            for (let j = stratification.waterStartRow; j < stratification.waterEndRow; j++) {
-                if (j < 0 || j >= stratification.rows) continue;
-
-                // Basic resource lighting logic (optimized)
-                let h = h2[i][j];
-                let c = co2[i][j];
-                let o = o2[i][j];
-                let l = light[i][j];
-                let t = temp[i][j];
-
-                if (h > 0 || c > 0 || o > 0 || l > 0) {
-                    // Compose color based on chemical signature
-                    // Green = CO2, Blue = H2, Red = O2, Yellow = Light
-                    fill(t * 2, c + l, h + o, 150);
-                    rect(i * res, j * res, res, res);
-                }
-            }
+            // Ensure background is visible even if ambient tint is very dark
+            // REVISED: Higher minimum and boost factor for visibility
+            const minBrightness = 30;
+            background(
+                Math.max(minBrightness, baseTint[0] * 0.65),
+                Math.max(minBrightness, baseTint[1] * 0.65),
+                Math.max(minBrightness, baseTint[2] * 0.65)
+            );
+        } else {
+            background(0);
         }
-    }
-
-    drawBoundaries(stratification) {
-        let res = this.resolution;
-        let startX = stratification.waterStartCol * res;
-        let endX = stratification.waterEndCol * res;
-
-        // Atmosphere line
-        let atmosphereY = stratification.atmosphereRow * res;
-        stroke(255, 255, 255, 100);
-        strokeWeight(2);
-        line(startX, atmosphereY, endX, atmosphereY);
-
-        // Sediment line
-        let sedimentY = stratification.sedimentRow * res;
-        stroke(200, 50, 50, 150);
-        strokeWeight(2);
-        line(startX, sedimentY, endX, sedimentY);
-
-        noStroke();
     }
 }

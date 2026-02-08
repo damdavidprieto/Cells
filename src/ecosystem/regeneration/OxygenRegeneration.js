@@ -202,7 +202,7 @@ class OxygenRegeneration {
     oxidarHierro(environment) {
         for (let i = 0; i < environment.cols; i++) {
             for (let j = 0; j < environment.rows; j++) {
-                if (environment.oxygenGrid[i][j] > 5 &&
+                if (environment.oxygenGrid[i][j] > 0.01 &&
                     environment.fe2Grid[i][j] > GameConstants.FE2_DEPLETION_THRESHOLD) {
 
                     let oxidationRate = GameConstants.FE2_OXIDATION_RATE;

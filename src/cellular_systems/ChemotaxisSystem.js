@@ -59,22 +59,34 @@ class ChemotaxisSystem {
         }
 
         // Scan dx, dy from -1 to 1
+        let neighborsScan = [];
         for (let dx = -1; dx <= 1; dx++) {
             for (let dy = -1; dy <= 1; dy++) {
-                if (dx === 0 && dy === 0) continue; // Skip self
+                if (dx === 0 && dy === 0) continue;
+                neighborsScan.push({ dx, dy });
+            }
+        }
 
-                let nx = gridX + dx;
-                let ny = gridY + dy;
+        // Randomize scan order to prevent directional bias (always picking -1, -1 first)
+        neighborsScan.sort(() => Math.random() - 0.5);
 
-                if (nx >= 0 && nx < environment.cols && ny >= 0 && ny < environment.rows) {
-                    let amount = targetGrid[nx][ny];
+        for (let n of neighborsScan) {
+            let nx = gridX + n.dx;
+            let ny = gridY + n.dy;
 
-                    // IF amount is significantly better than current (Sensitivity threshold)
-                    if (amount > currentAmount + GameConstants.MEMBRANE_SENSITIVITY) {
-                        // And better than best found so far
-                        if (amount > bestAmount) {
-                            bestAmount = amount;
-                            pBest = createVector(dx, dy); // Direction relative to cell
+            if (nx >= 0 && nx < environment.cols && ny >= 0 && ny < environment.rows) {
+                let amount = targetGrid[nx][ny];
+
+                // IF amount is significantly better than current (Sensitivity threshold)
+                if (amount > currentAmount + GameConstants.MEMBRANE_SENSITIVITY) {
+                    // And better than best found so far
+                    if (amount > bestAmount) {
+                        bestAmount = amount;
+                        pBest = createVector(n.dx, n.dy); // Direction relative to cell
+                    } else if (amount === bestAmount && bestAmount > 0) {
+                        // Tie-breaker: 50% chance to switch to this neighbor if it has same amount
+                        if (Math.random() > 0.5) {
+                            pBest = createVector(n.dx, n.dy);
                         }
                     }
                 }

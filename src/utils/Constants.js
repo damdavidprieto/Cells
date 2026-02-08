@@ -221,8 +221,8 @@ const GameConstants = {
     MUTATION_RATE_MAX: 0.3,
     EFFICIENCY_MIN: 0.5,
     // --- Resources ---
-    INITIAL_ENERGY: 500,     // Increased from 100 (gave 1.5s) to 500 (gives 8s) to survive spawn journey
-    INITIAL_OXYGEN: 100,
+    INITIAL_ENERGY: 500,
+    INITIAL_OXYGEN: 0,      // REALISM: LUCA starts anaerobic
     INITIAL_NITROGEN: 50,
     INITIAL_PHOSPHORUS: 50,
 
@@ -299,9 +299,9 @@ const GameConstants = {
 
     // O₂ Grid Range (trazas por fotólisis UV)
 
-    // O₂ Grid Range (trazas por fotólisis UV)
-    OXYGEN_GRID_MIN: 5,           // Minimum O₂ (traces from UV photolysis)
-    OXYGEN_GRID_MAX: 20,          // Maximum O₂ (still very low, <1% modern levels)
+    // O₂ Grid Range (trazas mínimas por fotólisis UV)
+    OXYGEN_GRID_MIN: 0,           // Strict anoxia
+    OXYGEN_GRID_MAX: 1,           // Trace levels only
 
     // CO₂ Grid Range (atmósfera reductora)
     CO2_GRID_MIN: 80,             // Minimum CO₂ (reducing atmosphere)

@@ -68,10 +68,13 @@ class MembraneSystem {
 
             if (diffusionAmount > 0) {
                 // INFLUX: Absorb from environment
-                // Cap at available environment resources
-                let taken = Math.min(diffusionAmount, envH2);
-                environment.h2Grid[gridX][gridY] -= taken;
-                entity.energy += taken;
+                // Cap at available environment resources AND entity storage capacity
+                let roomLeft = entity.maxResources - entity.energy;
+                if (roomLeft > 0) {
+                    let taken = Math.min(diffusionAmount, envH2, roomLeft);
+                    environment.h2Grid[gridX][gridY] -= taken;
+                    entity.energy += taken;
+                }
             } else {
                 // EFFLUX: Leak into environment (Cost of leaky membrane)
                 // entity.energy loses, environment gains (optional, usually negligible for env)
@@ -85,9 +88,10 @@ class MembraneSystem {
 
             // P gradient check (simplified)
             if (envP > cellP) {
-                let pDiff = (envP - cellP) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Slower than H2
-                let takenP = Math.min(pDiff, envP);
-                if (takenP > 0) {
+                let roomLeftP = entity.maxResources - entity.phosphorus;
+                if (roomLeftP > 0) {
+                    let pDiff = (envP - cellP) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Slower than H2
+                    let takenP = Math.min(pDiff, envP, roomLeftP);
                     environment.phosphorusGrid[gridX][gridY] -= takenP;
                     entity.phosphorus += takenP;
                 }
@@ -99,9 +103,10 @@ class MembraneSystem {
             let cellN = entity.nitrogen;
 
             if (envN > cellN) {
-                let nDiff = (envN - cellN) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Similar to P
-                let takenN = Math.min(nDiff, envN);
-                if (takenN > 0) {
+                let roomLeftN = entity.maxResources - entity.nitrogen;
+                if (roomLeftN > 0) {
+                    let nDiff = (envN - cellN) * GameConstants.MEMBRANE_PERMEABILITY * 0.1; // Similar to P
+                    let takenN = Math.min(nDiff, envN, roomLeftN);
                     environment.nitrogenGrid[gridX][gridY] -= takenN;
                     entity.nitrogen += takenN;
                 }

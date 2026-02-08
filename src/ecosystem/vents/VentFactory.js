@@ -35,8 +35,14 @@ class VentFactory {
             sedimentRow = Math.floor(config.rows * (1 - sDepth));
         }
 
+        // For LAB scenarios (restrictToVents), place vent at mid-height for better visibility
+        let defaultRow = sedimentRow || 0;
+        if (config.restrictToVents && config.rows) {
+            defaultRow = Math.floor(config.rows / 2); // Mid-height
+        }
+
         let y = ventConfig.y !== undefined ? ventConfig.y :
-            ((sedimentRow || 0) * (config.resolution || 10));
+            (defaultRow * (config.resolution || 10));
 
         if (ventConfig.type === 'CENTER' || ventConfig.positionMode === 'CENTER') {
             // Horizontal midpoint (Column index) - Ensure it's an integer
@@ -48,13 +54,24 @@ class VentFactory {
         const typeId = ventConfig.subType || ventConfig.type || 'ALKALINE';
         const typeDef = VentTypes.get(typeId);
 
+        // DEBUG: Log vent factory config
+        console.log('[VentFactory] Creating vent:', {
+            x, y,
+            context: ventConfig.context,
+            forceContext: ventConfig.forceContext,
+            type: typeId
+        });
+
         return new Vent({
             id: ventConfig.id, // Optional: preserve ID if provided
             x: x,
             y: y,
             width: ventConfig.width || GameConstants.VENTS?.DEFAULT_WIDTH || 3,
             type: typeDef,
-            intensity: ventConfig.intensity || GameConstants.VENTS?.DEFAULT_INTENSITY || 1.0
+            intensity: ventConfig.intensity || GameConstants.VENTS?.DEFAULT_INTENSITY || 1.0,
+            context: ventConfig.context || 'SUBMARINE', // Force context if specified
+            forceContext: ventConfig.forceContext !== undefined ? ventConfig.forceContext : !!ventConfig.context,
+            config: config // Pass config for resolution access
         });
     }
 }

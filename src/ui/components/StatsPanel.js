@@ -25,6 +25,10 @@ class StatsPanel {
         const exitBtn = this.createExitButton();
         this.container.appendChild(exitBtn);
 
+        // Botón de exportar BBDD
+        const exportBtn = this.createExportButton();
+        this.container.appendChild(exportBtn);
+
         // Header con tiempo
         const header = this.createHeader();
         this.container.appendChild(header);
@@ -69,6 +73,45 @@ class StatsPanel {
         btn.addEventListener('click', () => {
             if (confirm('¿Volver al menú principal? (Se perderá el progreso actual)')) {
                 location.reload();
+            }
+        });
+
+        return btn;
+    }
+
+    createExportButton() {
+        const btn = document.createElement('button');
+        btn.id = 'export-db-btn';
+        btn.textContent = '💾 EXPORTAR BBDD';
+        btn.style.cssText = `
+            width: 100%;
+            margin-bottom: 10px;
+            background: #27ae60;
+            border: none;
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+        `;
+
+        btn.onmouseenter = () => btn.style.background = '#2ecc71';
+        btn.onmouseleave = () => btn.style.background = '#27ae60';
+
+        btn.addEventListener('click', () => {
+            if (window.databaseLogger) {
+                const originalText = btn.textContent;
+                btn.textContent = '⏳ Exportando...';
+                window.databaseLogger.exportToJSON().then(() => {
+                    btn.textContent = '✅ Exportado';
+                    setTimeout(() => btn.textContent = originalText, 2000);
+                }).catch(err => {
+                    console.error(err);
+                    btn.textContent = '❌ Error';
+                });
+            } else {
+                window.modalManager.showError('Base de Datos', 'Database Logger no activo');
             }
         });
 
