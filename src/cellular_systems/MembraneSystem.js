@@ -62,14 +62,14 @@ class MembraneSystem {
 
         // 2. NATURAL QUIMIOSMOSIS (PMF)
         // Harnessing the environmental pH gradient (Russell & Martin Hypothesis)
+        // Requires ATP-SYNTHASE MOLECULAR MACHINE
         let extPH = environment.getPH(entity.pos.x, entity.pos.y);
         let intrinsicPH = 8.5; // Hypothetical internal pH of LUCA
         let phGradient = extPH - intrinsicPH;
 
-        // Favorable gradient: Alkaline exterior (pH 10) vs lower pH inside
-        // This provides "Free Energy" flux even without substrates
-        if (phGradient > 0) {
-            let pmfEnergy = phGradient * GameConstants.PMF_ENERGY_YIELD;
+        let atpSynthase = entity.organelles.find(o => o.id === 'atp_synthase');
+        if (atpSynthase && phGradient > 0) {
+            let pmfEnergy = atpSynthase.calculatePMFYield(phGradient);
             entity.energy += pmfEnergy;
             entity.pmfEnergyFrame = pmfEnergy; // For logging
         }
@@ -78,7 +78,12 @@ class MembraneSystem {
         let envH2 = environment.h2Grid[gridX][gridY];
         let cellEnergyConc = entity.energy / 5.0; // Approximation
         let gradientH2 = envH2 - cellEnergyConc;
-        let diffusionH2 = gradientH2 * effectivePermeability;
+
+        // Apply Hydrogenase bonus if present
+        let hydrogenase = entity.organelles.find(o => o.id === 'hydrogenase_complex');
+        let h2Bonus = hydrogenase ? hydrogenase.getMetabolicBonus() : 1.0;
+
+        let diffusionH2 = gradientH2 * effectivePermeability * h2Bonus;
 
         if (diffusionH2 > 0) {
             let roomLeft = entity.maxResources - entity.energy;
