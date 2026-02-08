@@ -102,16 +102,13 @@ class GameController {
         // Inicializar sistemas core
 
         // 1. Environment Initialization
-        // If ScenarioManager already prepared the environment, use it.
-        // Otherwise, fallback to defaults (Legacy support or direct run).
+        // Must be handled by ScenarioManager. If not present, it's a structural error in new workflow.
         if (!this.environment) {
-            console.log("%% [GameController] No Environment injected. Loading STANDARD Scenario.");
-            if (window.scenarioManager) window.scenarioManager.loadScenario(ScenarioLibrary.STANDARD);
-            // Sync reference after manager creates it
-            this.environment = window.environment;
+            console.error("%% [GameController] Environment NOT injected. Failed to start from Scenario.");
+            return;
         }
 
-        // Legacy Scenario Init Removed (Handled by ScenarioManager)
+        // 2. Logging & Analytics
 
         this.speciesNotifier = new SpeciesNotifier();
 
@@ -135,7 +132,7 @@ class GameController {
         // Resetear y Crear Entidades Iniciales (LUCA)
         window.entities = [];
 
-        // 3. Spawning Entities
+        // SPAWN INITIAL POPULATION
         if (this.spawnRules) {
             this._executeSpawnRules();
         } else {
@@ -145,6 +142,13 @@ class GameController {
 
         this.isRunning = true;
         console.log("[GameController] Simulación inicializada correctamente.");
+
+        // VENT MONITOR PANEL (LAB Mode only) - Create AFTER everything else
+        if (this.environment.config?.restrictToVents && this.environment.ventSystem?.vents?.length > 0) {
+            const vent = this.environment.ventSystem.vents[0];
+            window.ventMonitor = new VentMonitorPanel(vent, 60, 60, 550, 700);
+            console.log('[GameController] Vent Monitor Panel created');
+        }
     }
 
     /**
@@ -169,20 +173,24 @@ class GameController {
     }
 
     _spawnCenterVent(count) {
-        // Find center column
-        let centerCol = Math.floor(this.environment.cols / 2);
-        if (this.environment.waterStartCol !== undefined) {
-            centerCol = Math.floor((this.environment.waterStartCol + this.environment.waterEndCol) / 2);
+        // Get the first vent's position directly
+        const vents = this.environment.ventSystem?.vents;
+        if (!vents || vents.length === 0) {
+            console.warn('[GameController] No vents found for CENTER_VENT spawn');
+            return;
         }
 
-        // Calculate pixel position
-        let idealX = centerCol * this.environment.resolution;
+        const vent = vents[0];
 
-        let spawnRow = this.environment.sedimentRow;
-        if (this.environment.rows === 1) spawnRow = 0; // Handle single row worlds
+        // Spawn at the exact center of the vent (use pixel coordinates)
+        let idealX = vent.pos.x; // Pixel X (not grid column)
+        let idealY = vent.y;      // Already in pixels
 
-        // Center vertically in the cell
-        let idealY = spawnRow * this.environment.resolution + (this.environment.resolution / 2);
+        console.log(`[GameController] Spawning ${count} cell(s) at vent center:`, {
+            x: idealX,
+            y: idealY,
+            ventBounds: vent.bounds
+        });
 
         // Spawn
         for (let i = 0; i < count; i++) {

@@ -12,13 +12,35 @@ class Vent {
         this.width = config.width || 3;
 
         // Internal pixel position for proximity calculations
-        const res = (config.config && config.config.resolution) ? config.config.resolution : 50;
+        const res = (config.config && config.config.resolution) ? config.config.resolution : 60;
         this.pos = { x: this.x * res, y: this.y };
         this.type = config.type; // From VentTypes
         this.intensity = config.intensity || 1.0;
 
         // Environment State
         this.context = config.context || 'SUBMARINE'; // Defaults to SUBMARINE for vents
+        this.forceContext = config.forceContext || !!config.context; // Lock context if explicitly provided
+
+        // Bounding Box (for cell movement restriction)
+        // IMPORTANT: Use this.pos.x (pixels) not this.x (grid column index)
+        const pixelWidth = this.width * res;
+        this.bounds = {
+            left: this.pos.x - (pixelWidth / 2),
+            right: this.pos.x + (pixelWidth / 2),
+            top: this.y - (pixelWidth / 2),
+            bottom: this.y + (pixelWidth / 2)
+        };
+
+        // DEBUG: Log vent creation
+        console.log(`[Vent] Created ${this.id}:`, {
+            context: this.context,
+            forceContext: this.forceContext,
+            gridX: this.x,
+            pixelX: this.pos.x,
+            y: this.y,
+            type: this.type.id,
+            bounds: this.bounds
+        });
 
         // Lifecycle System
         this.lifecycle = new VentLifecycle(this.type.lifecycle || {});
@@ -52,6 +74,12 @@ class Vent {
      * Detects where the vent is located (Ocean vs Land vs Air)
      */
     _detectContext(env) {
+        // Skip detection if context was explicitly set in configuration
+        if (this.forceContext) {
+            console.log(`[Vent] ${this.id} context locked to ${this.context}`);
+            return;
+        }
+
         const gridY = Math.floor(this.y / env.resolution);
 
         if (env.stratification.isInWater(this.x, gridY)) {
@@ -66,6 +94,16 @@ class Vent {
         } else {
             this.context = 'SUBMARINE'; // Default to submarine instead of atmospheric to avoid generic circles
         }
+    }
+
+    /**
+     * Check if a point (in pixels) is within this vent's bounds
+     */
+    containsPoint(x, y) {
+        return x >= this.bounds.left &&
+            x <= this.bounds.right &&
+            y >= this.bounds.top &&
+            y <= this.bounds.bottom;
     }
 
     _injectChemicals(env) {

@@ -21,6 +21,13 @@ window.runTests = () => {
 };
 
 function setup() {
+    // Initialize random seeds for true randomness across runs
+    // Use timestamp to ensure different behavior each time
+    const seed = Date.now();
+    randomSeed(seed);
+    noiseSeed(seed);
+    console.log(`[Random] Initialized with seed: ${seed}`);
+
     let canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent('canvas-container');
 
@@ -185,8 +192,8 @@ function draw() {
         env.update();
     }
 
-    // 4. Renderizado (UNA VEZ POR FRAME)
-    background(0); // Fondo Negro (Void)
+    // 4. Renderizado (UNAVEZ POR FRAME)
+    background(0); // Restore Black Background
 
     push(); // Start Global View Transform
 
@@ -296,9 +303,18 @@ function draw() {
         } catch (uiErr) {
             console.error("!! [UI Error]", uiErr);
         }
+    }
 
-        // 6. Renderizar Overlays (Monitors, Notifications) - Skip in VENT_LABORATORY
-        renderOverlays(game);
+    // 6. Renderizar Overlays (Monitors, Notifications) - Skip in VENT_LABORATORY
+    renderOverlays(game, ents, env);
+
+    // ALWAYS render overlays (even if physics is skipped)
+    // This ensures panels are visible in all modes
+    if (!isLabMode || currentScenarioId === 'LAB_SINGLE_VENT') {
+        // Already rendered above
+    } else {
+        // Lab mode without physics - still render overlays
+        renderOverlays(game, ents, env);
     }
 }
 
@@ -347,13 +363,18 @@ function getDeathCause(e) {
 }
 
 
-function renderOverlays(game) {
+function renderOverlays(game, ents, env) {
     // 1. Species Notifier (Toasts)
     game.speciesNotifier.render();
 
-    // 2. UI Manager Canvas Components (Cell Inspector, etc.)
+    // VENT MONITOR PANEL (LAB Mode only)
+    if (window.ventMonitor) {
+        window.ventMonitor.render(env);
+    }
+
+    // UI MANAGER (Overlays, Panels, etc.)
     if (window.uiManager) {
-        window.uiManager.render();
+        window.uiManager.render(ents, env);
     }
 }
 

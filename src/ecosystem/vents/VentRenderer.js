@@ -63,39 +63,68 @@ class VentRenderer {
         }
     }
 
-    _renderSubmarineVent(vent, x, y, width) {
-        const ventColor = vent.type.color;
+    _renderSubmarineVent(vent, x, y, width, resolution) {
+        const type = vent.type;
         const intensity = vent.getVisualIntensity();
+        const albedo = type.albedo || 0.5;
+        const glowAmount = type.glow || 0;
+
+        // SINGLE SOLID COLOR: Base Type color blended with Ambient Chemistry
+        const chemicals = type.chemicals || {};
+        const ambientTint = window.ventColorSystem ?
+            window.ventColorSystem.getAmbientColor(y, chemicals) : [0, 60, 120];
 
         push();
 
-        // Glow effect (intensity-based) - Disabled in clean mode
-        if (intensity > 0.5 && this.showLabels) {
-            fill(ventColor[0], ventColor[1], ventColor[2], 50);
-            noStroke();
-            ellipse(x, y, width * 3, width * 3);
+        // 0. The Halo: (Disabled as per user request to avoid circular artifacts)
+        // noStroke();
+        // fill(ambientTint[0], ambientTint[1], ambientTint[2], 30 * intensity);
+        // ellipse(x, y, width * 3, width * 1.5);
+
+        const brightness = 1.0 + (albedo - 0.5) * 0.5;
+
+        // MINERAL COLOR INTEGRATION (New)
+        // Blend base color with mineral composition for realistic chimney appearance
+        let mineralColor = [type.color[0], type.color[1], type.color[2]];
+        if (window.ventColorSystem && type.minerals && type.minerals.length > 0) {
+            mineralColor = window.ventColorSystem.getVentChimneyColor(type.minerals, intensity);
         }
 
-        // Chimney structure (Draw upwards from floor)
-        fill(80, 60, 50); // Dark rock
-        stroke(40, 30, 25);
-        strokeWeight(1);
-        rect(x - width / 2, y - 10, width, 10);
+        // Final color synthesis: Mineral base + Archaean ambient tint + Thermal effects
+        // Weight: 40% mineral, 40% ambient, 20% thermal
+        let r = (mineralColor[0] * 0.4 + ambientTint[0] * 0.4) * brightness;
+        let g = (mineralColor[1] * 0.4 + ambientTint[1] * 0.4) * brightness;
+        let b = (mineralColor[2] * 0.4 + ambientTint[2] * 0.4) * brightness;
 
-        // Vent opening (triangle)
-        fill(ventColor[0], ventColor[1], ventColor[2], 200 * intensity);
-        noStroke();
-        triangle(
-            x - width / 2, y,
-            x + width / 2, y,
-            x, y - 15
-        );
+        // Add thermal tint (20% weight)
+        const temp = type.temperature || 70;
+        if (temp > 200) {
+            const thermalR = map(temp, 200, 400, 0, 50);
+            r += thermalR * 0.2;
+            g += thermalR * 0.06; // Less green
+            b -= thermalR * 0.1;  // Less blue
+        } else if (temp < 50) {
+            const coldB = map(temp, 10, 50, 30, 0);
+            b += coldB * 0.2;
+            r -= coldB * 0.06;
+        }
 
-        // Active indicator (pulsing)
-        if (vent.lifecycle && vent.lifecycle.isActive()) {
-            const pulse = 0.8 + 0.2 * Math.sin(frameCount * 0.1);
-            fill(255, 200, 0, 150 * pulse);
-            ellipse(x, y - 10, 5, 5);
+        r = Math.min(255, r);
+        g = Math.min(255, g);
+        b = Math.min(255, b);
+
+        // Main vent body (Homogeneous Square - as requested)
+        // REVISED: Higher base visibility, removed double intensity multiplication
+        // DYNAMICS: Only render solid chimney for non-diffuse types AND if enabled in config
+        const isChimneyType = type.id !== 'DIFFUSE' && type.id !== 'COLD_SEEP';
+        const showChimneys = env.config?.render?.showChimneys !== false; // Default true
+
+        if (isChimneyType && showChimneys) {
+            rectMode(CENTER);
+            stroke(r * 0.5, g * 0.5, b * 0.5);
+            strokeWeight(1);
+            fill(r, g, b); // Intensity is already mixed in minerals/ambient
+            rect(x, y, width, width);
         }
 
         pop();

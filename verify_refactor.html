@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refactoring Verification</title>
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .pass {
+            color: #4f4;
+        }
+
+        .fail {
+            color: #f44;
+        }
+
+        .log {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #333;
+            padding: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Scenario Refactoring Verification</h1>
+    <div id="results"></div>
+
+    <!-- Load Dependencies -->
+    <script src="src/scenarios/ScenarioDefinition.js"></script>
+    <script src="src/scenarios/ScenarioBuilder.js"></script>
+    <script src="src/scenarios/ScenarioLibrary.js"></script>
+
+    <script>
+        const results = document.getElementById('results');
+        function log(msg, type = 'neutral') {
+            const div = document.createElement('div');
+            div.textContent = msg;
+            div.className = 'log ' + type;
+            results.appendChild(div);
+        }
+
+        try {
+            const scenarios = [
+                'STANDARD',
+                'LAB_SINGLE_VENT',
+                'STRESS_TEST',
+                'PRESSURE_OXYGEN',
+                'PRESSURE_LIGHT',
+                'PRESSURE_SCARCITY',
+                'PRESSURE_THERMAL',
+                'HYDROTHERMAL_COLONIZATION',
+                'SINGLE_VENT_DEV',
+                'EMPTY_GRID',
+                'VENT_LABORATORY'
+            ];
+
+            let passed = 0;
+            scenarios.forEach(name => {
+                const scenario = ScenarioLibrary[name];
+                if (!scenario) throw new Error(`ScenarioLibrary.${name} is undefined`);
+
+                // Validate properties
+                if (!scenario.id) throw new Error(`${name} missing ID`);
+                if (!scenario.world) throw new Error(`${name} missing world config`);
+
+                log(`✅ ${name} built successfully (ID: ${scenario.id})`, 'pass');
+                passed++;
+            });
+
+            log('-----------------------------------');
+            log(`ALL ${passed} SCENARIOS VERIFIED!`, 'pass');
+
+        } catch (e) {
+            log(`❌ CRITICAL FAILURE: ${e.message}`, 'fail');
+            console.error(e);
+        }
+    </script>
+</body>
+
+</html>

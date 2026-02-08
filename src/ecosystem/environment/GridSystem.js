@@ -12,23 +12,42 @@ class GridSystem {
         const physical = new PhysicalGrids();
         const resource = new ResourceGrids();
 
-        // Resource Grids
+        // Initialize with default values first
         this.h2Grid = chemical.initializeH2(this.cols, this.rows);
         this.co2Grid = chemical.initializeCO2(this.cols, this.rows);
         this.phosphorusGrid = resource.initializePhosphorus(this.cols, this.rows);
         this.nitrogenGrid = resource.initializeNitrogen(this.cols, this.rows);
         this.oxygenGrid = resource.initializeOxygen(this.cols, this.rows);
-
-        // Physical Grids
         this.lightGrid = resource.initializeLight(this.cols, this.rows);
         this.temperatureGrid = physical.initializeTemperature(this.cols, this.rows);
         this.uvRadiationGrid = physical.initializeUV(this.cols, this.rows);
-
-        // Additional Grids (Vents)
         this.fe2Grid = chemical.initializeFe2(this.cols, this.rows);
         this.ch4Grid = chemical.initializeCH4(this.cols, this.rows);
         this.h2sGrid = chemical.initializeH2S(this.cols, this.rows);
         this.nh3Grid = chemical.initializeNH3(this.cols, this.rows);
+
+        // --- REALISM OVERRIDE: Apply initial state from Scenario ---
+        // This ensures the world starts anaerobic (O2:0) if the scenario says so.
+        if (window.environment && window.environment.config && window.environment.config.initialEnvState) {
+            const state = window.environment.config.initialEnvState;
+            this._applyInitialState(state);
+        }
+    }
+
+    _applyInitialState(state) {
+        if (state.oxygen !== undefined) this._fillGrid(this.oxygenGrid, state.oxygen);
+        if (state.h2 !== undefined) this._fillGrid(this.h2Grid, state.h2);
+        if (state.co2 !== undefined) this._fillGrid(this.co2Grid, state.co2);
+        if (state.nitrogen !== undefined) this._fillGrid(this.nitrogenGrid, state.nitrogen);
+        if (state.phosphorus !== undefined) this._fillGrid(this.phosphorusGrid, state.phosphorus);
+        if (state.light !== undefined) this._fillGrid(this.lightGrid, state.light);
+        if (state.temperature !== undefined) this._fillGrid(this.temperatureGrid, state.temperature);
+    }
+
+    _fillGrid(grid, value) {
+        for (let i = 0; i < this.cols; i++) {
+            grid[i].fill(value);
+        }
     }
 
     createGrid() {

@@ -486,7 +486,11 @@ class ConfigScreen {
         if (mode === 'SINGLE_CELL_MODE') modeText = `Single Cell (${scenario})`;
         if (mode === 'SINGLE_VENT_MODE') modeText = 'Single Vent (Manual)';
 
-        alert(`🎮 Iniciando simulación en modo ${modeText}...\n\n⚠️ El navegador puede tardar unos segundos en cargar.\n\nMira la consola (F12) para ver el progreso.`);
+        window.modalManager.show({
+            title: 'Iniciando Simulación',
+            message: `🎮 Iniciando simulación en modo ${modeText}...\n\n⚠️ El navegador puede tardar unos segundos en cargar.\n\nMira la consola (F12) para ver el progreso.`,
+            type: 'info'
+        });
 
         // Iniciar juego
         if (typeof GameController !== 'undefined' && GameController.startGame) {
@@ -495,7 +499,11 @@ class ConfigScreen {
             console.log('✅ [ConfigScreen] Simulación iniciada correctamente');
         } else {
             console.error('❌ [ConfigScreen] GameController.startGame no está disponible');
-            alert('❌ Error: No se pudo iniciar el juego. Recarga la página (F5).');
+            window.modalManager.show({
+                title: 'Error de Sistema',
+                message: '❌ Error: No se pudo iniciar el juego. Recarga la página (F5).',
+                type: 'error'
+            });
         }
     }
 

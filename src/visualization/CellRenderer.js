@@ -25,10 +25,7 @@ class CellRenderer {
             entity.dna.color
         );
 
-        // DEBUG: Force Gray to isolate pigment issues
-        if (GameConstants.DEBUG_DISABLE_PIGMENTS) {
-            finalColor = [200, 200, 200];
-        }
+
 
         // Color intensity modifiers
         let efficiencyHue = 1.0;
@@ -36,7 +33,6 @@ class CellRenderer {
 
         if (GameConstants.ENABLE_VISUAL_MODIFIERS) {
             efficiencyHue = map(entity.dna.metabolicEfficiency, 0.5, 1.5, 0.6, 1.4, true); // Constrain
-            // healthMultiplier = constrain(healthFactor, 0.3, 1.2); // DISABLED: Caused abrupt jumps at mitosis
             healthMultiplier = 1.0; // Stability preferred by user
         }
 
@@ -80,9 +76,7 @@ class CellRenderer {
     }
 
     drawRibosomes(entity, organelleSize) {
-        // DEBUG: Force Gray
-        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(220, 220, 220, 180);
-        else fill(255, 255, 255, 180);
+        fill(255, 255, 255, 180);
 
         for (let i = 0; i < 3; i++) {
             let angle = (TWO_PI / 3) * i + frameCount * 0.01;
@@ -94,9 +88,7 @@ class CellRenderer {
     }
 
     drawHydrogenosomes(entity, organelleSize) {
-        // DEBUG: Force Gray
-        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(150, 150, 150, 200);
-        else fill(180, 80, 200, 200);
+        fill(180, 80, 200, 200);
 
         for (let i = 0; i < 2; i++) {
             let angle = (TWO_PI / 2) * i + frameCount * 0.015;
@@ -108,9 +100,7 @@ class CellRenderer {
     }
 
     drawChemosyntheticEnzymes(entity, organelleSize) {
-        // DEBUG: Force Gray
-        if (GameConstants.DEBUG_DISABLE_PIGMENTS) fill(180, 180, 180, 200);
-        else fill(255, 215, 0, 200); // GOLD (Distinct from H2 Green Background)
+        fill(255, 215, 0, 200); // GOLD (Distinct from H2 Green Background)
 
         for (let i = 0; i < 2; i++) {
             let angle = (TWO_PI / 2) * i + PI / 2 + frameCount * 0.015;

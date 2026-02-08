@@ -19,7 +19,14 @@ class DBWriter {
         try {
             const transaction = this.db.transaction([storeName], 'readwrite');
             const store = transaction.objectStore(storeName);
-            store.add(data);
+            const request = store.add(data);
+            request.onsuccess = () => {
+                // Uncomment for verbose logging if needed
+                // console.log(`[DBWriter] ✅ Wrote to ${storeName}`);
+            };
+            request.onerror = (e) => {
+                console.error(`[DBWriter] ❌ Error writing to ${storeName}:`, e.target.error);
+            };
         } catch (error) {
             console.error(`[DBWriter] Error writing to ${storeName}:`, error);
         }

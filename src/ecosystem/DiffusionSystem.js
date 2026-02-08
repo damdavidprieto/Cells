@@ -39,6 +39,11 @@ class DiffusionSystem {
         const cols = env.cols;
         const rows = env.rows;
 
+        // 1. Create a temporary grid for the next state (Double Buffering)
+        // This prevents "dirty reads" where one cell's update affects its neighbor in the same loop
+        // creating an artificial directional bias (top-left to bottom-right).
+        const nextGrid = Array.from({ length: cols }, () => new Float32Array(rows));
+
         for (let x = 0; x < cols; x++) {
             for (let y = 0; y < rows; y++) {
                 let rate = 0;
@@ -54,6 +59,7 @@ class DiffusionSystem {
                 let sum = 0;
                 let neighbors = 0;
 
+                // Use current grid for neighborhood sum
                 if (x > 0) { sum += grid[x - 1][y]; neighbors++; }
                 if (x < cols - 1) { sum += grid[x + 1][y]; neighbors++; }
                 if (y > 0) { sum += grid[x][y - 1]; neighbors++; }
@@ -63,10 +69,22 @@ class DiffusionSystem {
                     let avg = sum / neighbors;
                     let diff = avg - grid[x][y];
 
-                    if (Math.abs(diff) > 0.01) {
-                        grid[x][y] += diff * rate;
+                    // Store new value in nextGrid
+                    if (Math.abs(diff) > 0.001) { // Increased sensitivity
+                        nextGrid[x][y] = grid[x][y] + diff * rate;
+                    } else {
+                        nextGrid[x][y] = grid[x][y];
                     }
+                } else {
+                    nextGrid[x][y] = grid[x][y];
                 }
+            }
+        }
+
+        // 2. Copy back to original grid (Safe copy for both Array and TypedArray)
+        for (let x = 0; x < cols; x++) {
+            for (let y = 0; y < rows; y++) {
+                grid[x][y] = nextGrid[x][y];
             }
         }
     }

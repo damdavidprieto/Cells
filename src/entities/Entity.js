@@ -22,10 +22,11 @@ class Entity {
             this.dna.storageCapacity,
             this.dna.size
         );
-        this.energy = GameConstants.INITIAL_ENERGY;
-        this.oxygen = GameConstants.INITIAL_OXYGEN;
-        this.nitrogen = GameConstants.INITIAL_NITROGEN;
-        this.phosphorus = GameConstants.INITIAL_PHOSPHORUS;
+        // CLAMP: Ensure initial resources don't exceed storage capacity
+        this.energy = Math.min(GameConstants.INITIAL_ENERGY, this.maxResources);
+        this.oxygen = Math.min(GameConstants.INITIAL_OXYGEN, this.maxResources);
+        this.nitrogen = Math.min(GameConstants.INITIAL_NITROGEN, this.maxResources);
+        this.phosphorus = Math.min(GameConstants.INITIAL_PHOSPHORUS, this.maxResources);
 
         this.age = 0;
         this.isDead = false;
@@ -93,6 +94,13 @@ class Entity {
         // Movement
         this.move(environment);
 
+        // LOG MOVEMENT (LAB Mode only, every 10 frames)
+        if (environment.config?.restrictToVents &&
+            window.databaseLogger &&
+            frameCount % 10 === 0) {
+            this._logMovement(environment);
+        }
+
         // Metabolic consumption (Restored)
         // No longer calls this.eat() as consumption is handled in applyMetabolicCosts -> window.metabolicCosts.calculate
 
@@ -140,6 +148,9 @@ class Entity {
         }
 
         this.age++;
+
+        // FINAL SAFETY: Clamp resources to membrane capacity
+        this.clampResources();
     }
 
     applyNaturalBehavior(environment) {
@@ -148,8 +159,15 @@ class Entity {
         let randomForce = p5.Vector.random2D().mult(GameConstants.PHYSICS.BROWNIAN_STRENGTH);
         this.applyForce(randomForce);
 
-        // 2. Chemotaxis (Biased drift towards nutrients - "Smell")
-        // Only active if ChemotaxisSystem is available (it should be)
+        // 2. Gravity (Sinking tendency in LAB mode)
+        if (environment.config?.restrictToVents) {
+            // LAB mode: Add gentle downward force (cells naturally sink)
+            let gravity = createVector(0, 0.02); // Very gentle gravity
+            this.applyForce(gravity);
+        }
+
+        // 3. Chemotaxis (Biased drift towards nutrients - "Smell")
+        // Active in all modes, but in LAB the gradient is minimal (homogeneous vent)
         if (window.chemotaxisSystem) {
             let biasForce = window.chemotaxisSystem.calculateBias(this, environment);
             this.applyForce(biasForce);
@@ -199,6 +217,29 @@ class Entity {
             if (this.pos.x >= waterEndX) {
                 this.pos.x = waterEndX - 1;
                 this.vel.x = -abs(this.vel.x); // Bounce left
+            }
+        }
+
+        // VENT BOUNDS RESTRICTION - Confine cells to vent area in LAB mode
+        if (environment.config?.restrictToVents && environment.ventSystem?.vents?.length > 0) {
+            const vent = environment.ventSystem.vents[0];
+
+            // Constrain position to vent bounds
+            if (this.pos.x < vent.bounds.left) {
+                this.pos.x = vent.bounds.left;
+                this.vel.x = abs(this.vel.x); // Bounce right
+            }
+            if (this.pos.x > vent.bounds.right) {
+                this.pos.x = vent.bounds.right;
+                this.vel.x = -abs(this.vel.x); // Bounce left
+            }
+            if (this.pos.y < vent.bounds.top) {
+                this.pos.y = vent.bounds.top;
+                this.vel.y = abs(this.vel.y); // Bounce down
+            }
+            if (this.pos.y > vent.bounds.bottom) {
+                this.pos.y = vent.bounds.bottom;
+                this.vel.y = -abs(this.vel.y); // Bounce up
             }
         }
 
@@ -495,5 +536,52 @@ class Entity {
 
         // Update SOD levels to adapt to current pressure
         window.oxygenTolerance.updateSODLevels(this);
+    }
+
+    /**
+     * LOG MOVEMENT DATA for pattern analysis (LAB mode only)
+     */
+    _logMovement(environment) {
+        // Calculate distance to vent center
+        const vent = environment.ventSystem?.vents[0];
+        let ventProximity = 0;
+        let withinBounds = false;
+
+        if (vent) {
+            const dx = this.pos.x - vent.pos.x;
+            const dy = this.pos.y - vent.y;
+            ventProximity = Math.sqrt(dx * dx + dy * dy);
+            withinBounds = vent.containsPoint(this.pos.x, this.pos.y);
+        }
+
+        // Log to database
+        window.databaseLogger.logCellEvent(frameCount, 'movement', this.id, {
+            position: { x: this.pos.x, y: this.pos.y },
+            velocity: {
+                x: this.vel.x,
+                y: this.vel.y,
+                magnitude: this.vel.mag()
+            },
+            acceleration: {
+                x: this.acc.x,
+                y: this.acc.y
+            },
+            ventProximity: ventProximity,
+            withinBounds: withinBounds,
+            resources: {
+                energy: this.energy,
+                oxygen: this.oxygen,
+                nitrogen: this.nitrogen,
+                phosphorus: this.phosphorus
+            },
+            age: this.age
+        });
+    }
+
+    clampResources() {
+        this.energy = Math.max(0, Math.min(this.energy, this.maxResources));
+        this.oxygen = Math.max(0, Math.min(this.oxygen, this.maxResources));
+        this.nitrogen = Math.max(0, Math.min(this.nitrogen, this.maxResources));
+        this.phosphorus = Math.max(0, Math.min(this.phosphorus, this.maxResources));
     }
 }

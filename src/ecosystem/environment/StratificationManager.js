@@ -43,10 +43,12 @@ class StratificationManager {
         if (this.config.vents && this.config.vents.length > 0) {
             let vWidth = this.config.vents[0].width || 1;
             let centerCol = floor(this.cols / 2);
+            // Increased margin: allow 2 extra columns on each side for the cell to move naturally
+            let margin = 2;
             let halfWidth = floor(vWidth / 2);
 
-            this.waterStartCol = max(0, centerCol - halfWidth);
-            this.waterEndCol = min(this.cols, centerCol + halfWidth + 1);
+            this.waterStartCol = max(0, centerCol - halfWidth - margin);
+            this.waterEndCol = min(this.cols, centerCol + halfWidth + margin + 1);
         }
     }
 

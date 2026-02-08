@@ -58,6 +58,13 @@ class VentPlume {
 
     _createParticle() {
         const baseColor = this.vent.type.color;
+        const chemicals = this.vent.type.chemicals || {};
+        const temperature = this.vent.type.temperature || 70;
+
+        // EMERGENT PARTICLE COLOR (with thermal effects)
+        const emergentColor = window.ventColorSystem ?
+            window.ventColorSystem.getPlumeColor(baseColor, chemicals, temperature) :
+            [baseColor[0], baseColor[1], baseColor[2], 150];
 
         return {
             x: this.vent.x + (Math.random() - 0.5) * this.vent.width,
@@ -65,12 +72,12 @@ class VentPlume {
             velocity: 0.5 + Math.random() * 1.0, // Upward speed
             drift: (Math.random() - 0.5) * 0.5,  // Horizontal drift
             size: 3 + Math.random() * 4,
-            alpha: 150 + Math.random() * 100,
+            alpha: emergentColor[3] || 150,
             fadeRate: 1 + Math.random() * 2,
             color: [
-                baseColor[0] + (Math.random() - 0.5) * 30,
-                baseColor[1] + (Math.random() - 0.5) * 30,
-                baseColor[2] + (Math.random() - 0.5) * 30
+                emergentColor[0] + (Math.random() - 0.5) * 20,
+                emergentColor[1] + (Math.random() - 0.5) * 20,
+                emergentColor[2] + (Math.random() - 0.5) * 20
             ]
         };
     }

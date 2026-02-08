@@ -1,0 +1,3369 @@
+{
+  "run_id": "run_STANDARD_2026-02-07T20-33-25",
+  "export_time": "2026-02-07T20:33:39.993Z",
+  "summary": {
+    "total_events": 93,
+    "total_mutations": 0,
+    "total_frames": 0,
+    "total_anomalies": 0,
+    "total_vent_activity": 0,
+    "total_geological_events": 0
+  },
+  "events": [
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 0,
+      "event_type": "birth",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 720,
+          "y": 0
+        },
+        "dna": {
+          "flagellaLevel": 0,
+          "maxForce": 0.1,
+          "size": 9.724057631466867,
+          "color": [
+            122.76917570054029,
+            102.50445013218359,
+            146.81133719703828
+          ],
+          "mutationRate": 0.15684408492456586,
+          "metabolicEfficiency": 1.060728432077192,
+          "storageCapacity": 102.87848873044328,
+          "dnaRepairEfficiency": 0.32081149360033134,
+          "sodEfficiency": 0.44399856803096377,
+          "thermalOptimum": 61.10547472528763,
+          "thermalTolerance": 11.25102546350254,
+          "pHOptimum": 8.610843664529051,
+          "redoxOptimum": -338.5997478442108,
+          "pHTolerance": 1.5,
+          "redoxTolerance": 100,
+          "metabolisms": {
+            "luca": {
+              "enabled": true,
+              "efficiency": 0.7945487267954752,
+              "substrates": {
+                "H2": 0.4,
+                "CO2": 0.2
+              },
+              "energyYield": 1.5,
+              "requiresO2": false,
+              "requiresLight": false,
+              "geochemicalBonus": true
+            },
+            "fermentation": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "energy": 1
+              },
+              "energyYield": 2,
+              "requiresO2": false,
+              "requiresLight": false
+            },
+            "anoxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2": 0.3,
+                "CO2": 0.2,
+                "light": 50
+              },
+              "energyYield": 6,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 30
+            },
+            "oxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "CO2": 0.6,
+                "light": 80
+              },
+              "energyYield": 12,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 50,
+              "producesO2": 0.6
+            },
+            "aerobicRespiration": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "energy": 1,
+                "O2": 0.6
+              },
+              "energyYield": 36,
+              "requiresO2": true,
+              "requiresLight": false
+            },
+            "methanogenesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2": 0.6,
+                "CO2": 0.2
+              },
+              "energyYield": 3.5,
+              "requiresO2": false,
+              "producesCH4": 0.5
+            },
+            "methanotrophy": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "CH4": 0.4,
+                "O2": 1
+              },
+              "energyYield": 18,
+              "requiresO2": true
+            },
+            "sulfurOxidation": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2S": 0.5,
+                "O2": 0.4
+              },
+              "energyYield": 12,
+              "requiresO2": true
+            }
+          },
+          "metabolismType": "luca",
+          "organelles": {
+            "ribosomes": true,
+            "hydrogenosomes": false,
+            "chemosynthetic_enzymes": false
+          },
+          "generation": 0,
+          "evolutionaryEra": "primordial",
+          "speciesId": null
+        },
+        "sod": 0.5,
+        "energy": 500
+      },
+      "timestamp": "2026-02-07T20:33:25.742Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 0,
+      "event_type": "birth",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 720,
+          "y": 0
+        },
+        "dna": {
+          "flagellaLevel": 0,
+          "maxForce": 0.1,
+          "size": 9.724057631466867,
+          "color": [
+            122.76917570054029,
+            102.50445013218359,
+            146.81133719703828
+          ],
+          "mutationRate": 0.15684408492456586,
+          "metabolicEfficiency": 1.060728432077192,
+          "storageCapacity": 102.87848873044328,
+          "dnaRepairEfficiency": 0.32081149360033134,
+          "sodEfficiency": 0.44399856803096377,
+          "thermalOptimum": 61.10547472528763,
+          "thermalTolerance": 11.25102546350254,
+          "pHOptimum": 8.610843664529051,
+          "redoxOptimum": -338.5997478442108,
+          "pHTolerance": 1.5,
+          "redoxTolerance": 100,
+          "metabolisms": {
+            "luca": {
+              "enabled": true,
+              "efficiency": 0.7945487267954752,
+              "substrates": {
+                "H2": 0.4,
+                "CO2": 0.2
+              },
+              "energyYield": 1.5,
+              "requiresO2": false,
+              "requiresLight": false,
+              "geochemicalBonus": true
+            },
+            "fermentation": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "energy": 1
+              },
+              "energyYield": 2,
+              "requiresO2": false,
+              "requiresLight": false
+            },
+            "anoxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2": 0.3,
+                "CO2": 0.2,
+                "light": 50
+              },
+              "energyYield": 6,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 30
+            },
+            "oxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "CO2": 0.6,
+                "light": 80
+              },
+              "energyYield": 12,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 50,
+              "producesO2": 0.6
+            },
+            "aerobicRespiration": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "energy": 1,
+                "O2": 0.6
+              },
+              "energyYield": 36,
+              "requiresO2": true,
+              "requiresLight": false
+            },
+            "methanogenesis": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2": 0.6,
+                "CO2": 0.2
+              },
+              "energyYield": 3.5,
+              "requiresO2": false,
+              "producesCH4": 0.5
+            },
+            "methanotrophy": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "CH4": 0.4,
+                "O2": 1
+              },
+              "energyYield": 18,
+              "requiresO2": true
+            },
+            "sulfurOxidation": {
+              "enabled": false,
+              "efficiency": 0,
+              "substrates": {
+                "H2S": 0.5,
+                "O2": 0.4
+              },
+              "energyYield": 12,
+              "requiresO2": true
+            }
+          },
+          "metabolismType": "luca",
+          "organelles": {
+            "ribosomes": true,
+            "hydrogenosomes": false,
+            "chemosynthetic_enzymes": false
+          },
+          "generation": 0,
+          "evolutionaryEra": "primordial",
+          "speciesId": null
+        },
+        "sod": 0.5,
+        "energy": 500,
+        "oxygen": 100,
+        "mode": "CENTER_VENT"
+      },
+      "timestamp": "2026-02-07T20:33:25.742Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 10,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 721.5364647672653,
+          "y": 1.6472597600213017
+        },
+        "velocity": {
+          "x": 0.19057016155482326,
+          "y": 0.18808820427294798,
+          "magnitude": 0.2677576498657949
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 2.2525959908588,
+        "withinBounds": true,
+        "resources": {
+          "energy": 423.67871926450493,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 51.182119699999994
+        },
+        "age": 4
+      },
+      "timestamp": "2026-02-07T20:33:25.851Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 20,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 722.3399259639958,
+          "y": 5.264591995363107
+        },
+        "velocity": {
+          "x": -0.05742683549351707,
+          "y": 0.4062840670824553,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 5.761178906666855,
+        "withinBounds": true,
+        "resources": {
+          "energy": 493.01584485006543,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 53.937625616930646
+        },
+        "age": 14
+      },
+      "timestamp": "2026-02-07T20:33:26.018Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 30,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 723.1112483251133,
+          "y": 8.791005665474168
+        },
+        "velocity": {
+          "x": 0.024132100589769976,
+          "y": 0.25167714682426773,
+          "magnitude": 0.2528314547529219
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 9.325322876497035,
+        "withinBounds": true,
+        "resources": {
+          "energy": 549.5377248553057,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 56.429655775783424
+        },
+        "age": 24
+      },
+      "timestamp": "2026-02-07T20:33:26.186Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 40,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 720.1787862204206,
+          "y": 9.990900537781469
+        },
+        "velocity": {
+          "x": -0.40681516479576174,
+          "y": 0.053535094023058366,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 9.99250009099096,
+        "withinBounds": true,
+        "resources": {
+          "energy": 595.6344040679854,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 58.683403181831224
+        },
+        "age": 34
+      },
+      "timestamp": "2026-02-07T20:33:26.353Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 50,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 722.1796531457039,
+          "y": 10.200730707087892
+        },
+        "velocity": {
+          "x": 0.40763335950395374,
+          "y": 0.04690020063262969,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 10.431001619887846,
+        "withinBounds": true,
+        "resources": {
+          "energy": 633.2987471404844,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 60.72165193745844
+        },
+        "age": 44
+      },
+      "timestamp": "2026-02-07T20:33:26.518Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 60,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 726.2616820479299,
+          "y": 10.377979423927169
+        },
+        "velocity": {
+          "x": 0.4057986165574536,
+          "y": 0.0607623847451467,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 12.120689707802228,
+        "withinBounds": true,
+        "resources": {
+          "energy": 664.0732576543066,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 62.5650075764567
+        },
+        "age": 54
+      },
+      "timestamp": "2026-02-07T20:33:26.688Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 70,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 730.3540190650914,
+          "y": 10.344072082443335
+        },
+        "velocity": {
+          "x": 0.4099935494014388,
+          "y": -0.016427843713356916,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 14.635762298119618,
+        "withinBounds": true,
+        "resources": {
+          "energy": 689.2182733404258,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 64.23210537423313
+        },
+        "age": 64
+      },
+      "timestamp": "2026-02-07T20:33:26.853Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 80,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 734.4432814199537,
+          "y": 10.453782662693966
+        },
+        "velocity": {
+          "x": 0.4064167536177235,
+          "y": 0.05648014676584297,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 17.829468588121745,
+        "withinBounds": true,
+        "resources": {
+          "energy": 709.7635818863146,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 65.73979873982879
+        },
+        "age": 74
+      },
+      "timestamp": "2026-02-07T20:33:27.019Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 90,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 738.5313497114015,
+          "y": 10.613278973514149
+        },
+        "velocity": {
+          "x": 0.4056727355233466,
+          "y": 0.061597209781494,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 21.355388376142873,
+        "withinBounds": true,
+        "resources": {
+          "energy": 726.5505948082747,
+          "oxygen": 100,
+          "nitrogen": 50,
+          "phosphorus": 67.10332959428318
+        },
+        "age": 84
+      },
+      "timestamp": "2026-02-07T20:33:27.184Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 92,
+      "event_type": "reproduction",
+      "cell_id": "unknown",
+      "data": {
+        "child_id": "00d524e9-a1ca-40f7-b356-4a2d89219d55",
+        "parent_energy": 365.4800625019148,
+        "child_energy": 355.4800625019148,
+        "generation": 1,
+        "metabolism": "luca"
+      },
+      "timestamp": "2026-02-07T20:33:27.224Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 92,
+      "event_type": "phantom_birth",
+      "cell_id": "phantom_92",
+      "data": {
+        "parent_id": 0,
+        "dna": {
+          "flagellaLevel": 0,
+          "maxForce": 0.1,
+          "size": 8.293365535725338,
+          "color": [
+            183.67285627772674,
+            171.22372701584595,
+            175.30952597619728
+          ],
+          "mutationRate": 0.13627136330107983,
+          "metabolicEfficiency": null,
+          "storageCapacity": null,
+          "dnaRepairEfficiency": null,
+          "sodEfficiency": 0.44001056130919025,
+          "thermalOptimum": 60.88460072091797,
+          "thermalTolerance": 11.171693559980422,
+          "pHOptimum": 8.565146789432006,
+          "redoxOptimum": -341.49002826729617,
+          "pHTolerance": 1.5,
+          "redoxTolerance": 100,
+          "metabolismType": "luca",
+          "organelles": {
+            "ribosomes": true,
+            "hydrogenosomes": false,
+            "chemosynthetic_enzymes": false
+          },
+          "metabolisms": {
+            "luca": {
+              "enabled": true,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.4,
+                "CO2": 0.2
+              },
+              "energyYield": 1.5,
+              "requiresO2": false,
+              "requiresLight": false,
+              "geochemicalBonus": true
+            },
+            "fermentation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1
+              },
+              "energyYield": 2,
+              "requiresO2": false,
+              "requiresLight": false
+            },
+            "anoxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.3,
+                "CO2": 0.2,
+                "light": 50
+              },
+              "energyYield": 6,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 30
+            },
+            "oxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CO2": 0.6,
+                "light": 80
+              },
+              "energyYield": 12,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 50,
+              "producesO2": 0.6
+            },
+            "aerobicRespiration": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1,
+                "O2": 0.6
+              },
+              "energyYield": 36,
+              "requiresO2": true,
+              "requiresLight": false
+            },
+            "methanogenesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.6,
+                "CO2": 0.2
+              },
+              "energyYield": 3.5,
+              "requiresO2": false,
+              "producesCH4": 0.5
+            },
+            "methanotrophy": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CH4": 0.4,
+                "O2": 1
+              },
+              "energyYield": 18,
+              "requiresO2": true
+            },
+            "sulfurOxidation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2S": 0.5,
+                "O2": 0.4
+              },
+              "energyYield": 12,
+              "requiresO2": true
+            }
+          },
+          "generation": 1,
+          "evolutionaryEra": "transition"
+        },
+        "generation": 1
+      },
+      "timestamp": "2026-02-07T20:33:27.226Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 100,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 742.6190671709329,
+          "y": 10.794007244356914
+        },
+        "velocity": {
+          "x": 0.4090625670744853,
+          "y": -0.032130994667029976,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 25.06257752256149,
+        "withinBounds": true,
+        "resources": {
+          "energy": 422.98423242515867,
+          "oxygen": 50,
+          "nitrogen": 26.69836630232525,
+          "phosphorus": 36.885627312606985
+        },
+        "age": 94
+      },
+      "timestamp": "2026-02-07T20:33:27.400Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 110,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 746.6940072926246,
+          "y": 11.219319061105066
+        },
+        "velocity": {
+          "x": 0.4024204639601502,
+          "y": 0.08013959561888227,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 28.95588274485122,
+        "withinBounds": true,
+        "resources": {
+          "energy": 392.4089241380262,
+          "oxygen": 50,
+          "nitrogen": 28.926420165401826,
+          "phosphorus": 41.008134166272576
+        },
+        "age": 104
+      },
+      "timestamp": "2026-02-07T20:33:27.566Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 120,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 11.97864797664771
+        },
+        "velocity": {
+          "x": -0.1010606526081269,
+          "y": 0.15102883930811167,
+          "magnitude": 0.1817222215589935
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 32.30306498381301,
+        "withinBounds": true,
+        "resources": {
+          "energy": 467.1242078903372,
+          "oxygen": 50,
+          "nitrogen": 30.9414321413224,
+          "phosphorus": 44.73645546882869
+        },
+        "age": 114
+      },
+      "timestamp": "2026-02-07T20:33:27.733Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 130,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 14.972887667203942
+        },
+        "velocity": {
+          "x": -0.238255914469814,
+          "y": 0.19995063933373927,
+          "magnitude": 0.31104041369220564
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 33.52890342815744,
+        "withinBounds": true,
+        "resources": {
+          "energy": 528.0031347057317,
+          "oxygen": 50,
+          "nitrogen": 32.763772853273046,
+          "phosphorus": 48.10828242473391
+        },
+        "age": 124
+      },
+      "timestamp": "2026-02-07T20:33:27.898Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 140,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 15.211819349977715
+        },
+        "velocity": {
+          "x": -0.27043810363178794,
+          "y": -0.17755624432277833,
+          "magnitude": 0.32351659585555703
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 33.63628171983872,
+        "withinBounds": true,
+        "resources": {
+          "energy": 577.7456503190875,
+          "oxygen": 50,
+          "nitrogen": 34.411865127720006,
+          "phosphorus": 51.157702283686085
+        },
+        "age": 134
+      },
+      "timestamp": "2026-02-07T20:33:28.065Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 150,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 16.600521538343347
+        },
+        "velocity": {
+          "x": -0.20108804135790567,
+          "y": 0.20992550382244113,
+          "magnitude": 0.2906976393647952
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 34.286692977669944,
+        "withinBounds": true,
+        "resources": {
+          "energy": 618.3889071729398,
+          "oxygen": 50,
+          "nitrogen": 35.90237023869031,
+          "phosphorus": 53.91554294329832
+        },
+        "age": 144
+      },
+      "timestamp": "2026-02-07T20:33:28.232Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 160,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 19.08256423402845
+        },
+        "velocity": {
+          "x": -0.2258273001704428,
+          "y": 0.34258811289592234,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 35.55480639443592,
+        "withinBounds": true,
+        "resources": {
+          "energy": 651.8101718026028,
+          "oxygen": 50,
+          "nitrogen": 37.25035634376086,
+          "phosphorus": 56.409684601582086
+        },
+        "age": 154
+      },
+      "timestamp": "2026-02-07T20:33:28.397Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 170,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 21.366776217201128
+        },
+        "velocity": {
+          "x": -0.0647865677668032,
+          "y": 0.20887710994293748,
+          "magnitude": 0.21869372743889243
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 36.831224876671584,
+        "withinBounds": true,
+        "resources": {
+          "energy": 679.198439362471,
+          "oxygen": 50,
+          "nitrogen": 38.46945081454761,
+          "phosphorus": 58.66534160986666
+        },
+        "age": 164
+      },
+      "timestamp": "2026-02-07T20:33:28.565Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 180,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 22.5894880332088
+        },
+        "velocity": {
+          "x": -0.15221121659801662,
+          "y": 0.11707091750042563,
+          "magnitude": 0.19202566021925246
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 37.55376105801499,
+        "withinBounds": true,
+        "resources": {
+          "energy": 701.5766480133998,
+          "oxygen": 50,
+          "nitrogen": 39.57197800166949,
+          "phosphorus": 60.7053173755272
+        },
+        "age": 174
+      },
+      "timestamp": "2026-02-07T20:33:28.731Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 190,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 23.380650968614216
+        },
+        "velocity": {
+          "x": -0.10083383150032575,
+          "y": -0.013703089314072697,
+          "magnitude": 0.10176068116805007
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 38.034916060327525,
+        "withinBounds": true,
+        "resources": {
+          "energy": 719.8612737689292,
+          "oxygen": 50,
+          "nitrogen": 40.569083826912404,
+          "phosphorus": 62.55023489144296
+        },
+        "age": 184
+      },
+      "timestamp": "2026-02-07T20:33:28.898Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 200,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 24.559935641986648
+        },
+        "velocity": {
+          "x": -0.4009033496738024,
+          "y": 0.08741332175466966,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 38.7709999708355,
+        "withinBounds": true,
+        "resources": {
+          "energy": 734.801144257888,
+          "oxygen": 50,
+          "nitrogen": 41.47084846214895,
+          "phosphorus": 64.21874522270696
+        },
+        "age": 194
+      },
+      "timestamp": "2026-02-07T20:33:29.065Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 210,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 25.878037819417912
+        },
+        "velocity": {
+          "x": -0.3323079013359988,
+          "y": 0.10515351349784254,
+          "magnitude": 0.3485481354006601
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 39.619096927911215,
+        "withinBounds": true,
+        "resources": {
+          "energy": 647.1860435242011,
+          "oxygen": 50,
+          "nitrogen": 42.286388234133724,
+          "phosphorus": 65.72771605826911
+        },
+        "age": 204
+      },
+      "timestamp": "2026-02-07T20:33:29.231Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 220,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.675365081203196
+        },
+        "velocity": {
+          "x": -0.2313207957864367,
+          "y": 0.06536899975424793,
+          "magnitude": 0.2403797343624067
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.81575470792965,
+        "withinBounds": true,
+        "resources": {
+          "energy": 675.4201898906292,
+          "oxygen": 50,
+          "nitrogen": 43.02394778537353,
+          "phosphorus": 67.09240223366258
+        },
+        "age": 214
+      },
+      "timestamp": "2026-02-07T20:33:29.397Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 230,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 26.818427315517365
+        },
+        "velocity": {
+          "x": -0.2788789781991129,
+          "y": -0.2846018608741869,
+          "magnitude": 0.3984616715500141
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.23963274779838,
+        "withinBounds": true,
+        "resources": {
+          "energy": 698.4895431123205,
+          "oxygen": 50,
+          "nitrogen": 43.69098342276634,
+          "phosphorus": 68.32659994870077
+        },
+        "age": 224
+      },
+      "timestamp": "2026-02-07T20:33:29.564Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 240,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 24.987356243312767
+        },
+        "velocity": {
+          "x": -0.2833071509804855,
+          "y": -0.07709329973133187,
+          "magnitude": 0.29360912564180386
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 39.0431552519801,
+        "withinBounds": true,
+        "resources": {
+          "energy": 717.0994996141186,
+          "oxygen": 50,
+          "nitrogen": 44.29423849661648,
+          "phosphorus": 69.44278623919811
+        },
+        "age": 234
+      },
+      "timestamp": "2026-02-07T20:33:29.729Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 250,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 23.917959814482124
+        },
+        "velocity": {
+          "x": -0.3570858643685067,
+          "y": -0.1394898334313212,
+          "magnitude": 0.3833637021974059
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 38.367548809992826,
+        "withinBounds": true,
+        "resources": {
+          "energy": 732.2511479670152,
+          "oxygen": 50,
+          "nitrogen": 44.83981157206465,
+          "phosphorus": 70.4522451126945
+        },
+        "age": 244
+      },
+      "timestamp": "2026-02-07T20:33:29.897Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 260,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 23.508606183547908
+        },
+        "velocity": {
+          "x": -0.3637115536674336,
+          "y": -0.05213425455698516,
+          "magnitude": 0.367429006434428
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 38.11370573288757,
+        "withinBounds": true,
+        "resources": {
+          "energy": 744.6311478156896,
+          "oxygen": 50,
+          "nitrogen": 45.33321808210741,
+          "phosphorus": 71.3651816233432
+        },
+        "age": 254
+      },
+      "timestamp": "2026-02-07T20:33:30.063Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 270,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 22.200616266063044
+        },
+        "velocity": {
+          "x": -0.38844207909624234,
+          "y": -0.13220187512758308,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 37.321138281046345,
+        "withinBounds": true,
+        "resources": {
+          "energy": 754.7799792050474,
+          "oxygen": 50,
+          "nitrogen": 45.77944608548274,
+          "phosphorus": 72.19082503919498
+        },
+        "age": 264
+      },
+      "timestamp": "2026-02-07T20:33:30.229Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 280,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 21.45764214816429
+        },
+        "velocity": {
+          "x": -0.36968849611213117,
+          "y": -0.07177880307929072,
+          "magnitude": 0.3765923269653072
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 36.88401288578395,
+        "withinBounds": true,
+        "resources": {
+          "energy": 763.3322689214566,
+          "oxygen": 50,
+          "nitrogen": 46.18300669310234,
+          "phosphorus": 72.93752214484037
+        },
+        "age": 274
+      },
+      "timestamp": "2026-02-07T20:33:30.396Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 290,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 22.086520596437758
+        },
+        "velocity": {
+          "x": -0.34797615078628313,
+          "y": 0.21743316923556635,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 37.2533809480008,
+        "withinBounds": true,
+        "resources": {
+          "energy": 770.3201122853586,
+          "oxygen": 50,
+          "nitrogen": 46.54797967281318,
+          "phosphorus": 73.61282162264699
+        },
+        "age": 284
+      },
+      "timestamp": "2026-02-07T20:33:30.577Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 300,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 23.523542029451196
+        },
+        "velocity": {
+          "x": -0.2108059133368989,
+          "y": 0.14658386105267734,
+          "magnitude": 0.25676051374562003
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 38.12292000373734,
+        "withinBounds": true,
+        "resources": {
+          "energy": 776.0296890767926,
+          "oxygen": 50,
+          "nitrogen": 46.87805469352621,
+          "phosphorus": 74.22355036563812
+        },
+        "age": 294
+      },
+      "timestamp": "2026-02-07T20:33:30.744Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 310,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 24.93596318201363
+        },
+        "velocity": {
+          "x": -0.22026178376498842,
+          "y": 0.25995586116720204,
+          "magnitude": 0.34072320605223844
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 39.01028402632746,
+        "withinBounds": true,
+        "resources": {
+          "energy": 680.8727663632725,
+          "oxygen": 50,
+          "nitrogen": 47.17656862566723,
+          "phosphorus": 74.77588249349195
+        },
+        "age": 304
+      },
+      "timestamp": "2026-02-07T20:33:30.912Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 320,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.312763295556003
+        },
+        "velocity": {
+          "x": -0.13926186527775386,
+          "y": 0.31898650712961196,
+          "magnitude": 0.34806071144469786
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.570765815289604,
+        "withinBounds": true,
+        "resources": {
+          "energy": 702.9446950755923,
+          "oxygen": 50,
+          "nitrogen": 47.44653927503597,
+          "phosphorus": 75.27540176937444
+        },
+        "age": 314
+      },
+      "timestamp": "2026-02-07T20:33:31.079Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 330,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.2754340831530389,
+          "y": -0.3041391958257031,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 720.9790678219891,
+          "oxygen": 50,
+          "nitrogen": 47.69069589110354,
+          "phosphorus": 75.72715804860393
+        },
+        "age": 324
+      },
+      "timestamp": "2026-02-07T20:33:31.245Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 340,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.934173648415907
+        },
+        "velocity": {
+          "x": -0.22439722648536958,
+          "y": -0.17040257994593416,
+          "magnitude": 0.28176435989414406
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.99168278346052,
+        "withinBounds": true,
+        "resources": {
+          "energy": 735.7144633823439,
+          "oxygen": 50,
+          "nitrogen": 47.91150675816986,
+          "phosphorus": 76.13571832981174
+        },
+        "age": 334
+      },
+      "timestamp": "2026-02-07T20:33:31.412Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 350,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 26.906276764081813
+        },
+        "velocity": {
+          "x": -0.26970341466330494,
+          "y": -0.0014439074844595865,
+          "magnitude": 0.26970727974949116
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.29823481624684,
+        "withinBounds": true,
+        "resources": {
+          "energy": 747.7543543934414,
+          "oxygen": 50,
+          "nitrogen": 48.11120414831179,
+          "phosphorus": 76.50521292469665
+        },
+        "age": 344
+      },
+      "timestamp": "2026-02-07T20:33:31.577Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 360,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.25713230876534
+        },
+        "velocity": {
+          "x": -0.24015265601937316,
+          "y": 0.32707496104033695,
+          "magnitude": 0.40577250810361376
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.90441254727956,
+        "withinBounds": true,
+        "resources": {
+          "energy": 757.5918219364988,
+          "oxygen": 50,
+          "nitrogen": 48.2918068883822,
+          "phosphorus": 76.83937721312321
+        },
+        "age": 354
+      },
+      "timestamp": "2026-02-07T20:33:31.745Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 370,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.286308786227316
+        },
+        "velocity": {
+          "x": -0.028610517097599705,
+          "y": 0.13974143528305205,
+          "magnitude": 0.14264021320637274
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.92478839925439,
+        "withinBounds": true,
+        "resources": {
+          "energy": 765.6297491545699,
+          "oxygen": 50,
+          "nitrogen": 48.45514076919935,
+          "phosphorus": 77.14158940568424
+        },
+        "age": 364
+      },
+      "timestamp": "2026-02-07T20:33:31.911Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 380,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.263987566411977
+        },
+        "velocity": {
+          "x": -0.2194834668703223,
+          "y": -0.18520903023470903,
+          "magnitude": 0.2871852661782934
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.90919908906772,
+        "withinBounds": true,
+        "resources": {
+          "energy": 772.1973209081972,
+          "oxygen": 50,
+          "nitrogen": 48.60285700325201,
+          "phosphorus": 77.41490469548556
+        },
+        "age": 374
+      },
+      "timestamp": "2026-02-07T20:33:32.078Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 390,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.627232095650093
+        },
+        "velocity": {
+          "x": -0.3543559276949961,
+          "y": -0.039583465462067674,
+          "magnitude": 0.35655991674691645
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.16364407459962,
+        "withinBounds": true,
+        "resources": {
+          "energy": 777.5635051953687,
+          "oxygen": 50,
+          "nitrogen": 48.73644891751704,
+          "phosphorus": 77.66208614440772
+        },
+        "age": 384
+      },
+      "timestamp": "2026-02-07T20:33:32.245Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 400,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.590921726846652
+        },
+        "velocity": {
+          "x": -0.41030324416550623,
+          "y": -0.003978998256029098,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.13813769786659,
+        "withinBounds": true,
+        "resources": {
+          "energy": 781.9480684531637,
+          "oxygen": 50,
+          "nitrogen": 48.85726705014443,
+          "phosphorus": 77.88563261608763
+        },
+        "age": 394
+      },
+      "timestamp": "2026-02-07T20:33:32.411Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 410,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.908868013311956
+        },
+        "velocity": {
+          "x": -0.23422819066453357,
+          "y": 0.12057167281302164,
+          "magnitude": 0.263439506503697
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.36201583774921,
+        "withinBounds": true,
+        "resources": {
+          "energy": 685.7085132125492,
+          "oxygen": 50,
+          "nitrogen": 48.96653280362868,
+          "phosphorus": 78.0878040380064
+        },
+        "age": 404
+      },
+      "timestamp": "2026-02-07T20:33:32.577Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 420,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.677269087446145
+        },
+        "velocity": {
+          "x": -0.20175326733494633,
+          "y": 0.1995623627041398,
+          "magnitude": 0.2837772321529424
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.19881870963554,
+        "withinBounds": true,
+        "resources": {
+          "energy": 706.8323316513955,
+          "oxygen": 50,
+          "nitrogen": 49.06535079249218,
+          "phosphorus": 78.27064424806876
+        },
+        "age": 414
+      },
+      "timestamp": "2026-02-07T20:33:32.743Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 430,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.2875611479733008,
+          "y": -0.2007595604133617,
+          "magnitude": 0.3507075917642628
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 723.862124220927,
+          "oxygen": 50,
+          "nitrogen": 49.15472001030874,
+          "phosphorus": 78.43600165664002
+        },
+        "age": 424
+      },
+      "timestamp": "2026-02-07T20:33:32.910Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 430,
+      "event_type": "reproduction",
+      "cell_id": "unknown",
+      "data": {
+        "child_id": "cee866cb-0188-435c-b0ef-3d5a47f7d4b2",
+        "parent_energy": 362.69172432687577,
+        "child_energy": 352.69172432687577,
+        "generation": 1,
+        "metabolism": "luca"
+      },
+      "timestamp": "2026-02-07T20:33:32.912Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 430,
+      "event_type": "phantom_birth",
+      "cell_id": "phantom_430",
+      "data": {
+        "parent_id": 0,
+        "dna": {
+          "flagellaLevel": 0,
+          "maxForce": 0.1,
+          "size": 10.942124779074119,
+          "color": [
+            172.6138955939145,
+            175.19120508884833,
+            193.30285965831644
+          ],
+          "mutationRate": 0.1637660168998696,
+          "metabolicEfficiency": null,
+          "storageCapacity": null,
+          "dnaRepairEfficiency": null,
+          "sodEfficiency": 0.4379962516158443,
+          "thermalOptimum": 62.49271028841107,
+          "thermalTolerance": 11.243474147298029,
+          "pHOptimum": 8.667954521226502,
+          "redoxOptimum": -339.2345778352505,
+          "pHTolerance": 1.5,
+          "redoxTolerance": 100,
+          "metabolismType": "luca",
+          "organelles": {
+            "ribosomes": true,
+            "hydrogenosomes": false,
+            "chemosynthetic_enzymes": false
+          },
+          "metabolisms": {
+            "luca": {
+              "enabled": true,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.4,
+                "CO2": 0.2
+              },
+              "energyYield": 1.5,
+              "requiresO2": false,
+              "requiresLight": false,
+              "geochemicalBonus": true
+            },
+            "fermentation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1
+              },
+              "energyYield": 2,
+              "requiresO2": false,
+              "requiresLight": false
+            },
+            "anoxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.3,
+                "CO2": 0.2,
+                "light": 50
+              },
+              "energyYield": 6,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 30
+            },
+            "oxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CO2": 0.6,
+                "light": 80
+              },
+              "energyYield": 12,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 50,
+              "producesO2": 0.6
+            },
+            "aerobicRespiration": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1,
+                "O2": 0.6
+              },
+              "energyYield": 36,
+              "requiresO2": true,
+              "requiresLight": false
+            },
+            "methanogenesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.6,
+                "CO2": 0.2
+              },
+              "energyYield": 3.5,
+              "requiresO2": false,
+              "producesCH4": 0.5
+            },
+            "methanotrophy": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CH4": 0.4,
+                "O2": 1
+              },
+              "energyYield": 18,
+              "requiresO2": true
+            },
+            "sulfurOxidation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2S": 0.5,
+                "O2": 0.4
+              },
+              "energyYield": 12,
+              "requiresO2": true
+            }
+          },
+          "generation": 1,
+          "evolutionaryEra": "primordial"
+        },
+        "generation": 1
+      },
+      "timestamp": "2026-02-07T20:33:32.912Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 440,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.1852912822643601,
+          "y": -0.1079364871272525,
+          "magnitude": 0.2144368077932105
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 435.3832911357688,
+          "oxygen": 25,
+          "nitrogen": 26.779840777388777,
+          "phosphorus": 42.75208406711524
+        },
+        "age": 434
+      },
+      "timestamp": "2026-02-07T20:33:33.077Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 450,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.3920444835524369,
+          "y": -0.12110205413602039,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 502.0684947598924,
+          "oxygen": 25,
+          "nitrogen": 29.00010422022003,
+          "phosphorus": 46.31365249886418
+        },
+        "age": 444
+      },
+      "timestamp": "2026-02-07T20:33:33.243Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 460,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.534191829438754
+        },
+        "velocity": {
+          "x": -0.024577233427959394,
+          "y": 0.018268057247749145,
+          "magnitude": 0.030622905129648374
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.09831928970665,
+        "withinBounds": true,
+        "resources": {
+          "energy": 556.710559008968,
+          "oxygen": 25,
+          "nitrogen": 31.008070679713956,
+          "phosphorus": 49.534671147455136
+        },
+        "age": 454
+      },
+      "timestamp": "2026-02-07T20:33:33.409Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 470,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.617223964092457
+        },
+        "velocity": {
+          "x": -0.40993610055192314,
+          "y": -0.017803877783900197,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.15661223745585,
+        "withinBounds": true,
+        "resources": {
+          "energy": 601.4951318032571,
+          "oxygen": 25,
+          "nitrogen": 32.82403955289916,
+          "phosphorus": 52.44770267650988
+        },
+        "age": 464
+      },
+      "timestamp": "2026-02-07T20:33:33.576Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 480,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.075954684081267
+        },
+        "velocity": {
+          "x": -0.3063215042606104,
+          "y": 0.15979805910014724,
+          "magnitude": 0.3454971543510269
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.77811796611651,
+        "withinBounds": true,
+        "resources": {
+          "energy": 638.0873884015464,
+          "oxygen": 25,
+          "nitrogen": 34.46636925058179,
+          "phosphorus": 55.08219617532248
+        },
+        "age": 474
+      },
+      "timestamp": "2026-02-07T20:33:33.743Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 490,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.639778240299993
+        },
+        "velocity": {
+          "x": -0.12944716233525397,
+          "y": 0.03439562242016384,
+          "magnitude": 0.13393889158239317
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.17246084987407,
+        "withinBounds": true,
+        "resources": {
+          "energy": 667.9859262106601,
+          "oxygen": 25,
+          "nitrogen": 35.95166279042059,
+          "phosphorus": 57.464784872375816
+        },
+        "age": 484
+      },
+      "timestamp": "2026-02-07T20:33:33.909Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 500,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.429883516497657
+        },
+        "velocity": {
+          "x": -0.08938005059847058,
+          "y": -0.04189288122754392,
+          "magnitude": 0.09871072354374809
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.02520724273255,
+        "withinBounds": true,
+        "resources": {
+          "energy": 692.415208420186,
+          "oxygen": 25,
+          "nitrogen": 37.29493564397717,
+          "phosphorus": 59.61955538210944
+        },
+        "age": 494
+      },
+      "timestamp": "2026-02-07T20:33:34.091Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 510,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.510945472814086
+        },
+        "velocity": {
+          "x": -0.06372141413406798,
+          "y": -0.03623778276971115,
+          "magnitude": 0.07330481238847947
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.38688212167931,
+        "withinBounds": true,
+        "resources": {
+          "energy": 612.5536479567344,
+          "oxygen": 25,
+          "nitrogen": 38.50976753457969,
+          "phosphorus": 61.568291206870114
+        },
+        "age": 504
+      },
+      "timestamp": "2026-02-07T20:33:34.257Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 520,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.50891891896172
+        },
+        "velocity": {
+          "x": -0.08428990423729282,
+          "y": -0.22438217151857442,
+          "magnitude": 0.239691774685163
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.0805928637639,
+        "withinBounds": true,
+        "resources": {
+          "energy": 647.1230012350793,
+          "oxygen": 25,
+          "nitrogen": 39.60843972058964,
+          "phosphorus": 63.330692955711164
+        },
+        "age": 514
+      },
+      "timestamp": "2026-02-07T20:33:34.425Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 530,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.3969745759256
+        },
+        "velocity": {
+          "x": -0.40849668287641216,
+          "y": -0.0386658076189868,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.30845149682768,
+        "withinBounds": true,
+        "resources": {
+          "energy": 675.3686797505039,
+          "oxygen": 25,
+          "nitrogen": 40.60205915192778,
+          "phosphorus": 64.9245775063272
+        },
+        "age": 524
+      },
+      "timestamp": "2026-02-07T20:33:34.592Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 540,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.68285572336887
+        },
+        "velocity": {
+          "x": -0.17529765204762082,
+          "y": -0.31714427663113093,
+          "magnitude": 0.36236688454285115
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.20274782397862,
+        "withinBounds": true,
+        "resources": {
+          "energy": 698.4474555775452,
+          "oxygen": 25,
+          "nitrogen": 41.50067075501044,
+          "phosphorus": 66.3660581235378
+        },
+        "age": 534
+      },
+      "timestamp": "2026-02-07T20:33:34.759Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 550,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.583725460410157
+        },
+        "velocity": {
+          "x": -0.10616472515694247,
+          "y": -0.07094508202203904,
+          "magnitude": 0.12768771879379387
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.43705299844693,
+        "withinBounds": true,
+        "resources": {
+          "energy": 717.3044957220742,
+          "oxygen": 25,
+          "nitrogen": 42.31335898123333,
+          "phosphorus": 67.66970735521569
+        },
+        "age": 544
+      },
+      "timestamp": "2026-02-07T20:33:34.925Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 560,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.971449235562353
+        },
+        "velocity": {
+          "x": -0.12395993220611802,
+          "y": 0.0998951775115427,
+          "magnitude": 0.15920148015206392
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.70545372980333,
+        "withinBounds": true,
+        "resources": {
+          "energy": 732.7120704425557,
+          "oxygen": 25,
+          "nitrogen": 43.04833964560002,
+          "phosphorus": 68.84870435244419
+        },
+        "age": 554
+      },
+      "timestamp": "2026-02-07T20:33:35.092Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 570,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.825383065318448
+        },
+        "velocity": {
+          "x": -0.1705100853499815,
+          "y": -0.17461693468155026,
+          "magnitude": 0.24405893362800463
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.30311424697931,
+        "withinBounds": true,
+        "resources": {
+          "energy": 745.3011807667491,
+          "oxygen": 25,
+          "nitrogen": 43.71304298393131,
+          "phosphorus": 69.91496810322684
+        },
+        "age": 564
+      },
+      "timestamp": "2026-02-07T20:33:35.258Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 580,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.11984351052679
+        },
+        "velocity": {
+          "x": -0.37292905517138925,
+          "y": -0.027159137295780435,
+          "magnitude": 0.3739167005225577
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.80867477064501,
+        "withinBounds": true,
+        "resources": {
+          "energy": 755.5874004755548,
+          "oxygen": 25,
+          "nitrogen": 44.314188768316626,
+          "phosphorus": 70.87927792666629
+        },
+        "age": 574
+      },
+      "timestamp": "2026-02-07T20:33:35.425Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 590,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.72790917518803
+        },
+        "velocity": {
+          "x": -0.2982163457968585,
+          "y": -0.1601501877740818,
+          "magnitude": 0.3384982592931685
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.536643648444354,
+        "withinBounds": true,
+        "resources": {
+          "energy": 763.9919908852906,
+          "oxygen": 25,
+          "nitrogen": 44.85785424018183,
+          "phosphorus": 71.75138244573985
+        },
+        "age": 584
+      },
+      "timestamp": "2026-02-07T20:33:35.591Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 600,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.383735050926518
+        },
+        "velocity": {
+          "x": -0.343248985436653,
+          "y": 0.22482152609696626,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.99290279967613,
+        "withinBounds": true,
+        "resources": {
+          "energy": 770.7050365987013,
+          "oxygen": 25,
+          "nitrogen": 45.34953554773792,
+          "phosphorus": 72.54009814032416
+        },
+        "age": 594
+      },
+      "timestamp": "2026-02-07T20:33:35.757Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 610,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.467406944793748
+        },
+        "velocity": {
+          "x": -0.3835144774509014,
+          "y": -0.1458808766954138,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.051493101316616,
+        "withinBounds": true,
+        "resources": {
+          "energy": 676.2287118870853,
+          "oxygen": 25,
+          "nitrogen": 45.79420330890853,
+          "phosphorus": 73.25339847678433
+        },
+        "age": 604
+      },
+      "timestamp": "2026-02-07T20:33:35.923Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 620,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.234737109582575
+        },
+        "velocity": {
+          "x": -0.4102582840468365,
+          "y": 0.007261196237930313,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.197091883374966,
+        "withinBounds": true,
+        "resources": {
+          "energy": 698.8567387191829,
+          "oxygen": 25,
+          "nitrogen": 46.19635286144554,
+          "phosphorus": 73.89849451517665
+        },
+        "age": 614
+      },
+      "timestamp": "2026-02-07T20:33:36.091Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 630,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.3759376806968694,
+          "y": -0.1644245870668959,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 717.3454841172116,
+          "oxygen": 25,
+          "nitrogen": 46.560049708232825,
+          "phosphorus": 74.48190780895783
+        },
+        "age": 624
+      },
+      "timestamp": "2026-02-07T20:33:36.256Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 640,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.56791280367293
+        },
+        "velocity": {
+          "x": -0.3894188339018383,
+          "y": -0.12929638975003516,
+          "magnitude": 0.4103225372799556
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.42614683938466,
+        "withinBounds": true,
+        "resources": {
+          "energy": 732.692725742382,
+          "oxygen": 25,
+          "nitrogen": 46.88897061720446,
+          "phosphorus": 75.0095363341754
+        },
+        "age": 634
+      },
+      "timestamp": "2026-02-07T20:33:36.424Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 650,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.07330111596896
+        },
+        "velocity": {
+          "x": -0.3384431797021834,
+          "y": 0.23199310057184044,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.77627122877055,
+        "withinBounds": true,
+        "resources": {
+          "energy": 745.2853747382799,
+          "oxygen": 25,
+          "nitrogen": 47.186440791374004,
+          "phosphorus": 75.4867141146455
+        },
+        "age": 644
+      },
+      "timestamp": "2026-02-07T20:33:36.590Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 660,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.946253453025278
+        },
+        "velocity": {
+          "x": -0.18942099194105672,
+          "y": -0.11724015432614095,
+          "magnitude": 0.222767964425658
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.68795496263613,
+        "withinBounds": true,
+        "resources": {
+          "energy": 755.5744857995077,
+          "oxygen": 25,
+          "nitrogen": 47.455467484742684,
+          "phosphorus": 75.91826514589515
+        },
+        "age": 654
+      },
+      "timestamp": "2026-02-07T20:33:36.756Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 670,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.545668265204256
+        },
+        "velocity": {
+          "x": -0.17193700840426382,
+          "y": -0.16434387606571088,
+          "magnitude": 0.23784710311313365
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.41080990160769,
+        "withinBounds": true,
+        "resources": {
+          "energy": 763.9814386546828,
+          "oxygen": 25,
+          "nitrogen": 47.698770403924215,
+          "phosphorus": 76.30855216300888
+        },
+        "age": 664
+      },
+      "timestamp": "2026-02-07T20:33:36.924Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 680,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.642910651093246
+        },
+        "velocity": {
+          "x": -0.21781237243065837,
+          "y": 0.09515638255442094,
+          "magnitude": 0.23769090585193858
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.47790171364158,
+        "withinBounds": true,
+        "resources": {
+          "energy": 770.8505312214322,
+          "oxygen": 25,
+          "nitrogen": 47.91880920282931,
+          "phosphorus": 76.66152074539521
+        },
+        "age": 674
+      },
+      "timestamp": "2026-02-07T20:33:37.090Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 690,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 30
+        },
+        "velocity": {
+          "x": -0.24333307246686942,
+          "y": -0.3303840196554515,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.42640687119285,
+        "withinBounds": true,
+        "resources": {
+          "energy": 776.4630799657165,
+          "oxygen": 25,
+          "nitrogen": 48.11780834836553,
+          "phosphorus": 76.98073920434668
+        },
+        "age": 684
+      },
+      "timestamp": "2026-02-07T20:33:37.256Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 700,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.333616305077474
+        },
+        "velocity": {
+          "x": -0.39706136024275107,
+          "y": 0.1034739619519652,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.264922306037995,
+        "withinBounds": true,
+        "resources": {
+          "energy": 781.0489409220019,
+          "oxygen": 25,
+          "nitrogen": 48.297779608530576,
+          "phosphorus": 77.26943465663432
+        },
+        "age": 694
+      },
+      "timestamp": "2026-02-07T20:33:37.423Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 710,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.383936430337176
+        },
+        "velocity": {
+          "x": -0.41003321688555694,
+          "y": 0.015406026429365881,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.99304371133505,
+        "withinBounds": true,
+        "resources": {
+          "energy": 684.9738605569131,
+          "oxygen": 25,
+          "nitrogen": 48.460542390240576,
+          "phosphorus": 77.53052564881982
+        },
+        "age": 704
+      },
+      "timestamp": "2026-02-07T20:33:37.604Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 720,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.897199663115007
+        },
+        "velocity": {
+          "x": -0.10663088726784266,
+          "y": -0.03916032635627099,
+          "magnitude": 0.11359435408442191
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.353778434705966,
+        "withinBounds": true,
+        "resources": {
+          "energy": 706.2955876197004,
+          "oxygen": 25,
+          "nitrogen": 48.60774213249768,
+          "phosphorus": 77.76665166209864
+        },
+        "age": 714
+      },
+      "timestamp": "2026-02-07T20:33:37.771Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 730,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.463149247029435
+        },
+        "velocity": {
+          "x": -0.3130746586933143,
+          "y": -0.17919906493787338,
+          "magnitude": 0.3607326527922631
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.04850964722449,
+        "withinBounds": true,
+        "resources": {
+          "energy": 723.7169909985823,
+          "oxygen": 25,
+          "nitrogen": 48.74086694084092,
+          "phosphorus": 77.9801997959513
+        },
+        "age": 724
+      },
+      "timestamp": "2026-02-07T20:33:37.938Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 740,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.749218865667228
+        },
+        "velocity": {
+          "x": -0.32476669666489527,
+          "y": -0.25078113433277316,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.24944997414015,
+        "withinBounds": true,
+        "resources": {
+          "energy": 737.9515459572852,
+          "oxygen": 25,
+          "nitrogen": 48.86126263124552,
+          "phosphorus": 78.17332890035924
+        },
+        "age": 734
+      },
+      "timestamp": "2026-02-07T20:33:38.105Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 750,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.635548724910375
+        },
+        "velocity": {
+          "x": -0.3964173327071105,
+          "y": -0.10591450764291252,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.78876748967656,
+        "withinBounds": true,
+        "resources": {
+          "energy": 749.5822137321878,
+          "oxygen": 25,
+          "nitrogen": 48.970146335555754,
+          "phosphorus": 78.34799140054827
+        },
+        "age": 744
+      },
+      "timestamp": "2026-02-07T20:33:38.272Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 760,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.961387592829166
+        },
+        "velocity": {
+          "x": -0.39415822823290675,
+          "y": 0.11403453738300635,
+          "magnitude": 0.4103225372799555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.010232822021635,
+        "withinBounds": true,
+        "resources": {
+          "energy": 759.085316097004,
+          "oxygen": 25,
+          "nitrogen": 49.06861880599449,
+          "phosphorus": 78.50595303489548
+        },
+        "age": 754
+      },
+      "timestamp": "2026-02-07T20:33:38.438Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 764,
+      "event_type": "reproduction",
+      "cell_id": "unknown",
+      "data": {
+        "child_id": "2f3675a0-dcf6-4ae7-b862-7d5a4a77c8d3",
+        "parent_energy": 381.58179920826313,
+        "child_energy": 371.58179920826313,
+        "generation": 1,
+        "metabolism": "luca"
+      },
+      "timestamp": "2026-02-07T20:33:38.506Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 764,
+      "event_type": "phantom_birth",
+      "cell_id": "phantom_764",
+      "data": {
+        "parent_id": 0,
+        "dna": {
+          "flagellaLevel": 0,
+          "maxForce": 0.1,
+          "size": 13.313673790090501,
+          "color": [
+            172.6526019003667,
+            162.9771793670364,
+            183.64528260329058
+          ],
+          "mutationRate": 0.13923335359425654,
+          "metabolicEfficiency": null,
+          "storageCapacity": null,
+          "dnaRepairEfficiency": null,
+          "sodEfficiency": 0.4288417525687411,
+          "thermalOptimum": 61.304473503927646,
+          "thermalTolerance": 11.365790964409273,
+          "pHOptimum": 8.669956869494285,
+          "redoxOptimum": -338.70803008782235,
+          "pHTolerance": 1.5,
+          "redoxTolerance": 100,
+          "metabolismType": "luca",
+          "organelles": {
+            "ribosomes": true,
+            "hydrogenosomes": false,
+            "chemosynthetic_enzymes": false
+          },
+          "metabolisms": {
+            "luca": {
+              "enabled": true,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.4,
+                "CO2": 0.2
+              },
+              "energyYield": 1.5,
+              "requiresO2": false,
+              "requiresLight": false,
+              "geochemicalBonus": true
+            },
+            "fermentation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1
+              },
+              "energyYield": 2,
+              "requiresO2": false,
+              "requiresLight": false
+            },
+            "anoxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.3,
+                "CO2": 0.2,
+                "light": 50
+              },
+              "energyYield": 6,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 30
+            },
+            "oxigenicPhotosynthesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CO2": 0.6,
+                "light": 80
+              },
+              "energyYield": 12,
+              "requiresO2": false,
+              "requiresLight": true,
+              "minLightLevel": 50,
+              "producesO2": 0.6
+            },
+            "aerobicRespiration": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "energy": 1,
+                "O2": 0.6
+              },
+              "energyYield": 36,
+              "requiresO2": true,
+              "requiresLight": false
+            },
+            "methanogenesis": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2": 0.6,
+                "CO2": 0.2
+              },
+              "energyYield": 3.5,
+              "requiresO2": false,
+              "producesCH4": 0.5
+            },
+            "methanotrophy": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "CH4": 0.4,
+                "O2": 1
+              },
+              "energyYield": 18,
+              "requiresO2": true
+            },
+            "sulfurOxidation": {
+              "enabled": false,
+              "efficiency": null,
+              "substrates": {
+                "H2S": 0.5,
+                "O2": 0.4
+              },
+              "energyYield": 12,
+              "requiresO2": true
+            }
+          },
+          "generation": 1,
+          "evolutionaryEra": "transition"
+        },
+        "generation": 1
+      },
+      "timestamp": "2026-02-07T20:33:38.506Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 770,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.726480900058256
+        },
+        "velocity": {
+          "x": -0.3663412880472394,
+          "y": 0.1848205758884818,
+          "magnitude": 0.41032253727995555
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.2334425153992,
+        "withinBounds": true,
+        "resources": {
+          "energy": 421.93031863565335,
+          "oxygen": 12.5,
+          "nitrogen": 25.804086524070563,
+          "phosphorus": 41.28480335676908
+        },
+        "age": 764
+      },
+      "timestamp": "2026-02-07T20:33:38.604Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 780,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.813488906978492
+        },
+        "velocity": {
+          "x": -0.33372195080387346,
+          "y": 0.12834977818047047,
+          "magnitude": 0.35755280170531306
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.294729231980305,
+        "withinBounds": true,
+        "resources": {
+          "energy": 491.3698624884546,
+          "oxygen": 12.5,
+          "nitrogen": 28.11764956390544,
+          "phosphorus": 44.98667012542092
+        },
+        "age": 774
+      },
+      "timestamp": "2026-02-07T20:33:38.771Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 790,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.04703080254457
+        },
+        "velocity": {
+          "x": -0.30062693600664325,
+          "y": -0.2775945011135094,
+          "magnitude": 0.40918854053015774
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.757993228170974,
+        "withinBounds": true,
+        "resources": {
+          "energy": 548.1070254932538,
+          "oxygen": 12.5,
+          "nitrogen": 30.209994506534983,
+          "phosphorus": 48.33457207506041
+        },
+        "age": 784
+      },
+      "timestamp": "2026-02-07T20:33:38.938Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 800,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.07885573955298
+        },
+        "velocity": {
+          "x": -0.0189552816039889,
+          "y": 0.03137303668298631,
+          "magnitude": 0.03665474227707139
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.41366635388976,
+        "withinBounds": true,
+        "resources": {
+          "energy": 594.4654185244214,
+          "oxygen": 12.5,
+          "nitrogen": 32.10227376738447,
+          "phosphorus": 51.36235458720138
+        },
+        "age": 794
+      },
+      "timestamp": "2026-02-07T20:33:39.105Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 810,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 28.206728037763675
+        },
+        "velocity": {
+          "x": -0.09965910626954355,
+          "y": 0.16706409374976783,
+          "magnitude": 0.19453110004026447
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 41.17790070652416,
+        "withinBounds": true,
+        "resources": {
+          "energy": 532.5215381925564,
+          "oxygen": 12.5,
+          "nitrogen": 33.813617211807646,
+          "phosphorus": 54.10062681820682
+        },
+        "age": 804
+      },
+      "timestamp": "2026-02-07T20:33:39.272Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 820,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 29.774607355439873
+        },
+        "velocity": {
+          "x": -0.2586549483466756,
+          "y": -0.22539264456012875,
+          "magnitude": 0.34308049569456717
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 42.26733068423666,
+        "withinBounds": true,
+        "resources": {
+          "energy": 581.7309406689303,
+          "oxygen": 12.5,
+          "nitrogen": 35.361325547127805,
+          "phosphorus": 56.5770711404225
+        },
+        "age": 814
+      },
+      "timestamp": "2026-02-07T20:33:39.438Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 830,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.36806171617557
+        },
+        "velocity": {
+          "x": -0.16202571741692248,
+          "y": -0.1351694686064911,
+          "magnitude": 0.21100501972187677
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.608014013251065,
+        "withinBounds": true,
+        "resources": {
+          "energy": 621.9386052755602,
+          "oxygen": 12.5,
+          "nitrogen": 36.76104522293306,
+          "phosphorus": 58.81672299519168
+        },
+        "age": 824
+      },
+      "timestamp": "2026-02-07T20:33:39.605Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 840,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 26.934246143430116
+        },
+        "velocity": {
+          "x": -0.11722025709747101,
+          "y": 0.0022850454679127588,
+          "magnitude": 0.11724252686967998
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.316914754416416,
+        "withinBounds": true,
+        "resources": {
+          "energy": 654.7911946540924,
+          "oxygen": 12.5,
+          "nitrogen": 38.02692660776847,
+          "phosphorus": 60.842223986905154
+        },
+        "age": 834
+      },
+      "timestamp": "2026-02-07T20:33:39.770Z"
+    },
+    {
+      "run_id": "run_STANDARD_2026-02-07T20-33-25",
+      "frame_number": 850,
+      "event_type": "movement",
+      "cell_id": 0,
+      "data": {
+        "position": {
+          "x": 750,
+          "y": 27.832755705337842
+        },
+        "velocity": {
+          "x": -0.026013215214348042,
+          "y": 0.19994060219419804,
+          "magnitude": 0.2016257219988723
+        },
+        "acceleration": {
+          "x": 0,
+          "y": 0
+        },
+        "ventProximity": 40.922637868947504,
+        "withinBounds": true,
+        "resources": {
+          "energy": 681.6341520711335,
+          "oxygen": 12.5,
+          "nitrogen": 39.17176704130094,
+          "phosphorus": 62.67405077672338
+        },
+        "age": 844
+      },
+      "timestamp": "2026-02-07T20:33:39.937Z"
+    }
+  ],
+  "mutations": [],
+  "frame_stats": [],
+  "environment_stats": [],
+  "anomalies": [],
+  "vent_activity": [],
+  "geological_events": []
+}

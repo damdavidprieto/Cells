@@ -71,6 +71,7 @@ class DatabaseManager {
         };
 
         this.writer.add(DBConfig.STORE_NAMES.RUNS, runData);
+        console.log(`[DatabaseManager] ✅ Run data saved to DB. Ready to log events.`);
     }
 
     async endRun() {
