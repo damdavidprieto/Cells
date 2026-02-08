@@ -40,6 +40,7 @@ class Entity {
         this.oxidativeDamage = 0;  // accumulated damage in this frame
         this.uvDamageFrame = 0;    // accumulated UV damage in this frame
         this.structuralDamage = 0; // NEW: Cumulative Structural Integrity (0-100)
+        this.pmfEnergyFrame = 0;   // Energy from pH gradient this frame
 
         // ORGANELL SYSTEM INTEGRATION
         this.organelles = [];
@@ -57,28 +58,28 @@ class Entity {
     }
 
     initializeOrganelles() {
-        // 1. Ribosomes (Universal) - Always present if LUCA enabled (which is always true for now)
-        if (this.dna.metabolisms.luca && this.dna.metabolisms.luca.enabled) {
+        // 1. Ribosomes (Universal) - Always present if LUCA enabled
+        if (this.dna.organelles?.ribosomes) {
             this.organelles.push(new Ribosome());
         }
 
-        // 2. Flagella (Locomotion)
-        // Explicitly encoded in flagellaLevel
+        // 2. ATP Synthase (Archaic PMF motor)
+        if (this.dna.organelles?.atp_synthase) {
+            this.organelles.push(new ATPSynthase());
+        }
+
+        // 3. Hydrogenase Complex (H2 optimization)
+        if (this.dna.organelles?.hydrogenase_complex) {
+            this.organelles.push(new HydrogenaseComplex());
+        }
+
+        // 4. Flagella (Locomotion)
         if (this.dna.flagellaLevel > 0) {
             this.organelles.push(new Flagellum(this.dna.flagellaLevel));
         }
 
-        // 3. Hydrogenosomes (Fermentation)
-        // PHENOTYPIC EXPRESSION: Only build if fermentation efficiency > threshold
-        if (this.dna.metabolisms.fermentation &&
-            this.dna.metabolisms.fermentation.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD) {
-            this.organelles.push(new Hydrogenosome());
-        }
-
-        // 4. Chemosynthetic Enzymes
-        // PHENOTYPIC EXPRESSION: Only build if chemosynthesis efficiency > threshold
-        if (this.dna.metabolisms.chemosynthesis &&
-            this.dna.metabolisms.chemosynthesis.efficiency > GameConstants.ORGANELLE_EFFICIENCY_THRESHOLD) {
+        // 5. Chemosynthetic Enzymes (Metabolic support)
+        if (this.dna.organelles?.chemosynthetic_enzymes) {
             this.organelles.push(new ChemosyntheticEnzymes());
         }
     }

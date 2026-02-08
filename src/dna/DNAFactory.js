@@ -187,8 +187,9 @@ class DNAFactory {
 
             organelles: {
                 ribosomes: true, // All cells have ribosomes (universal)
-                hydrogenosomes: false, // Enables fermentation
-                chemosynthetic_enzymes: false // Enables chemosynthesis
+                atp_synthase: true, // LUCA has primitive ATP synthase complex
+                hydrogenase_complex: true, // LUCA has primitive hydrogenases
+                chemosynthetic_enzymes: true // Universal for LUCA
             },
 
             // EVOLUTIONARY TRACKING

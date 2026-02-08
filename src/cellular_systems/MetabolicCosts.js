@@ -203,6 +203,14 @@ class MetabolicCosts {
             energyProduced *= bonus;
         }
 
+        // Apply Hydrogenase Complex Bonus (for H2 metabolisms like LUCA)
+        if (metabolismName === 'luca' || metabolismName === 'methanogenesis') {
+            let hydrogenase = entity.organelles.find(o => o.id === 'hydrogenase_complex');
+            if (hydrogenase) {
+                energyProduced *= hydrogenase.getMetabolicBonus();
+            }
+        }
+
         energyProduced *= metabolism.efficiency;
 
         // Produce CH4 if methanogenesis
