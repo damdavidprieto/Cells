@@ -366,6 +366,9 @@ const GameConstants = {
     CHEMOTAXIS_STRENGTH: 0.5,        // Strength of bias towards nutrient (H2)
     MEMBRANE_SENSITIVITY: 0.1,       // Minimum concentration diff to react
     MEMBRANE_PERMEABILITY: 0.15,     // Increased from 0.1 - higher diffusion in vents (steep gradients)
+    MEMBRANE_LEAK_RATE: 0.02,        // Base rate of energy/resource leakage
+    PMF_ENERGY_YIELD: 0.05,          // Energy gained per pH unit of gradient (Natural PMF)
+    MEMBRANE_CO2_DIFFUSION: 0.1,    // Rate of passive CO2 exchange
 
     // Temperature System
     // SCIENTIFIC BASIS: LUCA lived in warm primordial ocean (50-80°C)

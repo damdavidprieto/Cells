@@ -141,9 +141,13 @@ class Entity {
                 oxidativeImpact: this.oxidativeDamageFrame,
                 thermalStress: this.thermalStressMultiplier || 1.0,
                 repairPaid: this.repairCostPaid,
+                pmfEnergy: this.pmfEnergyFrame || 0,
                 energy: this.energy
             });
         }
+
+        // Reset per-frame tracking for survival logs
+        this.pmfEnergyFrame = 0;
 
         // Check death
         this.checkDeath();
