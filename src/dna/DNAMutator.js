@@ -111,8 +111,8 @@ class DNAMutator {
             metabolismType: parentDNA.metabolismType,
             organelles: {
                 ribosomes: true,
-                hydrogenosomes: parentDNA.organelles.hydrogenosomes,
-                chemosynthetic_enzymes: parentDNA.organelles.chemosynthetic_enzymes
+                atp_synthase: parentDNA.organelles.atp_synthase,
+                hydrogenase_complex: parentDNA.organelles.hydrogenase_complex
             },
 
             // MULTI-METABOLISM SYSTEM - Deep copy from parent
@@ -325,14 +325,8 @@ class DNAMutator {
             }
 
             // SYNC ORGANELLES WITH METABOLISM
-            if (name === 'fermentation') {
-                dna.organelles.hydrogenosomes = data.enabled;
-            }
-            if (name === 'anoxigenicPhotosynthesis' || name === 'oxigenicPhotosynthesis') {
-                // Map photosynthesis to "chemo" enzymes for visualization for now
-                // TODO: Create dedicated Chromatophores/Chloroplasts
-                if (data.enabled) dna.organelles.chemosynthetic_enzymes = true;
-            }
+            // (Molecular machines are currently fixed in LUCA DNA, 
+            // but this is where they could evolve in the future)
         }
     }
 
