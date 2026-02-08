@@ -64,14 +64,14 @@ class CellRenderer {
             this.drawRibosomes(entity, organelleSize);
         }
 
-        // Hydrogenosomes (fermentation) - purple dots
-        if (entity.dna.organelles.hydrogenosomes) {
-            this.drawHydrogenosomes(entity, organelleSize);
+        // ATP Synthase (PMF Motor) - Golden Spinning dots
+        if (entity.dna.organelles.atp_synthase) {
+            this.drawATPSynthase(entity, organelleSize);
         }
 
-        // Chemosynthetic enzymes - yellow/green dots
-        if (entity.dna.organelles.chemosynthetic_enzymes) {
-            this.drawChemosyntheticEnzymes(entity, organelleSize);
+        // Hydrogenase Complex (H2 optimization) - Cyan dots
+        if (entity.dna.organelles.hydrogenase_complex) {
+            this.drawHydrogenases(entity, organelleSize);
         }
     }
 
@@ -87,27 +87,27 @@ class CellRenderer {
         }
     }
 
-    drawHydrogenosomes(entity, organelleSize) {
-        fill(180, 80, 200, 200);
+    drawATPSynthase(entity, organelleSize) {
+        fill(255, 215, 0, 200); // GOLD
 
         for (let i = 0; i < 2; i++) {
-            let angle = (TWO_PI / 2) * i + frameCount * 0.015;
-            let radius = entity.dna.size * 0.25;
+            let angle = (TWO_PI / 2) * i + frameCount * 0.03; // Faster spin
+            let radius = entity.dna.size * 0.3;
             let ox = entity.pos.x + cos(angle) * radius;
             let oy = entity.pos.y + sin(angle) * radius;
             circle(ox, oy, organelleSize * 1.5);
         }
     }
 
-    drawChemosyntheticEnzymes(entity, organelleSize) {
-        fill(255, 215, 0, 200); // GOLD (Distinct from H2 Green Background)
+    drawHydrogenases(entity, organelleSize) {
+        fill(0, 255, 255, 180); // CYAN
 
         for (let i = 0; i < 2; i++) {
-            let angle = (TWO_PI / 2) * i + PI / 2 + frameCount * 0.015;
+            let angle = (TWO_PI / 2) * i + PI / 4 + frameCount * 0.015;
             let radius = entity.dna.size * 0.25;
             let ox = entity.pos.x + cos(angle) * radius;
             let oy = entity.pos.y + sin(angle) * radius;
-            circle(ox, oy, organelleSize * 1.5);
+            circle(ox, oy, organelleSize * 1.2);
         }
     }
 
