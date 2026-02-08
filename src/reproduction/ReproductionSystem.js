@@ -216,14 +216,14 @@ class ReproductionSystem {
             let cost = new Ribosome().getConstructionCost();
             e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
         }
-        // Hydrogenosomes
-        if (dna.organelles.hydrogenosomes) {
-            let cost = new Hydrogenosome().getConstructionCost();
+        // ATP Synthase
+        if (dna.organelles.atp_synthase) {
+            let cost = new ATPSynthase().getConstructionCost();
             e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
         }
-        // Chemosynthetic Enzymes
-        if (dna.organelles.chemosynthetic_enzymes) {
-            let cost = new ChemosyntheticEnzymes().getConstructionCost();
+        // Hydrogenase Complex
+        if (dna.organelles.hydrogenase_complex) {
+            let cost = new HydrogenaseComplex().getConstructionCost();
             e += cost.energy; p += cost.phosphorus; n += cost.nitrogen;
         }
         // Flagella

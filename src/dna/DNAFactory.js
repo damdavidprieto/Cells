@@ -189,7 +189,6 @@ class DNAFactory {
                 ribosomes: true, // All cells have ribosomes (universal)
                 atp_synthase: true, // LUCA has primitive ATP synthase complex
                 hydrogenase_complex: true, // LUCA has primitive hydrogenases
-                chemosynthetic_enzymes: true // Universal for LUCA
             },
 
             // EVOLUTIONARY TRACKING
