@@ -32,4 +32,8 @@ class HydrogenaseComplex extends Organelle {
     getMetabolicBonus() {
         return 1.0 + (this.level * 0.05); // 5% bonus per level
     }
+
+    getCapabilities() {
+        return { HYDROGEN_PROCESSING: this };
+    }
 }

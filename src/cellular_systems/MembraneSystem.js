@@ -62,12 +62,12 @@ class MembraneSystem {
 
         // 2. NATURAL QUIMIOSMOSIS (PMF)
         // Harnessing the environmental pH gradient (Russell & Martin Hypothesis)
-        // Requires ATP-SYNTHASE MOLECULAR MACHINE
+        // Uses PMF_CONVERSION capability if available
         let extPH = environment.getPH(entity.pos.x, entity.pos.y);
         let intrinsicPH = 8.5; // Hypothetical internal pH of LUCA
         let phGradient = extPH - intrinsicPH;
 
-        let atpSynthase = entity.organelles.find(o => o.id === 'atp_synthase');
+        let atpSynthase = entity.capabilities.PMF_CONVERSION;
         if (atpSynthase && phGradient > 0) {
             let pmfEnergy = atpSynthase.calculatePMFYield(phGradient);
             entity.energy += pmfEnergy;
@@ -79,8 +79,8 @@ class MembraneSystem {
         let cellEnergyConc = entity.energy / 5.0; // Approximation
         let gradientH2 = envH2 - cellEnergyConc;
 
-        // Apply Hydrogenase bonus if present
-        let hydrogenase = entity.organelles.find(o => o.id === 'hydrogenase_complex');
+        // Apply Hydrogenase bonus via HYDROGEN_PROCESSING capability
+        let hydrogenase = entity.capabilities.HYDROGEN_PROCESSING;
         let h2Bonus = hydrogenase ? hydrogenase.getMetabolicBonus() : 1.0;
 
         let diffusionH2 = gradientH2 * effectivePermeability * h2Bonus;

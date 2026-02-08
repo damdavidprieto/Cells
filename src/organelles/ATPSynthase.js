@@ -35,4 +35,8 @@ class ATPSynthase extends Organelle {
         let efficiency = 0.5 + (this.level * 0.1);
         return phGradient * GameConstants.PMF_ENERGY_YIELD * efficiency;
     }
+
+    getCapabilities() {
+        return { PMF_CONVERSION: this };
+    }
 }

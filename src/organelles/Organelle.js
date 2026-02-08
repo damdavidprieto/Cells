@@ -36,6 +36,14 @@ class Organelle {
     }
 
     /**
+     * Get the biological capabilities enabled by this organelle
+     * @returns {Object} { CAPABILITY_ID: instance }
+     */
+    getCapabilities() {
+        return {};
+    }
+
+    /**
      * Called when organelle is added to an entity (e.g., initialization)
      * @param {Entity} entity 
      */

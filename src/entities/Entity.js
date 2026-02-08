@@ -82,6 +82,13 @@ class Entity {
         if (this.dna.organelles?.chemosynthetic_enzymes) {
             this.organelles.push(new ChemosyntheticEnzymes());
         }
+
+        // Register all biological capabilities enabled by these organelles
+        this.capabilities = {};
+        this.organelles.forEach(organelle => {
+            const caps = organelle.getCapabilities();
+            Object.assign(this.capabilities, caps);
+        });
     }
 
     update(environment) {
