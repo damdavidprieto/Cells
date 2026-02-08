@@ -42,6 +42,10 @@ class GridSystem {
         if (state.phosphorus !== undefined) this._fillGrid(this.phosphorusGrid, state.phosphorus);
         if (state.light !== undefined) this._fillGrid(this.lightGrid, state.light);
         if (state.temperature !== undefined) this._fillGrid(this.temperatureGrid, state.temperature);
+        if (state.fe2 !== undefined) this._fillGrid(this.fe2Grid, state.fe2);
+        if (state.ch4 !== undefined) this._fillGrid(this.ch4Grid, state.ch4);
+        if (state.h2s !== undefined) this._fillGrid(this.h2sGrid, state.h2s);
+        if (state.nh3 !== undefined) this._fillGrid(this.nh3Grid, state.nh3);
     }
 
     _fillGrid(grid, value) {

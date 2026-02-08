@@ -37,23 +37,21 @@ devFiles.forEach(file => {
     }
 });
 
-// 4. Modificar index.html (eliminar scripts dev)
+// 4. Modificar index.html (eliminar scripts dev del array dinámico)
 console.log('\n🔧 Cleaning index.html...');
 let html = fs.readFileSync('./build/index.html', 'utf8');
 
 devFiles.forEach(file => {
-    // Escape special regex characters in filename
+    // Escape special regex characters
     const escapedFile = file.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-    // Pattern 1: Simple script tag
-    const scriptTag = `<script src="${file}"></script>`;
-
-    // Pattern 2: Script tag with extra attributes or newlines
-    const complexScriptTag = new RegExp(`<script[^>]*src=["']${escapedFile}["'][^>]*>.*?</script>`, 'gs');
-
-    html = html.replace(complexScriptTag, '');
-    html = html.replace(scriptTag, '');
+    // Pattern: Remove 'path/to/script.js', (with or without comma)
+    const arrayEntryPattern = new RegExp(`['"]${escapedFile}['"],?`, 'g');
+    html = html.replace(arrayEntryPattern, '');
 });
+
+// Eliminar comas finales sobrantes en el array si las hay
+html = html.replace(/,\s*\]/g, ']');
 
 // Eliminar comentarios DEPRECATED y bloques de desarrollo
 html = html.replace(/<!--.*?DEPRECATED.*?-->/g, '');
