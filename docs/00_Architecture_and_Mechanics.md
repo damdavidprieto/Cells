@@ -7,7 +7,7 @@ Complete documentation of all systems, mechanics, and code structure.
 ## 📁 Project Structure
 
 ```
-C:\Proyectos\rare\Cells\
+Cells/
 │
 ├── 📄 index.html                    # Entry point
 ├── 📄 style.css                     # UI styles
